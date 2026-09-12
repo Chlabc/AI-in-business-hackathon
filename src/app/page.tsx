@@ -1,6 +1,6 @@
-import { Fragment } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { GuidedDemo } from "@/components/GuidedDemo";
 import { KILL_LIST, PHASES, SCOPE_SENTENCE } from "@/lib/phases";
 import { SCENARIOS } from "@/data/scenarios";
 import {
@@ -11,33 +11,6 @@ import {
   ManagerIcon,
   ScoreIcon,
 } from "@/components/NavIcons";
-
-const HOW_IT_WORKS = [
-  {
-    n: 1,
-    title: "Diagnose",
-    body: "We find your weakest pattern from real call outcomes — which stage, which objection, how often it's costing you the deal.",
-    Icon: DiagnosisIcon,
-  },
-  {
-    n: 2,
-    title: "Drill",
-    body: "You have a live spoken conversation with an AI playing that difficult client. It argues back — it won't just let you win.",
-    Icon: DrillIcon,
-  },
-  {
-    n: 3,
-    title: "Score",
-    body: "The moment you finish, you get a score, what you did well, what to fix, and a better line to try next time.",
-    Icon: ScoreIcon,
-  },
-  {
-    n: 4,
-    title: "Track",
-    body: "Every attempt is saved so you can see if you're actually improving — and share a summary with your manager if you choose to.",
-    Icon: ManagerIcon,
-  },
-];
 
 const WHAT_YOU_GET = [
   {
@@ -171,55 +144,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section
-        id="how-it-works"
-        className="scroll-mt-20 rounded-2xl border border-border bg-card p-6 lg:p-8"
-      >
-        <p className="eyebrow">How it works</p>
-        <h2 className="display-serif mt-1 text-2xl tracking-tight text-foreground sm:text-3xl">
-          Four steps, start to finish
-        </h2>
-        <div className="stagger-children mt-6 grid gap-0 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
-          {HOW_IT_WORKS.map((step, i) => (
-            <Fragment key={step.title}>
-              <div className="flex flex-col gap-3 py-2">
-                <div className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
-                    <step.Icon className="h-4 w-4" />
-                  </span>
-                  <span className="font-mono text-xs text-muted">
-                    STEP {step.n}
-                  </span>
-                </div>
-                <h3 className="text-base font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-muted">
-                  {step.body}
-                </p>
-              </div>
-              {i < HOW_IT_WORKS.length - 1 && (
-                <div
-                  className="hidden items-center justify-center px-2 text-border lg:flex"
-                  aria-hidden
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </div>
-              )}
-            </Fragment>
-          ))}
-        </div>
-      </section>
+      <div id="how-it-works" className="scroll-mt-20">
+        <GuidedDemo />
+      </div>
 
       <section>
         <p className="eyebrow">What you get</p>
@@ -307,18 +234,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="build-phases" className="scroll-mt-20 border-t border-border pt-8">
-        <p className="eyebrow">For the team &amp; judges</p>
-        <h2 className="mt-1 text-lg font-semibold text-foreground">
-          Build transparency
-        </h2>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          The honest state of the build — not part of the pitch, kept here so
-          nothing is hidden.
-        </p>
-      </section>
+      <details id="build-phases" className="scroll-mt-20 border-t border-border pt-8">
+        <summary className="cursor-pointer list-none">
+          <span className="eyebrow">For the team &amp; judges</span>
+          <span className="display-serif mt-1 block text-xl text-foreground sm:text-2xl">
+            Build transparency ▾
+          </span>
+          <span className="mt-1 block max-w-2xl text-sm text-muted">
+            Phases, the kill list, and what&apos;s still seeded — expand it,
+            nothing is hidden.
+          </span>
+        </summary>
 
-      <section className="grid gap-8 lg:grid-cols-2">
+        <section className="mt-6 grid gap-8 lg:grid-cols-2">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
             Build phases
@@ -370,7 +298,8 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </section>
+        </section>
+      </details>
 
       <footer className="border-t border-border pt-6 text-center text-xs text-muted">
         Forward · AI in Business Hackathon · Track 1 + ElevenLabs
