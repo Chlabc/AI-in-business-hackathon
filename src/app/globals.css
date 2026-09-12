@@ -22,6 +22,10 @@ html.light {
   --audio: #1c7ed6;
   --audio-soft: #e7f5ff;
   --header: #ffffff;
+  /* Marketing-only brand accent — deliberately distinct from --warn (a status colour). */
+  --brand-navy: #16304d;
+  --brand-gold: #c9a961;
+  --brand-gold-fg: #16304d;
 }
 
 /* Option B — High-Performance Dark (navy + copper) */
@@ -45,6 +49,10 @@ html.dark {
   --audio: #4d96ff;
   --audio-soft: #152033;
   --header: #1c232b;
+  /* The hero band stays dark in both themes, so these hold steady. */
+  --brand-navy: #16304d;
+  --brand-gold: #d0b06c;
+  --brand-gold-fg: #16304d;
 }
 
 @theme inline {
@@ -66,8 +74,12 @@ html.dark {
   --color-audio: var(--audio);
   --color-audio-soft: var(--audio-soft);
   --color-header: var(--header);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-fg: var(--brand-gold-fg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
 }
 
 body {
@@ -99,6 +111,13 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+/* Advisory-firm display type — headlines only, never body copy. */
+.display-serif {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 /* ---- motion: a page settling into place, and a nudge on interactive elements ---- */

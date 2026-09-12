@@ -115,32 +115,59 @@ function LivePreviewCard() {
 export default function Home() {
   return (
     <AppShell variant="marketing">
-      <section className="grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:items-center">
-        <div>
-          <p className="eyebrow">In your corner — not your manager&apos;s dashboard</p>
-          <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-            Stop losing deals on the fee objection.
-          </h1>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            {SCOPE_SENTENCE}
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              href="/coach/practice"
-              className="btn-lift inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
-            >
-              Try the coach
-            </Link>
-            <a
-              href="#how-it-works"
-              className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-5 text-sm font-medium text-foreground transition hover:border-accent"
-            >
-              See how it works
-            </a>
+      <section className="relative overflow-hidden rounded-2xl bg-brand-navy px-6 py-12 sm:px-10 lg:px-14 lg:py-16">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white/[0.07] blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-brand-gold/10 blur-3xl"
+        />
+
+        <div className="relative grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+          <div>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-brand-gold">
+              In your corner — not your manager&apos;s dashboard
+            </p>
+            <h1 className="display-serif mt-4 text-4xl leading-[1.08] text-white sm:text-5xl lg:text-6xl">
+              Stop losing deals on the fee objection.
+            </h1>
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/70">
+              {SCOPE_SENTENCE}
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link
+                href="/coach/practice"
+                className="btn-lift inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-gold-fg"
+              >
+                Try the coach ›
+              </Link>
+              <a
+                href="#how-it-works"
+                className="text-sm font-medium text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
+              >
+                See how it works ›
+              </a>
+            </div>
+          </div>
+
+          <div className="flex justify-center lg:justify-end">
+            <LivePreviewCard />
           </div>
         </div>
-        <div className="flex justify-center lg:justify-end">
-          <LivePreviewCard />
+
+        <div className="relative mt-12 border-t border-white/10 pt-6">
+          <p className="text-center text-[0.7rem] uppercase tracking-[0.16em] text-white/40">
+            Built with
+          </p>
+          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm font-medium text-white/55">
+            {["ElevenLabs", "Next.js", "React", "TypeScript", "Tailwind CSS"].map(
+              (tech) => (
+                <li key={tech}>{tech}</li>
+              ),
+            )}
+          </ul>
         </div>
       </section>
 
@@ -149,7 +176,7 @@ export default function Home() {
         className="scroll-mt-20 rounded-2xl border border-border bg-card p-6 lg:p-8"
       >
         <p className="eyebrow">How it works</p>
-        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+        <h2 className="display-serif mt-1 text-2xl tracking-tight text-foreground sm:text-3xl">
           Four steps, start to finish
         </h2>
         <div className="stagger-children mt-6 grid gap-0 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
@@ -196,7 +223,7 @@ export default function Home() {
 
       <section>
         <p className="eyebrow">What you get</p>
-        <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+        <h2 className="display-serif mt-1 text-2xl tracking-tight text-foreground sm:text-3xl">
           Not a course. A practice partner that talks back.
         </h2>
         <div className="stagger-children mt-6 grid gap-4 sm:grid-cols-2">
@@ -218,7 +245,7 @@ export default function Home() {
 
       <section className="surface-card rounded-2xl p-6 lg:p-8">
         <p className="eyebrow">Where things honestly stand</p>
-        <h2 className="mt-1 text-xl font-semibold text-foreground">
+        <h2 className="display-serif mt-1 text-xl text-foreground sm:text-2xl">
           Built for the AI in Business Hackathon — Track 1 + ElevenLabs
         </h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
@@ -260,22 +287,22 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rounded-2xl bg-accent px-6 py-10 text-center text-accent-fg lg:py-14">
-        <h2 className="text-2xl font-semibold sm:text-3xl">
+      <section className="rounded-2xl bg-brand-navy px-6 py-12 text-center text-white lg:py-16">
+        <h2 className="display-serif text-2xl sm:text-4xl">
           Ready to stop losing on fees?
         </h2>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/coach"
-            className="btn-lift inline-flex h-11 items-center justify-center rounded-md bg-card px-5 text-sm font-semibold text-foreground transition hover:opacity-90"
+            className="btn-lift inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-gold-fg"
           >
-            Open the coach
+            Open the coach ›
           </Link>
           <a
             href="#build-phases"
-            className="text-sm font-medium underline-offset-4 hover:underline"
+            className="text-sm font-medium text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
           >
-            See the build phases
+            See the build phases ›
           </a>
         </div>
       </section>
