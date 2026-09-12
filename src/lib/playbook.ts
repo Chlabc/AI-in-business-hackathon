@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { FIRM, TALK_TRACKS } from "@/data/seed";
+import { dataStorePath } from "@/lib/file-store";
 import type { ObjectionType, TalkTrack } from "@/lib/types";
 
 /** Editable firm knowledge — source of truth for coach UI + client overrides. */
@@ -30,7 +31,7 @@ export type FirmPlaybook = {
   updatedAt: string;
 };
 
-const STORE = path.join(process.cwd(), "data", "playbook.json");
+const STORE = dataStorePath("playbook.json");
 
 const DEFAULT_EXAMPLES: Partial<Record<ObjectionType, string>> = {
   fee: "Before we talk discount — what does a failed rollout cost you in the next quarter? That’s what our time-to-value and CSM cover. Happy to trade annual prepay before we touch list price.",

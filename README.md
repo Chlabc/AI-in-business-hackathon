@@ -57,12 +57,23 @@ cp .env.example .env.local   # fill keys as you get them
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) → **Sign in**.
+
+## Demo accounts (not real email auth)
+
+Passwordless allowlist — no magic link, no SSO. Signed httpOnly cookie (`AUTH_SECRET`).
+
+| Role | Email | After login |
+|------|-------|-------------|
+| Employee | `alex@northline.demo` | Diagnosis · Scenarios · Drill |
+| Manager | `jordan@northline.demo` | Manager · Playbook · Health |
+
+Use the **Fill** buttons on `/login`, or type the email and **Continue**.
 
 ## Env vars
 
-See `.env.example`. Never commit secrets.
+See `.env.example`. Never commit secrets. Set `AUTH_SECRET` to any long random string (a dev default exists if unset).
 
 ## Honesty for judges
 
-Demo diagnosis runs on **seeded** call data, not a live CRM. The diagnose → drill → score loop is real; CRM/call-recording integration is the obvious next step.
+Demo diagnosis runs on **seeded** call data, not a live CRM. Demo login is **allowlisted emails only**, not a production IdP. The diagnose → drill → score loop is real; CRM/call-recording integration is the obvious next step.

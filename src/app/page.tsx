@@ -30,16 +30,16 @@ export default function Home() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
-              href="/coach"
+              href="/login"
               className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
             >
-              Open coach
+              Sign in
             </Link>
             <Link
-              href="/coach/practice"
+              href="/login"
               className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-5 text-sm font-medium text-foreground transition hover:border-accent"
             >
-              Start a drill
+              Employee or manager demo
             </Link>
           </div>
         </div>
