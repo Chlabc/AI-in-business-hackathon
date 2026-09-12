@@ -1,0 +1,92 @@
+import { promises as fs } from "fs";
+import path from "path";
+import type { PracticeScore } from "@/lib/rubric";
+import type { TranscriptTurn } from "@/lib/score";
+
+export type PracticeAttempt = {
+  id: string;
+  repId: string;
+  createdAt: string;
+  conversationId: string | null;
+  turns: TranscriptTurn[];
+  score: PracticeScore;
+};
+
+const STORE = path.join(process.cwd(), "data", "practice-attempts.json");
+
+async function readAll(): Promise<PracticeAttempt[]> {
+  try {
+    const raw = await fs.readFile(STORE, "utf8");
+    const parsed = JSON.parse(raw) as PracticeAttempt[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeAll(attempts: PracticeAttempt[]): Promise<void> {
+  await fs.mkdir(path.dirname(STORE), { recursive: true });
+  await fs.writeFile(STORE, JSON.stringify(attempts, null, 2), "utf8");
+}
+
+export async function saveAttempt(
+  attempt: Omit<PracticeAttempt, "id" | "createdAt"> & {
+    id?: string;
+    createdAt?: string;
+  },
+): Promise<PracticeAttempt> {
+  const all = await readAll();
+  const row: PracticeAttempt = {
+    id: attempt.id ?? `attempt_${Date.now()}`,
+    createdAt: attempt.createdAt ?? new Date().toISOString(),
+    repId: attempt.repId,
+    conversationId: attempt.conversationId,
+    turns: attempt.turns,
+    score: attempt.score,
+  };
+  all.push(row);
+  await writeAll(all);
+  return row;
+}
+
+export async function listAttempts(repId: string): Promise<PracticeAttempt[]> {
+  const all = await readAll();
+  return all
+    .filter((a) => a.repId === repId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export function practiceKpisFromAttempts(attempts: PracticeAttempt[]) {
+  if (attempts.length === 0) {
+    return {
+      attempts: 0,
+      lastScore: null as number | null,
+      feeHoldRate: null as number | null,
+      trendLabel: "No practice attempts yet — start a drill to track KPIs",
+    };
+  }
+  const lastScore = attempts[0].score.overall;
+  const holds = attempts.filter((a) => a.score.heldFee).length;
+  const feeHoldRate = Math.round((holds / attempts.length) * 1000) / 10;
+  const chronological = [...attempts].reverse();
+  let trendLabel = "Keep drilling the fee objection.";
+  if (chronological.length >= 2) {
+    const first = chronological[0].score.overall;
+    const latest = chronological[chronological.length - 1].score.overall;
+    if (latest > first + 5) {
+      trendLabel = `Improving — score ${first} → ${latest} across ${attempts.length} attempts.`;
+    } else if (latest < first - 5) {
+      trendLabel = `Dip vs first attempt (${first} → ${latest}). Re-read the approved play.`;
+    } else {
+      trendLabel = `Steady around ${latest}. Push for a cleaner hold next round.`;
+    }
+  } else {
+    trendLabel = `First scored attempt: ${lastScore}/100.`;
+  }
+  return {
+    attempts: attempts.length,
+    lastScore,
+    feeHoldRate,
+    trendLabel,
+  };
+}

@@ -4,7 +4,9 @@ import {
   ConversationProvider,
   useConversation,
 } from "@elevenlabs/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { FeedbackCard } from "@/components/FeedbackCard";
+import type { PracticeScore } from "@/lib/rubric";
 
 type Turn = {
   id: string;
@@ -25,22 +27,62 @@ function PracticeControls({
   diagnosisHeadline,
 }: PracticeSessionProps) {
   const [turns, setTurns] = useState<Turn[]>([]);
+  const turnsRef = useRef<Turn[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
+  const [scoring, setScoring] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [score, setScore] = useState<PracticeScore | null>(null);
 
   const pushTurn = useCallback((role: Turn["role"], text: string) => {
     const cleaned = text.trim();
     if (!cleaned) return;
-    setTurns((prev) => [
-      ...prev,
-      {
-        id: `${Date.now()}-${prev.length}`,
-        role,
-        text: cleaned,
-        at: new Date().toISOString(),
-      },
-    ]);
+    setTurns((prev) => {
+      const next = [
+        ...prev,
+        {
+          id: `${Date.now()}-${prev.length}`,
+          role,
+          text: cleaned,
+          at: new Date().toISOString(),
+        },
+      ];
+      turnsRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const runScore = useCallback(async (cid: string | null) => {
+    const snapshot = turnsRef.current.filter((t) => t.role !== "system");
+    const hasUser = snapshot.some((t) => t.role === "user");
+    if (!hasUser) {
+      setError("No spoken turns from you to score — try another drill.");
+      return;
+    }
+    setScoring(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/practice/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversationId: cid,
+          turns: snapshot.map(({ role, text }) => ({ role, text })),
+        }),
+      });
+      const data = (await res.json()) as {
+        score?: PracticeScore;
+        error?: string;
+      };
+      if (!res.ok || !data.score) {
+        throw new Error(data.error ?? "Scoring failed");
+      }
+      setScore(data.score);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Scoring failed");
+    } finally {
+      setScoring(false);
+    }
   }, []);
 
   const conversation = useConversation({
@@ -67,7 +109,6 @@ function PracticeControls({
       setStarting(false);
     },
     onMessage: (message) => {
-      // SDK message shapes vary; handle common fields defensively.
       const roleRaw =
         (message as { role?: string; source?: string }).role ??
         (message as { source?: string }).source ??
@@ -78,11 +119,7 @@ function PracticeControls({
         "";
       if (!text) return;
       const role: Turn["role"] =
-        roleRaw === "user" || roleRaw === "human"
-          ? "user"
-          : roleRaw === "agent" || roleRaw === "ai"
-            ? "agent"
-            : "agent";
+        roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
       pushTurn(role, text);
     },
   });
@@ -94,7 +131,9 @@ function PracticeControls({
   const start = async () => {
     setError(null);
     setStarting(true);
+    setScore(null);
     setTurns([]);
+    turnsRef.current = [];
     setConversationId(null);
 
     try {
@@ -111,7 +150,6 @@ function PracticeControls({
       const res = await fetch("/api/elevenlabs/conversation-token");
       const data = (await res.json()) as {
         token?: string;
-        agentId?: string;
         error?: string;
         detail?: string;
       };
@@ -137,6 +175,7 @@ function PracticeControls({
   };
 
   const end = async () => {
+    const cid = conversationId;
     try {
       await conversation.endSession();
     } catch (e) {
@@ -144,10 +183,15 @@ function PracticeControls({
       setError(message);
     } finally {
       setStarting(false);
+      // Small delay so final transcripts can land
+      setTimeout(() => {
+        void runScore(cid);
+      }, 400);
     }
   };
 
   const statusLabel = useMemo(() => {
+    if (scoring) return "scoring";
     if (error) return "error";
     if (connecting && !connected) return "connecting";
     if (connected && conversation.isSpeaking) return "client speaking";
@@ -160,6 +204,7 @@ function PracticeControls({
     conversation.isListening,
     conversation.isSpeaking,
     error,
+    scoring,
   ]);
 
   return (
@@ -183,7 +228,7 @@ function PracticeControls({
           <button
             type="button"
             onClick={start}
-            disabled={connecting}
+            disabled={connecting || scoring}
             className="inline-flex h-11 items-center justify-center rounded-full bg-amber-500 px-6 text-sm font-semibold text-zinc-950 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {connecting ? "Connecting…" : "Start fee-objection drill"}
@@ -192,9 +237,10 @@ function PracticeControls({
           <button
             type="button"
             onClick={end}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-rose-500/40 bg-rose-500/10 px-6 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20"
+            disabled={scoring}
+            className="inline-flex h-11 items-center justify-center rounded-full border border-rose-500/40 bg-rose-500/10 px-6 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:opacity-60"
           >
-            End session
+            End &amp; score
           </button>
         )}
 
@@ -213,6 +259,8 @@ function PracticeControls({
           {error}
         </div>
       ) : null}
+
+      {score ? <FeedbackCard score={score} /> : null}
 
       <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-4">
         <div className="flex items-center justify-between gap-3">

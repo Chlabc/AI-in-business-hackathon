@@ -35,14 +35,14 @@ export const PHASES: Phase[] = [
     id: 3,
     title: "Scoring & feedback",
     hours: "12–18",
-    status: "active",
-    summary: "Rubric scores grounded in approved talk-tracks",
+    status: "done",
+    summary: "Rubric scores + feedback card + practice KPIs",
   },
   {
     id: 4,
     title: "Close the loop",
     hours: "18–24",
-    status: "pending",
+    status: "active",
     summary: "Re-practice, progress view, rep-owned sharing",
   },
   {

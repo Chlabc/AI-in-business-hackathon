@@ -26,7 +26,7 @@ export default function Home() {
             </span>
           </div>
           <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-            Phase 2 done · try /coach/practice
+            Phase 3 done · End &amp; score a drill
           </span>
         </div>
       </header>

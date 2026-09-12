@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { DEMO_REP_ID } from "@/data/seed";
+import { listAttempts, practiceKpisFromAttempts } from "@/lib/attempts";
 import { getRepDashboard } from "@/lib/diagnosis";
+
+export const dynamic = "force-dynamic";
 
 function pct(n: number | null | undefined, fallback = "—") {
   if (n === null || n === undefined) return fallback;
@@ -11,7 +14,7 @@ function label(value: string) {
   return value.replaceAll("_", " ");
 }
 
-export default function CoachPage() {
+export default async function CoachPage() {
   const dash = getRepDashboard(DEMO_REP_ID);
 
   if (!dash) {
@@ -23,6 +26,8 @@ export default function CoachPage() {
   }
 
   const { rep, firm, kpis, diagnosis, talkTrack, recentCalls } = dash;
+  const practice = practiceKpisFromAttempts(await listAttempts(DEMO_REP_ID));
+  kpis.practice = practice;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10">
