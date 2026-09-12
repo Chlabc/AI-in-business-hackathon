@@ -9,6 +9,10 @@ import { AudioWaveform } from "@/components/AudioWaveform";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { SignalStreamGuard } from "@/components/SignalStreamGuard";
 import type { PracticeScenario } from "@/data/scenarios";
+import {
+  formatUnknownError,
+  isBenignElevenLabsError,
+} from "@/lib/elevenlabs-errors";
 import type { PracticeScore } from "@/lib/rubric";
 
 type Turn = {
@@ -23,32 +27,6 @@ type PracticeSessionProps = {
   approvedPlay: string;
   diagnosisHeadline: string;
 };
-
-function isBenignSignalError(message: string): boolean {
-  const m = message.toLowerCase();
-  return (
-    m.includes("signal stream") ||
-    m.includes("reading from signal") ||
-    m.trim() === "" ||
-    m === "{}" ||
-    m === "[object object]"
-  );
-}
-
-function formatErr(err: unknown): string {
-  if (typeof err === "string") return err;
-  if (err && typeof err === "object") {
-    const o = err as Record<string, unknown>;
-    if (typeof o.message === "string" && o.message.trim()) return o.message;
-    try {
-      const s = JSON.stringify(err);
-      if (s && s !== "{}") return s;
-    } catch {
-      /* ignore */
-    }
-  }
-  return "";
-}
 
 function PracticeControls({
   scenario,
@@ -136,12 +114,15 @@ function PracticeControls({
       setStarting(false);
     },
     onError: (err) => {
-      const message = formatErr(err);
+      const message = formatUnknownError(err);
       // ElevenLabs often emits empty / signal-stream noise on clean hangup
-      if (endingRef.current || isBenignSignalError(message)) {
+      if (
+        endingRef.current ||
+        isBenignElevenLabsError(message, err) ||
+        !message
+      ) {
         return;
       }
-      if (!message) return;
       setError(message);
       pushTurn("system", `Error: ${message}`);
       setStarting(false);
@@ -220,8 +201,9 @@ function PracticeControls({
       });
       setConversationId(id ?? null);
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Failed to start session";
-      if (!isBenignSignalError(message)) setError(message);
+      const message =
+        e instanceof Error ? e.message : formatUnknownError(e) || "Failed to start session";
+      if (!isBenignElevenLabsError(message, e)) setError(message);
       setStarting(false);
     }
   };
@@ -232,8 +214,8 @@ function PracticeControls({
     try {
       await conversation.endSession();
     } catch (e) {
-      const message = formatErr(e);
-      if (message && !isBenignSignalError(message)) setError(message);
+      const message = formatUnknownError(e);
+      if (message && !isBenignElevenLabsError(message, e)) setError(message);
     } finally {
       setStarting(false);
       setTimeout(() => {
