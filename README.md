@@ -33,10 +33,18 @@ Forward: AI in Business Hackathon · Track 1 + Built With ElevenLabs
 | 2 | **done** | ElevenLabs voice roleplay + transcript |
 | 3 | **done** | Scoring + grounded feedback + practice KPIs |
 | 4 | **done** | Full loop + progress + share + full-width UI |
-| 5 | **next** | Eval harness |
-| 6 | pending | User tests + value |
+| 5 | **done** | Eval harness (`npm run eval` → `EVAL.md`) |
+| 6 | **next** | User tests + value |
 | 7 | pending | Harden + docs |
 | 8 | pending | Demo video + Devpost |
+
+## Eval
+
+```bash
+npm run eval
+```
+
+Writes `EVAL.md` with diagnosis accuracy, scoring–human agreement, and persona/guardrail results.
 
 Planning live in Flint: `(Notepad) 002 Cornerman Induction + Build Plan`.
 

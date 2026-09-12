@@ -21,19 +21,22 @@ function lossRate(calls: CallRecord[]): number {
   return Math.round((bad / calls.length) * 1000) / 10;
 }
 
-/**
- * Deterministic diagnosis from call outcomes.
- * Prefers high-volume weak spots (stage × objection) with elevated loss/concede rate.
- */
-export function diagnoseRep(repId: string): Diagnosis | null {
-  const calls = getCallsForRep(repId);
-  if (calls.length === 0) return null;
+type Bucket = {
+  stage: DealStage;
+  objection: ObjectionType;
+  calls: CallRecord[];
+};
 
-  type Bucket = {
-    stage: DealStage;
-    objection: ObjectionType;
-    calls: CallRecord[];
-  };
+/**
+ * Deterministic diagnosis from an arbitrary call history.
+ * Prefers high-volume weak spots (stage × objection) with elevated loss/concede rate.
+ * Used by the product path and by the Phase 5 eval harness.
+ */
+export function diagnoseCalls(
+  calls: CallRecord[],
+  repId: string,
+): Diagnosis | null {
+  if (calls.length === 0) return null;
 
   const map = new Map<string, Bucket>();
   for (const call of calls) {
@@ -111,6 +114,11 @@ export function diagnoseRep(repId: string): Diagnosis | null {
     recommendedDrillId: talkTrack.id,
     confidence,
   };
+}
+
+/** Product path: diagnose the seeded rep history. */
+export function diagnoseRep(repId: string): Diagnosis | null {
+  return diagnoseCalls(getCallsForRep(repId), repId);
 }
 
 export function getRepDashboard(repId: string): RepDashboard | null {

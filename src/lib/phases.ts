@@ -49,14 +49,14 @@ export const PHASES: Phase[] = [
     id: 5,
     title: "Eval harness",
     hours: "24–30",
-    status: "active",
-    summary: "Diagnosis accuracy + scoring–human agreement",
+    status: "done",
+    summary: "Diagnosis accuracy + scoring–human agreement (`npm run eval`)",
   },
   {
     id: 6,
     title: "User tests & value",
     hours: "30–36",
-    status: "pending",
+    status: "active",
     summary: "3–5 sessions, before/after, ROI blurb",
   },
   {
