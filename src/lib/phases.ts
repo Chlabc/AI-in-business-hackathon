@@ -56,15 +56,15 @@ export const PHASES: Phase[] = [
     id: 6,
     title: "User tests & value",
     hours: "30–36",
-    status: "active",
+    status: "done",
     summary:
-      "3–5 sessions, before/after, ROI blurb (playbook + reactive cues shipped)",
+      "Value page: before/after, ROI blurb, 3–5 labeled user-test sessions",
   },
   {
     id: 7,
     title: "Harden & document",
     hours: "36–42",
-    status: "pending",
+    status: "active",
     summary: "Stress cases, README, architecture diagram",
   },
   {
