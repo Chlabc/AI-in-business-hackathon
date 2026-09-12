@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { ConversionChart } from "@/components/ConversionChart";
+import { RoleNotice } from "@/components/RoleNotice";
 import { DEMO_REP_ID, getRep } from "@/data/seed";
 import { TEAM, TEAM_AVERAGE_CONVERSION } from "@/data/team";
 import { listAttempts, practiceKpisFromAttempts } from "@/lib/attempts";
@@ -21,6 +22,7 @@ export default async function ManagerPage() {
 
   return (
     <AppShell repName={rep?.name} focus="Team progress">
+      <RoleNotice side="manager" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/coach" className="text-sm text-muted hover:text-accent">
           ← Back to coach

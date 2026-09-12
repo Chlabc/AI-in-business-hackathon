@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { ProgressPanel } from "@/components/ProgressPanel";
+import { RoleNotice } from "@/components/RoleNotice";
 import { ShareControls } from "@/components/ShareControls";
 import { DEMO_REP_ID } from "@/data/seed";
 import { listAttempts, practiceKpisFromAttempts } from "@/lib/attempts";
@@ -53,6 +54,7 @@ export default async function CoachPage() {
 
   return (
     <AppShell repName={rep.name} focus="Fee concessions">
+      <RoleNotice side="rep" />
       <OnboardingBanner />
 
       <div className="flex flex-wrap items-end justify-between gap-3">

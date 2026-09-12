@@ -9,6 +9,7 @@ import {
   ManagerIcon,
   ScenariosIcon,
 } from "@/components/NavIcons";
+import { useRole } from "@/components/RoleProvider";
 import { useTheme } from "@/components/ThemeProvider";
 
 type AppHeaderProps = {
@@ -18,12 +19,42 @@ type AppHeaderProps = {
   variant?: "app" | "marketing";
 };
 
-const NAV_LINKS = [
+const REP_LINKS = [
   { href: "/coach", label: "Diagnosis", Icon: DiagnosisIcon },
   { href: "/coach/training", label: "Scenarios", Icon: ScenariosIcon },
   { href: "/coach/practice", label: "Drill", Icon: DrillIcon },
-  { href: "/coach/manager", label: "Manager", Icon: ManagerIcon },
 ];
+
+const MANAGER_LINKS = [
+  { href: "/coach/manager", label: "Team overview", Icon: ManagerIcon },
+];
+
+/**
+ * A demo-only role switch — not access control. It exists so the rep/manager
+ * split is visible in the product, the way the privacy model already claims.
+ */
+function RoleSwitch() {
+  const { role, setRole } = useRole();
+  return (
+    <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
+      {(["rep", "manager"] as const).map((r) => (
+        <button
+          key={r}
+          type="button"
+          onClick={() => setRole(r)}
+          title="Demo role switch — not a login"
+          className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize transition ${
+            role === r
+              ? "bg-accent text-accent-fg"
+              : "text-muted hover:text-foreground"
+          }`}
+        >
+          {r}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
@@ -52,6 +83,7 @@ export function AppHeader({
   variant = "app",
 }: AppHeaderProps) {
   const pathname = usePathname();
+  const { role } = useRole();
 
   if (variant === "marketing") {
     return (
@@ -98,19 +130,30 @@ export function AppHeader({
           </Link>
           <div className="hidden h-4 w-px bg-border sm:block" />
           <div className="hidden min-w-0 items-center gap-3 text-sm sm:flex">
-            <span className="truncate text-muted">
-              Rep: <span className="font-medium text-foreground">{repName}</span>
-            </span>
-            <span className="text-border">|</span>
-            <span className="truncate text-muted">
-              Focus:{" "}
-              <span className="font-medium text-accent">{focus}</span>
-            </span>
+            {role === "manager" ? (
+              <span className="truncate text-muted">
+                Viewing as{" "}
+                <span className="font-medium text-foreground">manager</span> —
+                summaries only, no transcripts
+              </span>
+            ) : (
+              <>
+                <span className="truncate text-muted">
+                  Rep:{" "}
+                  <span className="font-medium text-foreground">{repName}</span>
+                </span>
+                <span className="text-border">|</span>
+                <span className="truncate text-muted">
+                  Focus:{" "}
+                  <span className="font-medium text-accent">{focus}</span>
+                </span>
+              </>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-1">
-          {NAV_LINKS.map((link, i) => {
+          {(role === "manager" ? MANAGER_LINKS : REP_LINKS).map((link, i) => {
             const active = pathname === link.href;
             return (
               <Link
@@ -130,6 +173,7 @@ export function AppHeader({
             );
           })}
           <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
+          <RoleSwitch />
           <ThemeToggle />
         </div>
       </div>
