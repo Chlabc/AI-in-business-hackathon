@@ -54,7 +54,7 @@ export default async function CoachPage() {
           { label: "Calls analysed", value: String(kpis.callsAnalysed) },
           { label: "Win rate", value: pct(kpis.winRate) },
           {
-            label: "Fee concession rate",
+            label: "Price concession rate",
             value: pct(kpis.feeConcessionRate),
             warn: true,
           },
