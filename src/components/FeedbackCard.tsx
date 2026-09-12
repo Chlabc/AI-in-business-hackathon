@@ -1,11 +1,19 @@
+"use client";
+
+import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import type { PracticeScore } from "@/lib/rubric";
 
 type FeedbackCardProps = {
   score: PracticeScore;
   whatYouSaid?: string[];
+  repName?: string;
 };
 
-export function FeedbackCard({ score, whatYouSaid = [] }: FeedbackCardProps) {
+export function FeedbackCard({
+  score,
+  whatYouSaid = [],
+  repName = "Alex Chen",
+}: FeedbackCardProps) {
   const said =
     whatYouSaid.length > 0
       ? whatYouSaid.slice(-3)
@@ -21,7 +29,7 @@ export function FeedbackCard({ score, whatYouSaid = [] }: FeedbackCardProps) {
               Score {score.overall}/100
             </h2>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="rounded border border-border bg-card px-2 py-1 text-muted">
               {score.method}
             </span>
@@ -35,6 +43,11 @@ export function FeedbackCard({ score, whatYouSaid = [] }: FeedbackCardProps) {
               {score.heldFee ? "Price held" : "Price softened"}
               {score.feeOfferedPct !== null ? ` · ${score.feeOfferedPct}%` : ""}
             </span>
+            <DownloadPdfButton
+              score={score}
+              whatYouSaid={whatYouSaid}
+              repName={repName}
+            />
           </div>
         </div>
       </div>
