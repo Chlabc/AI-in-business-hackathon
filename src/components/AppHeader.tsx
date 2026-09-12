@@ -63,6 +63,13 @@ export function AppHeader({
             Health
           </Link>
           <Link
+            href="/coach/playbook"
+            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground md:inline"
+            title="Manager playbook — firm knowledge"
+          >
+            Playbook
+          </Link>
+          <Link
             href="/coach/manager"
             className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground md:inline"
           >
@@ -101,6 +108,7 @@ export function AppHeader({
             { href: "/coach/training", label: "Scenarios" },
             { href: "/coach/practice", label: "Drill" },
             { href: "/coach/health", label: "Health" },
+            { href: "/coach/playbook", label: "Playbook" },
             { href: "/coach/manager", label: "Manager" },
           ].map((item) => (
             <Link

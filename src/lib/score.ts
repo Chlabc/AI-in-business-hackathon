@@ -1,18 +1,29 @@
 import { getScenario } from "@/data/scenarios";
-import { FIRM, getTalkTrackForObjection } from "@/data/seed";
 import {
   FEE_RUBRIC,
   type CriterionScore,
   type PracticeScore,
   type RubricCriterionId,
 } from "@/lib/rubric";
+import {
+  defaultPlaybook,
+  getPlaybook,
+  getPlaybookTalkTrack,
+  type FirmPlaybook,
+} from "@/lib/playbook";
 
 export type TranscriptTurn = {
   role: "user" | "agent" | "system";
   text: string;
 };
 
-function suggestedForScenario(scenarioId: string, talkTrackPlay: string): string {
+function suggestedForScenario(
+  scenarioId: string,
+  talkTrackPlay: string,
+  playbook: FirmPlaybook,
+  exampleLine?: string,
+): string {
+  if (exampleLine?.trim()) return exampleLine.trim();
   switch (scenarioId) {
     case "competitor":
       return "I respect that relationship — where are they still leaving gaps? Happy to run a parallel shortlist on one hard-to-fill seat so you can compare without ripping anything up.";
@@ -21,8 +32,13 @@ function suggestedForScenario(scenarioId: string, talkTrackPlay: string): string
     case "need-to-think":
       return "Makes sense. Shall I send a one-pager and we lock 15 minutes Thursday to decide go / no-go with your co-founder on the call?";
     case "price-objection":
-    default:
-      return `Before we talk numbers — what would a bad hire in month two cost your team? That’s what our ${FIRM.valueAnchors[1]} protects. ${talkTrackPlay}`;
+    default: {
+      const guarantee =
+        playbook.valueAnchors.find((a) => /guarantee/i.test(a)) ??
+        playbook.valueAnchors[0] ??
+        "our guarantee";
+      return `Before we talk numbers — what would a bad hire in month two cost your team? That’s what ${guarantee} protects. ${talkTrackPlay}`;
+    }
   }
 }
 
@@ -55,15 +71,23 @@ function extractOfferedFees(text: string): number[] {
   return found;
 }
 
+function softHoldBar(playbook: FirmPlaybook): number {
+  return Math.max(playbook.feeFloorPct, playbook.standardPermFeePct - 2);
+}
+
 function scoreCriterion(
   id: RubricCriterionId,
   turns: TranscriptTurn[],
+  playbook: FirmPlaybook,
 ): Omit<CriterionScore, "label" | "max"> {
   const all = userText(turns);
   const first = firstUserText(turns);
   const offered = extractOfferedFees(all);
   const firstOffered = extractOfferedFees(first);
   const minOffered = offered.length ? Math.min(...offered) : null;
+  const std = playbook.standardPermFeePct;
+  const floor = playbook.feeFloorPct;
+  const soft = softHoldBar(playbook);
 
   switch (id) {
     case "explored_objection": {
@@ -105,7 +129,6 @@ function scoreCriterion(
     }
     case "held_fee": {
       if (minOffered === null) {
-        // No explicit % — treat as held if they didn't say "we can do" lower language
         const cave =
           /we can do|i can do|how about|let.?s say|drop|discount|lower/.test(
             all,
@@ -118,21 +141,21 @@ function scoreCriterion(
             : "No explicit fee drop detected — treated as holding the ask.",
         };
       }
-      if (minOffered < FIRM.feeFloorPct) {
+      if (minOffered < floor) {
         return {
           id,
           score: 0,
-          notes: `Offered ${minOffered}% — below firm floor (${FIRM.feeFloorPct}%).`,
+          notes: `Offered ${minOffered}% — below firm floor (${floor}%).`,
         };
       }
-      if (minOffered < 18) {
+      if (minOffered < soft) {
         return {
           id,
           score: 0.35,
-          notes: `Moved to ${minOffered}% — above floor but soft vs ${FIRM.standardPermFeePct}% standard.`,
+          notes: `Moved to ${minOffered}% — above floor but soft vs ${std}% standard.`,
         };
       }
-      if (minOffered < FIRM.standardPermFeePct) {
+      if (minOffered < std) {
         return {
           id,
           score: 0.7,
@@ -142,7 +165,7 @@ function scoreCriterion(
       return {
         id,
         score: 1,
-        notes: `Held the ${FIRM.standardPermFeePct}% ask.`,
+        notes: `Held the ${std}% ask.`,
       };
     }
     case "used_approved_play": {
@@ -160,7 +183,7 @@ function scoreCriterion(
     }
     case "no_early_cave": {
       const early =
-        firstOffered.some((n) => n < FIRM.standardPermFeePct) ||
+        firstOffered.some((n) => n < std) ||
         /we can do \d+|i can do \d+|how about \d+/.test(first);
       return {
         id,
@@ -176,11 +199,12 @@ function scoreCriterion(
 export function scoreTranscriptHeuristic(
   turns: TranscriptTurn[],
   scenarioId = "price-objection",
+  playbook: FirmPlaybook = defaultPlaybook(),
 ): PracticeScore {
   const scenario = getScenario(scenarioId);
-  const talkTrack = getTalkTrackForObjection(scenario.objectionType);
+  const talkTrack = getPlaybookTalkTrack(playbook, scenario.objectionType);
   const criteria: CriterionScore[] = FEE_RUBRIC.map((c) => {
-    const raw = scoreCriterion(c.id, turns);
+    const raw = scoreCriterion(c.id, turns, playbook);
     return {
       id: c.id,
       label: c.label,
@@ -197,10 +221,11 @@ export function scoreTranscriptHeuristic(
   const all = userText(turns);
   const offered = extractOfferedFees(all);
   const feeOfferedPct = offered.length ? Math.min(...offered) : null;
+  const holdBar = softHoldBar(playbook);
   const heldFee =
     feeOfferedPct === null
       ? !/we can do|drop to|discount to/.test(all)
-      : feeOfferedPct >= 18;
+      : feeOfferedPct >= holdBar;
 
   const feedback: string[] = [];
   const weak = [...criteria].sort((a, b) => a.score - b.score).slice(0, 3);
@@ -212,10 +237,8 @@ export function scoreTranscriptHeuristic(
     feedback.unshift(`Strength — ${strong[0].label}: ${strong[0].notes}`);
   }
   feedback.push(`Approved play: ${talkTrack.approvedPlay}`);
-
-  // Never invent fees — only cite firm constants
   feedback.push(
-    `Firm pricing (approved): standard ${FIRM.standardPermFeePct}%, floor ${FIRM.feeFloorPct}%.`,
+    `Firm pricing (approved): standard ${playbook.standardPermFeePct}%, floor ${playbook.feeFloorPct}%.`,
   );
 
   return {
@@ -225,7 +248,12 @@ export function scoreTranscriptHeuristic(
     criteria,
     feedback: feedback.slice(0, 5),
     approvedPlayReminder: talkTrack.approvedPlay,
-    suggestedResponse: suggestedForScenario(scenario.id, talkTrack.approvedPlay),
+    suggestedResponse: suggestedForScenario(
+      scenario.id,
+      talkTrack.approvedPlay,
+      playbook,
+      talkTrack.exampleLine,
+    ),
     method: "heuristic",
     talkTrackId: talkTrack.id,
     scenarioId: scenario.id,
@@ -239,12 +267,13 @@ export async function scoreTranscript(
   turns: TranscriptTurn[],
   scenarioId = "price-objection",
 ): Promise<PracticeScore> {
-  const base = scoreTranscriptHeuristic(turns, scenarioId);
+  const playbook = await getPlaybook();
+  const base = scoreTranscriptHeuristic(turns, scenarioId, playbook);
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) return base;
 
   try {
-    const talkTrack = getTalkTrackForObjection("fee");
+    const talkTrack = getPlaybookTalkTrack(playbook, "fee");
     const res = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -259,15 +288,15 @@ export async function scoreTranscript(
             role: "system",
             content: `You score a recruitment fee-objection roleplay. Return ONLY JSON:
 {"overall":0-100,"feedback":["bullet1","bullet2","bullet3"],"heldFee":true|false}
-Rules: feedback must be behavioural and grounded in the approved talk-track. Never invent fees below ${FIRM.feeFloorPct}%. Never invent policies.`,
+Rules: feedback must be behavioural and grounded in the approved talk-track. Never invent fees below ${playbook.feeFloorPct}%. Never invent policies.`,
           },
           {
             role: "user",
             content: JSON.stringify({
               approvedPlay: talkTrack.approvedPlay,
               firm: {
-                standard: FIRM.standardPermFeePct,
-                floor: FIRM.feeFloorPct,
+                standard: playbook.standardPermFeePct,
+                floor: playbook.feeFloorPct,
               },
               heuristic: base,
               transcript: turns.filter((t) => t.role !== "system"),

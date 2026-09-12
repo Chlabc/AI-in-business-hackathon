@@ -34,6 +34,7 @@ Forward: AI in Business Hackathon · Track 1 + Built With ElevenLabs
 | 3 | **done** | Scoring + grounded feedback + practice KPIs |
 | 4 | **done** | Full loop + progress + share + full-width UI |
 | 5 | **done** | Eval harness (`npm run eval` → `EVAL.md`) |
+| — | **done** | Playbook (Manager) + reactive cue modes Off/Soft/Full |
 | 6 | **next** | User tests + value |
 | 7 | pending | Harden + docs |
 | 8 | pending | Demo video + Devpost |
