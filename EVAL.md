@@ -1,6 +1,6 @@
 # Cornerman EVAL
 
-Generated: 2026-09-12T13:00:52.972Z
+Generated: 2026-09-12T16:11:35.932Z
 
 Offline harness for hackathon judges — diagnosis accuracy, scoring–human agreement, and persona/guardrail checks. Run with `npm run eval`.
 

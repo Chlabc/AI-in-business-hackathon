@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { PlaybookTalkTrack } from "@/lib/playbook";
 import {
   CUE_MODE_STORAGE_KEY,
@@ -24,6 +24,15 @@ const MODES: { id: CueMode; label: string }[] = [
   { id: "full", label: "Full" },
 ];
 
+function readStoredCueMode(): CueMode {
+  if (typeof window === "undefined") return "soft";
+  try {
+    return parseCueMode(localStorage.getItem(CUE_MODE_STORAGE_KEY));
+  } catch {
+    return "soft";
+  }
+}
+
 export function CoachStrip({
   track,
   latestClientText,
@@ -31,15 +40,7 @@ export function CoachStrip({
   feeFloorPct,
   connected,
 }: CoachStripProps) {
-  const [mode, setMode] = useState<CueMode>("soft");
-
-  useEffect(() => {
-    try {
-      setMode(parseCueMode(localStorage.getItem(CUE_MODE_STORAGE_KEY)));
-    } catch {
-      /* ignore */
-    }
-  }, []);
+  const [mode, setMode] = useState<CueMode>(readStoredCueMode);
 
   const setModePersist = (next: CueMode) => {
     setMode(next);

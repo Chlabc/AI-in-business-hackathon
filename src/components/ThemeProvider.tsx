@@ -20,6 +20,17 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "cornerman-theme";
 
+function readStoredTheme(): Theme {
+  if (typeof window === "undefined") return "light";
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    // First visit defaults to day; only honor an explicit saved choice.
+    return stored === "light" || stored === "dark" ? stored : "light";
+  } catch {
+    return "light";
+  }
+}
+
 function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.classList.remove("light", "dark");
@@ -28,20 +39,14 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-    // First visit always starts in day mode; only honor an explicit saved choice.
-    const preferred: Theme =
-      stored === "light" || stored === "dark" ? stored : "light";
-    setThemeState(preferred);
-    applyTheme(preferred);
-  }, []);
+    applyTheme(theme);
+  }, [theme]);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
-    applyTheme(next);
     window.localStorage.setItem(STORAGE_KEY, next);
   }, []);
 

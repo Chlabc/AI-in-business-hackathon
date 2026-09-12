@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import {
-  getSession,
   jsonAuthError,
   repIdForViewer,
   requireUser,

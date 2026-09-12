@@ -3,8 +3,8 @@ import { AppShell } from "@/components/AppShell";
 import type { EvalCaseRow } from "@/lib/eval-snapshot";
 import { loadEvalSnapshot } from "@/lib/load-eval-snapshot";
 
-// Must be dynamic: AppShell reads the session cookie. force-static baked a
-// logged-out header and made Sign out flip to Sign in on this tab.
+// Must be dynamic: AppShell reads the session cookie. A static bake of this
+// page left a logged-out header and flipped Sign out → Sign in on this tab.
 export const dynamic = "force-dynamic";
 
 function CaseTable({
