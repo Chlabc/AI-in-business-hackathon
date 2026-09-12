@@ -52,7 +52,9 @@ export default async function PracticePage({ searchParams }: Props) {
         </p>
       </div>
 
+      {/* key forces a clean voice session when switching scenarios */}
       <PracticeSession
+        key={scenario.id}
         scenario={scenario}
         diagnosisHeadline={headline}
         approvedPlay={track.approvedPlay}

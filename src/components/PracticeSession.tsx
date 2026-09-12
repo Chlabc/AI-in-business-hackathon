@@ -1,25 +1,11 @@
 "use client";
 
-import { Conversation } from "@elevenlabs/client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { AudioWaveform } from "@/components/AudioWaveform";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { SignalStreamGuard } from "@/components/SignalStreamGuard";
 import type { PracticeScenario } from "@/data/scenarios";
-import {
-  formatUnknownError,
-  isBenignElevenLabsError,
-} from "@/lib/elevenlabs-errors";
-import type { PracticeScore } from "@/lib/rubric";
-
-type Turn = {
-  id: string;
-  role: "user" | "agent" | "system";
-  text: string;
-  at: string;
-};
-
-type SessionStatus = "idle" | "connecting" | "connected" | "error";
+import { usePracticeConversation } from "@/hooks/usePracticeConversation";
 
 type PracticeSessionProps = {
   scenario: PracticeScenario;
@@ -27,284 +13,26 @@ type PracticeSessionProps = {
   diagnosisHeadline: string;
 };
 
-function formatDisconnect(details: unknown): string {
-  if (!details || typeof details !== "object") return "unknown";
-  const d = details as {
-    reason?: string;
-    context?: { type?: string; reason?: string };
-  };
-  const parts = [
-    d.reason,
-    d.context?.type,
-    d.context?.reason,
-  ].filter(Boolean);
-  return parts.join(" · ") || JSON.stringify(details);
-}
-
-/**
- * Direct `@elevenlabs/client` Conversation (no React ConversationProvider).
- * Instant hangups were caused by the dashboard agent calling built-in `end_call`
- * after its opening line — we now point at a Cornerman agent without that tool.
- */
 export function PracticeSession({
   scenario,
   approvedPlay,
   diagnosisHeadline,
 }: PracticeSessionProps) {
-  const scenarioLine = scenario.openingLine;
-  const [turns, setTurns] = useState<Turn[]>([]);
-  const turnsRef = useRef<Turn[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [status, setStatus] = useState<SessionStatus>("idle");
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [scoring, setScoring] = useState(false);
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [score, setScore] = useState<PracticeScore | null>(null);
-  const [lastDisconnect, setLastDisconnect] = useState<string | null>(null);
-
-  const conversationRef = useRef<Awaited<
-    ReturnType<typeof Conversation.startSession>
-  > | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
-  const endingRef = useRef(false);
-  const scenarioRef = useRef(scenario);
-  scenarioRef.current = scenario;
-
-  const pushTurn = useCallback((role: Turn["role"], text: string) => {
-    const cleaned = text.trim();
-    if (!cleaned) return;
-    setTurns((prev) => {
-      const next = [
-        ...prev,
-        {
-          id: `${Date.now()}-${prev.length}`,
-          role,
-          text: cleaned,
-          at: new Date().toISOString(),
-        },
-      ];
-      turnsRef.current = next;
-      return next;
-    });
-  }, []);
-
-  const stopMic = useCallback(() => {
-    micStreamRef.current?.getTracks().forEach((t) => t.stop());
-    micStreamRef.current = null;
-  }, []);
-
-  const runScore = useCallback(async (cid: string | null) => {
-    const snapshot = turnsRef.current.filter((t) => t.role !== "system");
-    if (!snapshot.some((t) => t.role === "user")) {
-      setError("No spoken turns from you to score — try another drill.");
-      return;
-    }
-    setScoring(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/practice/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversationId: cid,
-          scenarioId: scenarioRef.current.id,
-          turns: snapshot.map(({ role, text }) => ({ role, text })),
-        }),
-      });
-      const data = (await res.json()) as {
-        score?: PracticeScore;
-        error?: string;
-      };
-      if (!res.ok || !data.score) {
-        throw new Error(data.error ?? "Scoring failed");
-      }
-      setScore(data.score);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Scoring failed");
-    } finally {
-      setScoring(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      endingRef.current = true;
-      const conv = conversationRef.current;
-      conversationRef.current = null;
-      void conv?.endSession().catch(() => {});
-      micStreamRef.current?.getTracks().forEach((t) => t.stop());
-      micStreamRef.current = null;
-    };
-  }, [scenario.id]);
-
-  const start = async () => {
-    if (conversationRef.current || status === "connecting") return;
-
-    setError(null);
-    setLastDisconnect(null);
-    setScore(null);
-    setTurns([]);
-    turnsRef.current = [];
-    setConversationId(null);
-    setIsSpeaking(false);
-    endingRef.current = false;
-    setStatus("connecting");
-
-    // Permission probe only — stop tracks immediately so ElevenLabs owns the mic.
-    // Holding a parallel MediaStream was racing LiveKit and aborting DataChannels ~2s in.
-    try {
-      const probe = await navigator.mediaDevices.getUserMedia({ audio: true });
-      probe.getTracks().forEach((t) => t.stop());
-    } catch {
-      setError(
-        "Microphone permission is required for the spoken drill. Allow mic access and try again.",
-      );
-      setStatus("idle");
-      return;
-    }
-
-    try {
-      const sc = scenarioRef.current;
-
-      // Prefer server-issued conversation token + default WebRTC.
-      // Do NOT pre-hold a mic stream (races LiveKit). Keep overrides light —
-      // firstMessage only on the fee drill so we don't replace the agent's
-      // tool/policy config (that was re-enabling end_call behavior).
-      const callbacks = {
-        onConnect: () => {
-          if (endingRef.current) return;
-          setStatus("connected");
-          pushTurn(
-            "system",
-            "Connected — speak as the recruitment consultant.",
-          );
-        },
-        onDisconnect: (details: unknown) => {
-          conversationRef.current = null;
-          setIsSpeaking(false);
-          setStatus("idle");
-          stopMic();
-          const reason = formatDisconnect(details);
-          setLastDisconnect(reason);
-          pushTurn("system", `Session ended (${reason}).`);
-        },
-        onError: (message: unknown, context?: unknown) => {
-          if (
-            endingRef.current ||
-            isBenignElevenLabsError(message, context)
-          ) {
-            return;
-          }
-          const text =
-            typeof message === "string" && message.trim()
-              ? message
-              : formatUnknownError(context) || "Voice session error";
-          if (!text) return;
-          setError(text);
-          pushTurn("system", `Error: ${text}`);
-          setStatus("error");
-        },
-        onModeChange: ({ mode }: { mode: string }) => {
-          setIsSpeaking(mode === "speaking");
-        },
-        onMessage: (message: unknown) => {
-          const roleRaw =
-            (message as { role?: string; source?: string }).role ??
-            (message as { source?: string }).source ??
-            "";
-          const text =
-            (message as { message?: string }).message ??
-            (message as { text?: string }).text ??
-            "";
-          if (!text) return;
-          const role: Turn["role"] =
-            roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
-          pushTurn(role, text);
-        },
-        onAgentToolResponse: (tool: {
-          tool_name?: string;
-          toolName?: string;
-        }) => {
-          const name = tool.tool_name ?? tool.toolName ?? "tool";
-          pushTurn("system", `Agent tool: ${name}`);
-        },
-        overrides: {
-          agent: {
-            firstMessage: sc.openingLine,
-            // Keep the platform agent prompt (no end_call). Only nudge scenario
-            // context via first message for non-default drills when needed.
-            ...(sc.id === "price-objection"
-              ? {}
-              : { prompt: { prompt: sc.agentSystemPrompt } }),
-          },
-        },
-        userId: "rep_demo_alex",
-      };
-
-      // Always mint a short-lived token server-side (correct agent id from env).
-      const res = await fetch("/api/elevenlabs/conversation-token");
-      const data = (await res.json()) as {
-        token?: string;
-        agentId?: string;
-        error?: string;
-        detail?: string;
-      };
-      if (!res.ok || !data.token) {
-        throw new Error(
-          data.error
-            ? `${data.error}${data.detail ? ` — ${data.detail}` : ""}`
-            : "Could not get conversation token",
-        );
-      }
-
-      const conv = await Conversation.startSession({
-        conversationToken: data.token,
-        ...callbacks,
-      });
-
-      if (endingRef.current) {
-        await conv.endSession().catch(() => {});
-        stopMic();
-        return;
-      }
-
-      conversationRef.current = conv;
-      try {
-        setConversationId(conv.getId?.() ?? null);
-      } catch {
-        /* id may not be ready */
-      }
-    } catch (e) {
-      conversationRef.current = null;
-      stopMic();
-      const message =
-        e instanceof Error
-          ? e.message
-          : formatUnknownError(e) || "Failed to start session";
-      if (!isBenignElevenLabsError(message, e)) setError(message);
-      setStatus("idle");
-    }
-  };
-
-  const end = async () => {
-    const cid = conversationId;
-    endingRef.current = true;
-    const conv = conversationRef.current;
-    conversationRef.current = null;
-    try {
-      await conv?.endSession();
-    } catch (e) {
-      const message = formatUnknownError(e);
-      if (message && !isBenignElevenLabsError(message, e)) setError(message);
-    } finally {
-      stopMic();
-      setStatus("idle");
-      setIsSpeaking(false);
-      setTimeout(() => {
-        void runScore(cid);
-      }, 450);
-    }
-  };
+  const {
+    turns,
+    error,
+    status,
+    isSpeaking,
+    scoring,
+    score,
+    lastDisconnect,
+    start,
+    end,
+    practiceAgain,
+    getInputLevels,
+    getOutputLevels,
+    userLines,
+  } = usePracticeConversation(scenario);
 
   const connected = status === "connected";
   const connecting = status === "connecting";
@@ -315,8 +43,6 @@ export function PracticeSession({
     if (connected) return "listening" as const;
     return "idle" as const;
   }, [connected, connecting, isSpeaking]);
-
-  const userLines = turns.filter((t) => t.role === "user").map((t) => t.text);
 
   return (
     <div className="space-y-6">
@@ -334,7 +60,7 @@ export function PracticeSession({
               Client opens with
             </p>
             <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
-              “{scenarioLine}”
+              “{scenario.openingLine}”
             </p>
           </div>
 
@@ -346,12 +72,8 @@ export function PracticeSession({
             <AudioWaveform
               active={connected || connecting}
               mode={waveMode}
-              getInputLevels={() =>
-                conversationRef.current?.getInputByteFrequencyData?.()
-              }
-              getOutputLevels={() =>
-                conversationRef.current?.getOutputByteFrequencyData?.()
-              }
+              getInputLevels={getInputLevels}
+              getOutputLevels={getOutputLevels}
             />
           </div>
 
@@ -388,7 +110,8 @@ export function PracticeSession({
 
           {lastDisconnect ? (
             <div className="mt-3 rounded-md border border-border bg-background px-4 py-2 text-xs text-muted">
-              Last disconnect: <span className="font-mono">{lastDisconnect}</span>
+              Last disconnect:{" "}
+              <span className="font-mono">{lastDisconnect}</span>
             </div>
           ) : null}
         </section>
@@ -438,14 +161,7 @@ export function PracticeSession({
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => {
-                setScore(null);
-                setError(null);
-                setTurns([]);
-                turnsRef.current = [];
-                setConversationId(null);
-                void start();
-              }}
+              onClick={() => void practiceAgain()}
               disabled={connecting || scoring || connected}
               className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -456,6 +172,12 @@ export function PracticeSession({
               className="text-sm font-medium text-muted hover:text-accent"
             >
               View progress on diagnosis →
+            </a>
+            <a
+              href="/coach/training"
+              className="text-sm font-medium text-muted hover:text-accent"
+            >
+              Other scenarios →
             </a>
           </div>
         </div>

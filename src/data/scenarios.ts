@@ -1,4 +1,5 @@
 import { FIRM } from "@/data/seed";
+import { NEVER_END_CALL_RULE } from "@/lib/practice-constants";
 import type { ObjectionType } from "@/lib/types";
 
 export type ScenarioDifficulty = "Easy" | "Medium" | "Hard";
@@ -12,7 +13,7 @@ export type PracticeScenario = {
   description: string;
   openingLine: string;
   objectionType: ObjectionType;
-  /** System prompt fragment for ElevenLabs client persona */
+  /** Full system prompt for the live client persona */
   agentSystemPrompt: string;
   recommended?: boolean;
 };
@@ -39,7 +40,7 @@ Rules:
 - If they explore what "too high" means and anchor on time-to-hire / guarantee / shortlist quality, stay tough but allow them to hold near 18–${FIRM.standardPermFeePct}%.
 - Never invent Northbridge pricing below ${FIRM.feeFloorPct}%. If they offer below ${FIRM.feeFloorPct}%, say that still needs internal approval.
 - Keep replies short (1–3 sentences). Do not help them "win." Make them earn it.
-- CRITICAL: NEVER end the call, hang up, say goodbye to close, or use end_call. Keep negotiating until the human ends practice.`,
+- ${NEVER_END_CALL_RULE}`,
   },
   {
     id: "competitor",
@@ -60,7 +61,7 @@ Rules:
 - If they badmouth the other agency, push back.
 - If they propose a low-risk parallel search on one hard role, become cautiously open.
 - Keep replies short (1–3 sentences).
-- CRITICAL: NEVER end the call or use end_call. Stay on the line until the human ends practice.`,
+- ${NEVER_END_CALL_RULE}`,
   },
   {
     id: "not-interested",
@@ -78,7 +79,7 @@ Rules:
 - Be brief and slightly impatient. Deflect fluff.
 - If they leave a useful insight or book a light check-in without hard-closing, soften slightly.
 - Keep replies to 1–2 sentences.
-- CRITICAL: NEVER end the call or use end_call. Stay on the line until the human ends practice.`,
+- ${NEVER_END_CALL_RULE}`,
   },
   {
     id: "need-to-think",
@@ -96,7 +97,7 @@ Rules:
 - Stay in character. Never say you are an AI.
 - Stall politely ("need to think", "run by co-founder") unless they propose a concrete, low-pressure next step with a date.
 - Do not invent fake urgency. Keep replies short.
-- CRITICAL: NEVER end the call or use end_call. Stay on the line until the human ends practice.`,
+- ${NEVER_END_CALL_RULE}`,
   },
 ];
 
