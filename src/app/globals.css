@@ -22,6 +22,22 @@ html.light {
   --audio: #1c7ed6;
   --audio-soft: #e7f5ff;
   --header: #ffffff;
+  --coach-accent: #52677f;
+  --coach-soft: #f3f6f9;
+  --coach-strong: #26384d;
+  --coach-strong-fg: #ffffff;
+  --coach-ai: #4f5f8f;
+  --coach-ai-fg: #ffffff;
+  --coach-ai-soft: #f1f3fa;
+  --coach-action: #28766f;
+  --coach-action-fg: #ffffff;
+  --coach-action-soft: #edf8f6;
+  --coach-positive: #3f7d59;
+  --coach-positive-soft: #eff8f2;
+  --coach-warning: #9a6725;
+  --coach-warning-soft: #fff7e8;
+  --coach-risk: #a14f46;
+  --coach-risk-soft: #fff1ef;
 }
 
 /* Option B — High-Performance Dark (navy + copper) */
@@ -45,6 +61,22 @@ html.dark {
   --audio: #4d96ff;
   --audio-soft: #152033;
   --header: #1c232b;
+  --coach-accent: #9fb0c3;
+  --coach-soft: #202832;
+  --coach-strong: #dce5ee;
+  --coach-strong-fg: #12161a;
+  --coach-ai: #a9b8ee;
+  --coach-ai-fg: #151a28;
+  --coach-ai-soft: #222738;
+  --coach-action: #73c5bb;
+  --coach-action-fg: #10201e;
+  --coach-action-soft: #182f2e;
+  --coach-positive: #79bd91;
+  --coach-positive-soft: #1c2e24;
+  --coach-warning: #d9ad67;
+  --coach-warning-soft: #332918;
+  --coach-risk: #e09288;
+  --coach-risk-soft: #351f20;
 }
 
 @theme inline {
@@ -66,6 +98,22 @@ html.dark {
   --color-audio: var(--audio);
   --color-audio-soft: var(--audio-soft);
   --color-header: var(--header);
+  --color-coach-accent: var(--coach-accent);
+  --color-coach-soft: var(--coach-soft);
+  --color-coach-strong: var(--coach-strong);
+  --color-coach-strong-fg: var(--coach-strong-fg);
+  --color-coach-ai: var(--coach-ai);
+  --color-coach-ai-fg: var(--coach-ai-fg);
+  --color-coach-ai-soft: var(--coach-ai-soft);
+  --color-coach-action: var(--coach-action);
+  --color-coach-action-fg: var(--coach-action-fg);
+  --color-coach-action-soft: var(--coach-action-soft);
+  --color-coach-positive: var(--coach-positive);
+  --color-coach-positive-soft: var(--coach-positive-soft);
+  --color-coach-warning: var(--coach-warning);
+  --color-coach-warning-soft: var(--coach-warning-soft);
+  --color-coach-risk: var(--coach-risk);
+  --color-coach-risk-soft: var(--coach-risk-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
