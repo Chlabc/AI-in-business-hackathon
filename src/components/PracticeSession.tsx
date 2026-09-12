@@ -13,6 +13,17 @@ type PracticeSessionProps = {
   diagnosisHeadline: string;
 };
 
+function formatTurnTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+}
+
 export function PracticeSession({
   scenario,
   approvedPlay,
@@ -140,13 +151,21 @@ export function PracticeSession({
                         : "border-border bg-card text-muted"
                   }`}
                 >
-                  <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
-                    {t.role === "user"
-                      ? "You"
-                      : t.role === "agent"
-                        ? "Client"
-                        : "System"}
-                  </span>
+                  <div className="mb-1 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    <span>
+                      {t.role === "user"
+                        ? "You"
+                        : t.role === "agent"
+                          ? "Client"
+                          : "System"}
+                    </span>
+                    <time
+                      dateTime={t.at}
+                      className="font-mono font-normal normal-case tracking-normal opacity-80"
+                    >
+                      {formatTurnTime(t.at)}
+                    </time>
+                  </div>
                   {t.text}
                 </div>
               ))
