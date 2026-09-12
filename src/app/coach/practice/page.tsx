@@ -3,21 +3,26 @@ import { AppShell } from "@/components/AppShell";
 import { PracticeSession } from "@/components/PracticeSession";
 import { getScenario } from "@/data/scenarios";
 import { DEMO_REP_ID } from "@/data/seed";
+import { requireRole } from "@/lib/auth";
 import { diagnoseRep } from "@/lib/diagnosis";
 import { getPlaybook, getPlaybookTalkTrack } from "@/lib/playbook";
 import { applyPlaybookToScenario } from "@/lib/scenario-session";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
   searchParams: Promise<{ scenario?: string }>;
 };
 
 export default async function PracticePage({ searchParams }: Props) {
+  const user = await requireRole("employee");
+  const repId = user.repId ?? DEMO_REP_ID;
   const params = await searchParams;
   const baseScenario = getScenario(params.scenario);
   const playbook = await getPlaybook();
   const scenario = applyPlaybookToScenario(baseScenario, playbook);
   const track = getPlaybookTalkTrack(playbook, scenario.objectionType);
-  const diagnosis = diagnoseRep(DEMO_REP_ID);
+  const diagnosis = diagnoseRep(repId);
 
   const headline =
     scenario.id === "price-objection"

@@ -1,5 +1,8 @@
-/** Demo team KPIs — illustrative, from Huey-style manager dashboard. */
+import { DEMO_REP_ID } from "@/data/seed";
+
+/** Demo team KPIs — illustrative manager dashboard rows. */
 export type TeamMember = {
+  /** Same id space as seed reps when the member is a live demo AE. */
   id: string;
   name: string;
   role: string;
@@ -14,9 +17,9 @@ export const TEAM_AVERAGE_CONVERSION = 27;
 
 export const TEAM: TeamMember[] = [
   {
-    id: "alex",
+    id: DEMO_REP_ID,
     name: "Alex Chen",
-    role: "Recruitment Consultant",
+    role: "Account Executive",
     conversionRate: 22,
     weakestSkill: "Pricing objection handling",
     flagged: true,
@@ -30,9 +33,9 @@ export const TEAM: TeamMember[] = [
     ],
   },
   {
-    id: "priya",
+    id: "rep_demo_priya",
     name: "Priya Nair",
-    role: "Recruitment Consultant",
+    role: "Account Executive",
     conversionRate: 29,
     weakestSkill: "Closing and next steps",
     flagged: false,
@@ -46,9 +49,9 @@ export const TEAM: TeamMember[] = [
     ],
   },
   {
-    id: "marcus",
+    id: "rep_demo_marcus",
     name: "Marcus Lee",
-    role: "Recruitment Consultant",
+    role: "Account Executive",
     conversionRate: 19,
     weakestSkill: "Competitive positioning",
     flagged: true,

@@ -3,8 +3,8 @@ import { AppShell } from "@/components/AppShell";
 import type { EvalCaseRow } from "@/lib/eval-snapshot";
 import { loadEvalSnapshot } from "@/lib/load-eval-snapshot";
 
-// Must be dynamic: AppShell reads the session cookie. force-static baked a
-// logged-out header and made Sign out flip to Sign in on this tab.
+// Must be dynamic: AppShell reads the session cookie. A static bake of this
+// page left a logged-out header and flipped Sign out → Sign in on this tab.
 export const dynamic = "force-dynamic";
 
 function CaseTable({
@@ -93,8 +93,11 @@ export default function HealthPage() {
   return (
     <AppShell focus="Measured evidence">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/coach" className="text-sm text-muted hover:text-accent">
-          ← Back to coach
+        <Link
+          href="/coach/manager"
+          className="text-sm text-muted hover:text-accent"
+        >
+          ← Manager
         </Link>
         <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
           Seeded demo data · offline eval · not a live CRM

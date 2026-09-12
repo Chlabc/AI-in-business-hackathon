@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { ConversionChart } from "@/components/ConversionChart";
 import { DEMO_REP_ID, getRep } from "@/data/seed";
@@ -13,18 +12,16 @@ export default async function ManagerPage() {
   const share = await getShareSettings(DEMO_REP_ID);
   const attempts = await listAttempts(DEMO_REP_ID);
   const practice = practiceKpisFromAttempts(attempts);
-  const alex = TEAM.find((t) => t.id === "alex")!;
-  const alexWithLive = {
-    ...alex,
-    sessionsCompleted: Math.max(alex.sessionsCompleted, practice.attempts),
+  const liveAe = TEAM.find((t) => t.id === DEMO_REP_ID)!;
+  const liveAeWithSessions = {
+    ...liveAe,
+    sessionsCompleted: Math.max(liveAe.sessionsCompleted, practice.attempts),
   };
 
   return (
     <AppShell focus="Team progress">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/coach" className="text-sm text-muted hover:text-accent">
-          ← Back to coach
-        </Link>
+        <span className="text-sm text-muted">Manager home</span>
         <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
           Manager view · no raw transcripts
         </span>
@@ -56,7 +53,7 @@ export default async function ManagerPage() {
             </thead>
             <tbody>
               {TEAM.map((e) => {
-                const row = e.id === "alex" ? alexWithLive : e;
+                const row = e.id === DEMO_REP_ID ? liveAeWithSessions : e;
                 return (
                   <tr key={e.id} className="border-t border-border">
                     <td className="px-5 py-3 font-medium text-foreground">
@@ -93,8 +90,8 @@ export default async function ManagerPage() {
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="surface-card rounded-xl p-6">
           <ConversionChart
-            data={alex.kpiHistory}
-            label={`${alex.name} — conversion trend (illustrative)`}
+            data={liveAe.kpiHistory}
+            label={`${liveAe.name} — conversion trend (illustrative)`}
           />
           <p className="mt-2 text-xs text-muted">
             Illustrative measurement alongside training — not proof that

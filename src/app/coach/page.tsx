@@ -4,6 +4,7 @@ import { ProgressPanel } from "@/components/ProgressPanel";
 import { ShareControls } from "@/components/ShareControls";
 import { DEMO_REP_ID } from "@/data/seed";
 import { listAttempts, practiceKpisFromAttempts } from "@/lib/attempts";
+import { requireRole } from "@/lib/auth";
 import { getRepDashboard } from "@/lib/diagnosis";
 import { getShareSettings } from "@/lib/share";
 
@@ -19,7 +20,9 @@ function label(value: string) {
 }
 
 export default async function CoachPage() {
-  const dash = getRepDashboard(DEMO_REP_ID);
+  const user = await requireRole("employee");
+  const repId = user.repId ?? DEMO_REP_ID;
+  const dash = getRepDashboard(repId);
 
   if (!dash) {
     return (
@@ -28,10 +31,10 @@ export default async function CoachPage() {
   }
 
   const { rep, firm, kpis, diagnosis, talkTrack, recentCalls } = dash;
-  const attempts = await listAttempts(DEMO_REP_ID);
+  const attempts = await listAttempts(repId);
   const practice = practiceKpisFromAttempts(attempts);
   kpis.practice = practice;
-  const share = await getShareSettings(DEMO_REP_ID);
+  const share = await getShareSettings(repId);
 
   return (
     <AppShell focus="Price concessions">
@@ -156,7 +159,7 @@ export default async function CoachPage() {
           />
           <ShareControls
             initialShared={share.shareProgressWithManager}
-            repId={DEMO_REP_ID}
+            repId={repId}
           />
         </div>
       </div>
