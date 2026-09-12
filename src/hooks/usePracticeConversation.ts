@@ -56,6 +56,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   const [turns, setTurns] = useState<TranscriptTurn[]>([]);
   const turnsRef = useRef<TranscriptTurn[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [scoring, setScoring] = useState(false);
@@ -88,6 +89,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
 
   const resetLocal = useCallback(() => {
     setError(null);
+    setNotice(null);
     setLastDisconnect(null);
     setScore(null);
     setTurns([]);
@@ -122,11 +124,17 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   const runScore = useCallback(async (cid: string | null) => {
     const snapshot = turnsRef.current.filter((t) => t.role !== "system");
     if (!snapshot.some((t) => t.role === "user")) {
-      setError("No spoken turns from you to score — try another drill.");
+      // User hit End before speaking — not a failure, just nothing to score.
+      setError(null);
+      setScore(null);
+      setNotice(
+        "Session ended before you spoke — press Start drill when you’re ready to practice.",
+      );
       return;
     }
     setScoring(true);
     setError(null);
+    setNotice(null);
     try {
       const res = await fetch("/api/practice/score", {
         method: "POST",
@@ -225,8 +233,13 @@ export function usePracticeConversation(scenario: PracticeScenario) {
             (message as { text?: string }).text ??
             "";
           if (!text) return;
+          // SDK uses role: user|agent and deprecated source: user|ai
           const role: TranscriptTurn["role"] =
-            roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
+            roleRaw === "user" || roleRaw === "human"
+              ? "user"
+              : roleRaw === "agent" || roleRaw === "ai"
+                ? "agent"
+                : "agent";
           pushTurn(role, text);
         },
         onAgentToolResponse: (tool) => {
@@ -301,6 +314,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   return {
     turns,
     error,
+    notice,
     status,
     isSpeaking,
     scoring,

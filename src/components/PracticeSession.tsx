@@ -32,6 +32,7 @@ export function PracticeSession({
   const {
     turns,
     error,
+    notice,
     status,
     isSpeaking,
     scoring,
@@ -116,6 +117,12 @@ export function PracticeSession({
           {error ? (
             <div className="mt-4 rounded-md border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
               {error}
+            </div>
+          ) : null}
+
+          {notice ? (
+            <div className="mt-4 rounded-md border border-border bg-background px-4 py-3 text-sm text-muted">
+              {notice}
             </div>
           ) : null}
 
