@@ -27,10 +27,24 @@ type PracticeSessionProps = {
   diagnosisHeadline: string;
 };
 
+function formatDisconnect(details: unknown): string {
+  if (!details || typeof details !== "object") return "unknown";
+  const d = details as {
+    reason?: string;
+    context?: { type?: string; reason?: string };
+  };
+  const parts = [
+    d.reason,
+    d.context?.type,
+    d.context?.reason,
+  ].filter(Boolean);
+  return parts.join(" · ") || JSON.stringify(details);
+}
+
 /**
- * Direct `@elevenlabs/client` Conversation — bypasses ConversationProvider,
- * which was tearing down WebRTC as soon as React state updated after the
- * agent's opening line (known provider state issues in the React SDK).
+ * Direct `@elevenlabs/client` Conversation (no React ConversationProvider).
+ * Instant hangups were caused by the dashboard agent calling built-in `end_call`
+ * after its opening line — we now point at a Cornerman agent without that tool.
  */
 export function PracticeSession({
   scenario,
@@ -46,10 +60,12 @@ export function PracticeSession({
   const [scoring, setScoring] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [score, setScore] = useState<PracticeScore | null>(null);
+  const [lastDisconnect, setLastDisconnect] = useState<string | null>(null);
 
   const conversationRef = useRef<Awaited<
     ReturnType<typeof Conversation.startSession>
   > | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
   const endingRef = useRef(false);
   const scenarioRef = useRef(scenario);
   scenarioRef.current = scenario;
@@ -70,6 +86,11 @@ export function PracticeSession({
       turnsRef.current = next;
       return next;
     });
+  }, []);
+
+  const stopMic = useCallback(() => {
+    micStreamRef.current?.getTracks().forEach((t) => t.stop());
+    micStreamRef.current = null;
   }, []);
 
   const runScore = useCallback(async (cid: string | null) => {
@@ -105,13 +126,14 @@ export function PracticeSession({
     }
   }, []);
 
-  // Always tear down on unmount / scenario change
   useEffect(() => {
     return () => {
       endingRef.current = true;
       const conv = conversationRef.current;
       conversationRef.current = null;
       void conv?.endSession().catch(() => {});
+      micStreamRef.current?.getTracks().forEach((t) => t.stop());
+      micStreamRef.current = null;
     };
   }, [scenario.id]);
 
@@ -119,6 +141,7 @@ export function PracticeSession({
     if (conversationRef.current || status === "connecting") return;
 
     setError(null);
+    setLastDisconnect(null);
     setScore(null);
     setTurns([]);
     turnsRef.current = [];
@@ -128,7 +151,8 @@ export function PracticeSession({
     setStatus("connecting");
 
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
     } catch {
       setError(
         "Microphone permission is required for the spoken drill. Allow mic access and try again.",
@@ -138,43 +162,35 @@ export function PracticeSession({
     }
 
     try {
-      const res = await fetch("/api/elevenlabs/conversation-token");
-      const data = (await res.json()) as {
-        token?: string;
-        error?: string;
-        detail?: string;
-      };
-      if (!res.ok || !data.token) {
-        throw new Error(
-          data.error
-            ? `${data.error}${data.detail ? ` — ${data.detail}` : ""}`
-            : "Could not get conversation token",
-        );
-      }
-
       const sc = scenarioRef.current;
-      const conv = await Conversation.startSession({
-        conversationToken: data.token,
-        userId: "rep_demo_alex",
-        overrides: {
-          agent: {
-            firstMessage: sc.openingLine,
-            prompt: { prompt: sc.agentSystemPrompt },
-          },
-        },
+      const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID;
+
+      // Prefer public agentId (auth disabled). Fall back to server conversation token.
+      let sessionOpts: Parameters<typeof Conversation.startSession>[0];
+
+      const callbacks = {
         onConnect: () => {
           if (endingRef.current) return;
           setStatus("connected");
-          pushTurn("system", "Connected — speak as the recruitment consultant.");
+          pushTurn(
+            "system",
+            "Connected — speak as the recruitment consultant.",
+          );
         },
-        onDisconnect: () => {
+        onDisconnect: (details: unknown) => {
           conversationRef.current = null;
           setIsSpeaking(false);
           setStatus("idle");
-          pushTurn("system", "Session ended.");
+          stopMic();
+          const reason = formatDisconnect(details);
+          setLastDisconnect(reason);
+          pushTurn("system", `Session ended (${reason}).`);
         },
-        onError: (message, context) => {
-          if (endingRef.current || isBenignElevenLabsError(message, context)) {
+        onError: (message: unknown, context?: unknown) => {
+          if (
+            endingRef.current ||
+            isBenignElevenLabsError(message, context)
+          ) {
             return;
           }
           const text =
@@ -186,10 +202,10 @@ export function PracticeSession({
           pushTurn("system", `Error: ${text}`);
           setStatus("error");
         },
-        onModeChange: ({ mode }) => {
+        onModeChange: ({ mode }: { mode: string }) => {
           setIsSpeaking(mode === "speaking");
         },
-        onMessage: (message) => {
+        onMessage: (message: unknown) => {
           const roleRaw =
             (message as { role?: string; source?: string }).role ??
             (message as { source?: string }).source ??
@@ -203,22 +219,55 @@ export function PracticeSession({
             roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
           pushTurn(role, text);
         },
-      });
+        onAgentToolResponse: (tool: { tool_name?: string; toolName?: string }) => {
+          const name = tool.tool_name ?? tool.toolName ?? "tool";
+          pushTurn("system", `Agent tool: ${name}`);
+        },
+        overrides: {
+          agent: {
+            firstMessage: sc.openingLine,
+            prompt: { prompt: sc.agentSystemPrompt },
+          },
+        },
+        userId: "rep_demo_alex",
+      };
+
+      if (agentId) {
+        sessionOpts = { agentId, ...callbacks };
+      } else {
+        const res = await fetch("/api/elevenlabs/conversation-token");
+        const data = (await res.json()) as {
+          token?: string;
+          error?: string;
+          detail?: string;
+        };
+        if (!res.ok || !data.token) {
+          throw new Error(
+            data.error
+              ? `${data.error}${data.detail ? ` — ${data.detail}` : ""}`
+              : "Could not get conversation token",
+          );
+        }
+        sessionOpts = { conversationToken: data.token, ...callbacks };
+      }
+
+      const conv = await Conversation.startSession(sessionOpts);
 
       if (endingRef.current) {
         await conv.endSession().catch(() => {});
+        stopMic();
         return;
       }
 
       conversationRef.current = conv;
       try {
-        const id = conv.getId?.() ?? null;
-        setConversationId(id);
+        setConversationId(conv.getId?.() ?? null);
       } catch {
-        /* id may not be ready yet */
+        /* id may not be ready */
       }
     } catch (e) {
       conversationRef.current = null;
+      stopMic();
       const message =
         e instanceof Error
           ? e.message
@@ -239,6 +288,7 @@ export function PracticeSession({
       const message = formatUnknownError(e);
       if (message && !isBenignElevenLabsError(message, e)) setError(message);
     } finally {
+      stopMic();
       setStatus("idle");
       setIsSpeaking(false);
       setTimeout(() => {
@@ -324,6 +374,12 @@ export function PracticeSession({
           {error ? (
             <div className="mt-4 rounded-md border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
               {error}
+            </div>
+          ) : null}
+
+          {lastDisconnect ? (
+            <div className="mt-3 rounded-md border border-border bg-background px-4 py-2 text-xs text-muted">
+              Last disconnect: <span className="font-mono">{lastDisconnect}</span>
             </div>
           ) : null}
         </section>

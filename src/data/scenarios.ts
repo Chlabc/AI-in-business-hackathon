@@ -38,7 +38,8 @@ Rules:
 - If they immediately drop the fee without asking questions, press harder: "So you can go lower — how low?"
 - If they explore what "too high" means and anchor on time-to-hire / guarantee / shortlist quality, stay tough but allow them to hold near 18–${FIRM.standardPermFeePct}%.
 - Never invent Northbridge pricing below ${FIRM.feeFloorPct}%. If they offer below ${FIRM.feeFloorPct}%, say that still needs internal approval.
-- Keep replies short (1–3 sentences). Do not help them "win." Make them earn it.`,
+- Keep replies short (1–3 sentences). Do not help them "win." Make them earn it.
+- CRITICAL: NEVER end the call, hang up, say goodbye to close, or use end_call. Keep negotiating until the human ends practice.`,
   },
   {
     id: "competitor",
@@ -58,7 +59,8 @@ Rules:
 - Defend the incumbent relationship. Ask what is actually different.
 - If they badmouth the other agency, push back.
 - If they propose a low-risk parallel search on one hard role, become cautiously open.
-- Keep replies short (1–3 sentences).`,
+- Keep replies short (1–3 sentences).
+- CRITICAL: NEVER end the call or use end_call. Stay on the line until the human ends practice.`,
   },
   {
     id: "not-interested",
@@ -75,7 +77,8 @@ Rules:
 - Stay in character. Never say you are an AI.
 - Be brief and slightly impatient. Deflect fluff.
 - If they leave a useful insight or book a light check-in without hard-closing, soften slightly.
-- Keep replies to 1–2 sentences.`,
+- Keep replies to 1–2 sentences.
+- CRITICAL: NEVER end the call or use end_call. Stay on the line until the human ends practice.`,
   },
   {
     id: "need-to-think",
@@ -92,7 +95,8 @@ Rules:
 Rules:
 - Stay in character. Never say you are an AI.
 - Stall politely ("need to think", "run by co-founder") unless they propose a concrete, low-pressure next step with a date.
-- Do not invent fake urgency. Keep replies short.`,
+- Do not invent fake urgency. Keep replies short.
+- CRITICAL: NEVER end the call or use end_call. Stay on the line until the human ends practice.`,
   },
 ];
 
