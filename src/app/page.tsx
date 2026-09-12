@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import { KILL_LIST, PHASES, SCOPE_SENTENCE } from "@/lib/phases";
 import { SCENARIOS } from "@/data/scenarios";
 import {
@@ -144,6 +145,7 @@ export default function Home() {
         </div>
       </section>
 
+      <ScrollReveal>
       <section
         id="how-it-works"
         className="scroll-mt-20 rounded-2xl border border-border bg-card p-6 lg:p-8"
@@ -155,9 +157,9 @@ export default function Home() {
         <div className="stagger-children mt-6 grid gap-0 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
           {HOW_IT_WORKS.map((step, i) => (
             <Fragment key={step.title}>
-              <div className="flex flex-col gap-3 py-2">
+              <div className="group flex flex-col gap-3 py-2">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+                  <span className="icon-pop flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
                     <step.Icon className="h-4 w-4" />
                   </span>
                   <span className="font-mono text-xs text-muted">
@@ -193,7 +195,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </ScrollReveal>
 
+      <ScrollReveal>
       <section>
         <p className="eyebrow">What you get</p>
         <h2 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
@@ -201,8 +205,8 @@ export default function Home() {
         </h2>
         <div className="stagger-children mt-6 grid gap-4 sm:grid-cols-2">
           {WHAT_YOU_GET.map((item) => (
-            <div key={item.title} className="surface-card rounded-xl p-5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-soft text-accent">
+            <div key={item.title} className="surface-card group rounded-xl p-5">
+              <span className="icon-pop flex h-9 w-9 items-center justify-center rounded-full bg-accent-soft text-accent">
                 <item.Icon className="h-[18px] w-[18px]" />
               </span>
               <h3 className="mt-3 text-base font-semibold text-foreground">
@@ -215,7 +219,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </ScrollReveal>
 
+      <ScrollReveal>
       <section className="surface-card rounded-2xl p-6 lg:p-8">
         <p className="eyebrow">Where things honestly stand</p>
         <h2 className="mt-1 text-xl font-semibold text-foreground">
@@ -259,7 +265,9 @@ export default function Home() {
           </ul>
         </div>
       </section>
+      </ScrollReveal>
 
+      <ScrollReveal>
       <section className="rounded-2xl bg-accent px-6 py-10 text-center text-accent-fg lg:py-14">
         <h2 className="text-2xl font-semibold sm:text-3xl">
           Ready to stop losing on fees?
@@ -279,6 +287,7 @@ export default function Home() {
           </a>
         </div>
       </section>
+      </ScrollReveal>
 
       <section id="build-phases" className="scroll-mt-20 border-t border-border pt-8">
         <p className="eyebrow">For the team &amp; judges</p>
