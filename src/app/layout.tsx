@@ -23,9 +23,8 @@ const themeInitScript = `
 (function(){
   try {
     var stored = localStorage.getItem('cornerman-theme');
-    var theme = (stored === 'light' || stored === 'dark')
-      ? stored
-      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    // First visit defaults to day (light); only honor an explicit saved choice.
+    var theme = (stored === 'light' || stored === 'dark') ? stored : 'light';
     var root = document.documentElement;
     root.classList.remove('light','dark');
     root.classList.add(theme);

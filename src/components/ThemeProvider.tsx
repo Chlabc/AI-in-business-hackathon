@@ -32,12 +32,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const preferred =
-      stored === "light" || stored === "dark"
-        ? stored
-        : window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+    // First visit always starts in day mode; only honor an explicit saved choice.
+    const preferred: Theme =
+      stored === "light" || stored === "dark" ? stored : "light";
     setThemeState(preferred);
     applyTheme(preferred);
   }, []);
