@@ -6,6 +6,10 @@ import { NEVER_END_CALL_RULE } from "@/lib/practice-constants";
  * Always set both firstMessage + prompt so every scenario takes the same path
  * (no special-case for fee vs others). Prompt override only accepts `prompt` /
  * `llm` — it does not touch built_in_tools on the platform agent.
+ *
+ * Requires platform_settings.overrides.conversation_config_override.agent
+ * first_message + prompt.prompt = true on the Cornerman agent. If those flags
+ * are false, non-fee scenarios sit in "listening" with no client opening line.
  */
 export function buildSessionOverrides(scenario: PracticeScenario) {
   return {
