@@ -32,8 +32,8 @@ Forward: AI in Business Hackathon · Track 1 + Built With ElevenLabs
 | 1 | **done** | Seed data + diagnosis API/UI + KPI stats |
 | 2 | **done** | ElevenLabs voice roleplay + transcript |
 | 3 | **done** | Scoring + grounded feedback + practice KPIs |
-| 4 | **next** | Full loop + progress + share controls |
-| 5 | pending | Eval harness |
+| 4 | **done** | Full loop + progress + share + full-width UI |
+| 5 | **next** | Eval harness |
 | 6 | pending | User tests + value |
 | 7 | pending | Harden + docs |
 | 8 | pending | Demo video + Devpost |

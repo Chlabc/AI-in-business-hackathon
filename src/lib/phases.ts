@@ -42,14 +42,14 @@ export const PHASES: Phase[] = [
     id: 4,
     title: "Close the loop",
     hours: "18–24",
-    status: "active",
+    status: "done",
     summary: "Re-practice, progress view, rep-owned sharing",
   },
   {
     id: 5,
     title: "Eval harness",
     hours: "24–30",
-    status: "pending",
+    status: "active",
     summary: "Diagnosis accuracy + scoring–human agreement",
   },
   {

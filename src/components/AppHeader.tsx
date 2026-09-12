@@ -16,7 +16,7 @@ export function AppHeader({
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur-sm">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-3">
+      <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10 xl:px-12">
         <div className="flex min-w-0 items-center gap-4 sm:gap-6">
           <Link href="/" className="shrink-0">
             <span className="text-base font-semibold tracking-tight text-foreground">
@@ -49,6 +49,12 @@ export function AppHeader({
           >
             Drill
           </Link>
+          <Link
+            href="/coach/manager"
+            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground md:inline"
+          >
+            Manager
+          </Link>
           <button
             type="button"
             onClick={toggleTheme}
@@ -59,7 +65,7 @@ export function AppHeader({
           </button>
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-5xl gap-3 px-6 pb-3 text-xs text-muted sm:hidden">
+      <div className="mx-auto flex w-full max-w-[1800px] gap-3 px-4 pb-3 text-xs text-muted sm:hidden sm:px-6 lg:px-10 xl:px-12">
         <span>
           Rep: <span className="text-foreground">{repName}</span>
         </span>

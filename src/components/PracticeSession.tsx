@@ -235,106 +235,137 @@ function PracticeControls({
 
   return (
     <div className="space-y-6">
-      <section className="surface-card rounded-xl p-5 sm:p-6">
-        <p className="eyebrow">2 · Live drill</p>
-        <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-          Fee-objection roleplay
-        </h2>
-        <p className="mt-2 text-sm text-muted">{diagnosisHeadline}</p>
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+        <section className="surface-card rounded-xl p-5 sm:p-6 lg:p-8">
+          <p className="eyebrow">2 · Live drill</p>
+          <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+            Fee-objection roleplay
+          </h2>
+          <p className="mt-2 text-sm text-muted">{diagnosisHeadline}</p>
 
-        <div className="mt-5 rounded-lg border border-border bg-background px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Client opens with
+          <div className="mt-5 rounded-lg border border-border bg-background px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+              Client opens with
+            </p>
+            <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
+              “{scenarioLine}”
+            </p>
+          </div>
+
+          <p className="mt-3 text-xs leading-relaxed text-muted">
+            Approved play (for you): {approvedPlay}
           </p>
-          <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
-            “{scenarioLine}”
-          </p>
-        </div>
 
-        <p className="mt-3 text-xs leading-relaxed text-muted">
-          Approved play (for you): {approvedPlay}
-        </p>
+          <div className="mt-5">
+            <AudioWaveform
+              active={connected || connecting}
+              mode={waveMode}
+              getInputLevels={() => conversation.getInputByteFrequencyData?.()}
+              getOutputLevels={() =>
+                conversation.getOutputByteFrequencyData?.()
+              }
+            />
+          </div>
 
-        <div className="mt-5">
-          <AudioWaveform
-            active={connected || connecting}
-            mode={waveMode}
-            getInputLevels={() => conversation.getInputByteFrequencyData?.()}
-            getOutputLevels={() => conversation.getOutputByteFrequencyData?.()}
-          />
-        </div>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            {!connected ? (
+              <button
+                type="button"
+                onClick={start}
+                disabled={connecting || scoring}
+                className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {connecting ? "Connecting…" : "Start drill"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={end}
+                disabled={scoring}
+                className="inline-flex h-11 items-center justify-center rounded-md border border-danger/40 bg-danger-soft px-5 text-sm font-semibold text-danger transition hover:opacity-90 disabled:opacity-60"
+              >
+                End &amp; score
+              </button>
+            )}
+            <span className="rounded border border-border px-2.5 py-1 text-xs capitalize text-muted">
+              {scoring ? "scoring" : waveMode}
+            </span>
+          </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          {!connected ? (
+          {error ? (
+            <div className="mt-4 rounded-md border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
+              {error}
+            </div>
+          ) : null}
+        </section>
+
+        <section className="surface-card flex min-h-[320px] flex-col rounded-xl p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+              Transcript
+            </h3>
+            <span className="text-xs text-muted">{turns.length} turns</span>
+          </div>
+          <div className="mt-4 max-h-[28rem] flex-1 space-y-2 overflow-y-auto">
+            {turns.length === 0 ? (
+              <p className="text-sm text-muted">
+                Start the drill to capture spoken turns.
+              </p>
+            ) : (
+              turns.map((t) => (
+                <div
+                  key={t.id}
+                  className={`rounded-md border px-3 py-2 text-sm ${
+                    t.role === "user"
+                      ? "border-border bg-background text-foreground"
+                      : t.role === "agent"
+                        ? "border-accent/20 bg-accent-soft text-foreground"
+                        : "border-border bg-card text-muted"
+                  }`}
+                >
+                  <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+                    {t.role === "user"
+                      ? "You"
+                      : t.role === "agent"
+                        ? "Client"
+                        : "System"}
+                  </span>
+                  {t.text}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+
+      {score ? (
+        <div className="space-y-4">
+          <FeedbackCard score={score} whatYouSaid={userLines} />
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={start}
-              disabled={connecting || scoring}
+              onClick={() => {
+                setScore(null);
+                setError(null);
+                setTurns([]);
+                turnsRef.current = [];
+                setConversationId(null);
+                void start();
+              }}
+              disabled={connecting || scoring || connected}
               className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {connecting ? "Connecting…" : "Start drill"}
+              Practice again
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={end}
-              disabled={scoring}
-              className="inline-flex h-11 items-center justify-center rounded-md border border-danger/40 bg-danger-soft px-5 text-sm font-semibold text-danger transition hover:opacity-90 disabled:opacity-60"
+            <a
+              href="/coach"
+              className="text-sm font-medium text-muted hover:text-accent"
             >
-              End &amp; score
-            </button>
-          )}
-          <span className="rounded border border-border px-2.5 py-1 text-xs capitalize text-muted">
-            {scoring ? "scoring" : waveMode}
-          </span>
-        </div>
-
-        {error ? (
-          <div className="mt-4 rounded-md border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
-            {error}
+              View progress on diagnosis →
+            </a>
           </div>
-        ) : null}
-      </section>
-
-      {score ? <FeedbackCard score={score} whatYouSaid={userLines} /> : null}
-
-      <section className="surface-card rounded-xl p-5 sm:p-6">
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Transcript
-          </h3>
-          <span className="text-xs text-muted">{turns.length} turns</span>
         </div>
-        <div className="mt-4 max-h-72 space-y-2 overflow-y-auto">
-          {turns.length === 0 ? (
-            <p className="text-sm text-muted">
-              Start the drill to capture spoken turns.
-            </p>
-          ) : (
-            turns.map((t) => (
-              <div
-                key={t.id}
-                className={`rounded-md border px-3 py-2 text-sm ${
-                  t.role === "user"
-                    ? "border-border bg-background text-foreground"
-                    : t.role === "agent"
-                      ? "border-accent/20 bg-accent-soft text-foreground"
-                      : "border-border bg-card text-muted"
-                }`}
-              >
-                <span className="mr-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
-                  {t.role === "user"
-                    ? "You"
-                    : t.role === "agent"
-                      ? "Client"
-                      : "System"}
-                </span>
-                {t.text}
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+      ) : null}
     </div>
   );
 }

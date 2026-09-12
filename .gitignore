@@ -36,6 +36,7 @@ yarn-error.log*
 
 # local practice attempt store (hackathon file DB)
 /data/practice-attempts.json
+/data/share-settings.json
 
 # vercel
 .vercel
