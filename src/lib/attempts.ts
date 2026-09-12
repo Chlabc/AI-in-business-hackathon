@@ -1,5 +1,5 @@
 import { promises as fs } from "fs";
-import path from "path";
+import { dataStorePath } from "@/lib/file-store";
 import type { PracticeScore } from "@/lib/rubric";
 import type { TranscriptTurn } from "@/lib/score";
 
@@ -12,7 +12,7 @@ export type PracticeAttempt = {
   score: PracticeScore;
 };
 
-const STORE = path.join(process.cwd(), "data", "practice-attempts.json");
+const STORE = dataStorePath("practice-attempts.json");
 
 async function readAll(): Promise<PracticeAttempt[]> {
   try {

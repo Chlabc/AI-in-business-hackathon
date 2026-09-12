@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 import { DEMO_REP_ID } from "@/data/seed";
-import { AuthError, requireRole } from "@/lib/auth";
-import { saveAttempt } from "@/lib/attempts";
+import { getSession } from "@/lib/auth";
+import { saveAttempt, type PracticeAttempt } from "@/lib/attempts";
 import { scoreTranscript, type TranscriptTurn } from "@/lib/score";
 
 export async function POST(request: Request) {
-  let user;
-  try {
-    user = await requireRole("employee");
-  } catch (e) {
-    if (e instanceof AuthError) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
-    }
-    throw e;
+  // Auth is optional for scoring so Vercel deploys without Task 010 still work.
+  // Managers must use an AE account to drill.
+  const user = await getSession();
+  if (user?.role === "manager") {
+    return NextResponse.json(
+      {
+        error:
+          "Managers can’t run scored drills. Sign in as an employee (AE) account.",
+      },
+      { status: 403 },
+    );
   }
 
   let body: {
@@ -39,17 +42,37 @@ export async function POST(request: Request) {
     );
   }
 
-  const repId = user.repId ?? DEMO_REP_ID;
+  const repId = user?.repId ?? body.repId ?? DEMO_REP_ID;
   const score = await scoreTranscript(
     turns,
     body.scenarioId ?? "price-objection",
   );
-  const attempt = await saveAttempt({
-    repId,
-    conversationId: body.conversationId ?? null,
-    turns,
-    score,
-  });
 
-  return NextResponse.json({ attempt, score });
+  let attempt: PracticeAttempt;
+  let persisted = true;
+  try {
+    attempt = await saveAttempt({
+      repId,
+      conversationId: body.conversationId ?? null,
+      turns,
+      score,
+    });
+  } catch (err) {
+    // Vercel serverless FS is often read-only — never block the score card.
+    console.error(
+      "[practice/score] saveAttempt failed; returning score only",
+      err,
+    );
+    persisted = false;
+    attempt = {
+      id: `ephemeral_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      repId,
+      conversationId: body.conversationId ?? null,
+      turns,
+      score,
+    };
+  }
+
+  return NextResponse.json({ attempt, score, persisted });
 }
