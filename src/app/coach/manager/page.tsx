@@ -1,13 +1,16 @@
 import { AppShell } from "@/components/AppShell";
 import { ConversionChart } from "@/components/ConversionChart";
-import { DEMO_REP_ID, getRep } from "@/data/seed";
+import { ManagerReportPdfButton } from "@/components/ManagerReportPdfButton";
+import { FIRM, DEMO_REP_ID, getRep } from "@/data/seed";
 import { TEAM, TEAM_AVERAGE_CONVERSION } from "@/data/team";
+import { getSession } from "@/lib/auth";
 import { listAttempts, practiceKpisFromAttempts } from "@/lib/attempts";
 import { getShareSettings } from "@/lib/share";
 
 export const dynamic = "force-dynamic";
 
 export default async function ManagerPage() {
+  const session = await getSession();
   const rep = getRep(DEMO_REP_ID);
   const share = await getShareSettings(DEMO_REP_ID);
   const attempts = await listAttempts(DEMO_REP_ID);
@@ -17,6 +20,9 @@ export default async function ManagerPage() {
     ...liveAe,
     sessionsCompleted: Math.max(liveAe.sessionsCompleted, practice.attempts),
   };
+  const teamForPdf = TEAM.map((e) =>
+    e.id === DEMO_REP_ID ? liveAeWithSessions : e,
+  );
 
   return (
     <AppShell focus="Team progress">
@@ -27,16 +33,35 @@ export default async function ManagerPage() {
         </span>
       </div>
 
-      <div>
-        <p className="eyebrow">Manager</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-          Team overview
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm text-muted lg:text-base">
-          Development tool, not surveillance. Team KPI table is demo data
-          (Huey-style). Alex&apos;s practice summary only appears when they
-          choose to share.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="eyebrow">Manager</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
+            Team overview
+          </h1>
+          <p className="mt-3 max-w-3xl text-sm text-muted lg:text-base">
+            Development tool, not surveillance. Team KPI table is demo data
+            (Huey-style). Alex&apos;s practice summary only appears when they
+            choose to share.
+          </p>
+        </div>
+        <ManagerReportPdfButton
+          managerName={session?.name ?? "Manager"}
+          firmLabel={`${FIRM.name} · ${FIRM.vertical}`}
+          teamAverageConversion={TEAM_AVERAGE_CONVERSION}
+          team={teamForPdf}
+          focusRepName={rep?.name ?? liveAe.name}
+          share={{
+            shareProgressWithManager: share.shareProgressWithManager,
+            updatedAt: share.updatedAt,
+          }}
+          practice={{
+            attempts: practice.attempts,
+            lastScore: practice.lastScore,
+            feeHoldRate: practice.feeHoldRate,
+            trendLabel: practice.trendLabel,
+          }}
+        />
       </div>
 
       <section className="surface-card overflow-hidden rounded-xl">
