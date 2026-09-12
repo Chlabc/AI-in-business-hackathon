@@ -29,7 +29,6 @@ function applyTheme(theme: Theme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
@@ -41,7 +40,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           : "light";
     setThemeState(preferred);
     applyTheme(preferred);
-    setReady(true);
   }, []);
 
   const setTheme = useCallback((next: Theme) => {
@@ -60,9 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <ThemeContext.Provider value={value}>
-      <div className={ready ? "contents" : "invisible"}>{children}</div>
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
 
