@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { AuthError, requireRole } from "@/lib/auth";
+import { jsonAuthError, requireRole } from "@/lib/auth";
 
 /**
  * Issues a short-lived conversation token for WebRTC sessions.
@@ -9,10 +9,9 @@ export async function GET() {
   try {
     await requireRole("employee");
   } catch (e) {
-    if (e instanceof AuthError) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
-    }
-    throw e;
+    return (
+      jsonAuthError(e) ?? NextResponse.json({ error: "Error" }, { status: 500 })
+    );
   }
 
   const apiKey = process.env.ELEVENLABS_API_KEY;

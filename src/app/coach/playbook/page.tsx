@@ -3,14 +3,19 @@ import { AppShell } from "@/components/AppShell";
 import { PlaybookEditor } from "@/components/PlaybookEditor";
 import { getPlaybook } from "@/lib/playbook";
 
+export const dynamic = "force-dynamic";
+
 export default async function PlaybookPage() {
   const playbook = await getPlaybook();
 
   return (
     <AppShell focus="Firm playbook">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/coach" className="text-sm text-muted transition hover:text-accent">
-          ← Diagnosis
+        <Link
+          href="/coach/manager"
+          className="text-sm text-muted transition hover:text-accent"
+        >
+          ← Manager
         </Link>
         <span className="rounded border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
           Manager only · label

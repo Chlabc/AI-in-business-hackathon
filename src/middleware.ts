@@ -1,15 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import { SESSION_COOKIE } from "@/lib/auth-constants";
+import { authSecretKey } from "@/lib/auth-secret";
 import { findDemoAccount, defaultPathForRole } from "@/data/users";
 import type { Role } from "@/lib/auth-types";
-
-function secretKey(): Uint8Array {
-  const secret =
-    process.env.AUTH_SECRET?.trim() ||
-    "cornerman-demo-dev-secret-change-me";
-  return new TextEncoder().encode(secret);
-}
 
 async function readUser(
   req: NextRequest,
@@ -17,7 +11,7 @@ async function readUser(
   const token = req.cookies.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, secretKey());
+    const { payload } = await jwtVerify(token, authSecretKey());
     const email = String(payload.email ?? "");
     const role = payload.role as Role;
     const account = findDemoAccount(email);

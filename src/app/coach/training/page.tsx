@@ -2,6 +2,8 @@ import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { SCENARIOS } from "@/data/scenarios";
 
+export const dynamic = "force-dynamic";
+
 const difficultyClass: Record<string, string> = {
   Easy: "border-ok/30 bg-ok-soft text-ok",
   Medium: "border-accent/30 bg-accent-soft text-accent",
