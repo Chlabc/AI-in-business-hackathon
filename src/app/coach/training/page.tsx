@@ -4,7 +4,7 @@ import { SCENARIOS } from "@/data/scenarios";
 
 const difficultyClass: Record<string, string> = {
   Easy: "border-ok/30 bg-ok-soft text-ok",
-  Medium: "border-accent/30 bg-accent-soft text-accent",
+  Medium: "border-warn/30 bg-warn-soft text-warn",
   Hard: "border-danger/30 bg-danger-soft text-danger",
 };
 

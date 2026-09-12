@@ -66,7 +66,7 @@ export default async function CoachPage() {
           <div
             key={card.label}
             className={`surface-card rounded-xl px-4 py-4 ${
-              card.warn ? "border-accent/40 bg-accent-soft" : ""
+              card.warn ? "border-warn/40 bg-warn-soft" : ""
             }`}
           >
             <p className="text-xs uppercase tracking-wider text-muted">
@@ -201,7 +201,7 @@ export default async function CoachPage() {
                 </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-border">
                   <div
-                    className="h-full rounded-full bg-accent"
+                    className="h-full rounded-full bg-danger"
                     style={{ width: `${Math.min(s.lossRate, 100)}%` }}
                   />
                 </div>
@@ -263,7 +263,7 @@ function OutcomePill({ outcome }: { outcome: string }) {
   const styles: Record<string, string> = {
     won: "bg-ok-soft text-ok border-ok/30",
     lost: "bg-danger-soft text-danger border-danger/30",
-    conceded: "bg-accent-soft text-accent border-accent/30",
+    conceded: "bg-warn-soft text-warn border-warn/30",
     no_decision: "bg-background text-muted border-border",
   };
   return (

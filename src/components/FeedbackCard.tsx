@@ -7,6 +7,12 @@ type FeedbackCardProps = {
   repName?: string;
 };
 
+function tierBarClass(fraction: number) {
+  if (fraction >= 0.8) return "bg-ok";
+  if (fraction >= 0.5) return "bg-warn";
+  return "bg-danger";
+}
+
 export function FeedbackCard({ score, whatYouSaid = [], repName }: FeedbackCardProps) {
   const said =
     whatYouSaid.length > 0
@@ -31,7 +37,7 @@ export function FeedbackCard({ score, whatYouSaid = [], repName }: FeedbackCardP
               className={`rounded border px-2 py-1 font-medium ${
                 score.heldFee
                   ? "border-ok/30 bg-ok-soft text-ok"
-                  : "border-accent/30 bg-accent-soft text-accent"
+                  : "border-warn/30 bg-warn-soft text-warn"
               }`}
             >
               {score.heldFee ? "Fee held" : "Fee softened"}
@@ -104,7 +110,7 @@ export function FeedbackCard({ score, whatYouSaid = [], repName }: FeedbackCardP
                     {c.label}
                     <div className="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-border">
                       <div
-                        className="h-full rounded-full bg-accent"
+                        className={`h-full rounded-full ${tierBarClass(c.score)}`}
                         style={{ width: `${Math.round(c.score * 100)}%` }}
                       />
                     </div>

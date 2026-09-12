@@ -67,7 +67,7 @@ export function ProgressPanel({
                   >
                     <div
                       className={`w-full max-w-8 rounded-t ${
-                        a.score.heldFee ? "bg-ok" : "bg-accent"
+                        a.score.heldFee ? "bg-ok" : "bg-warn"
                       }`}
                       style={{ height: `${h}%` }}
                     />
@@ -107,7 +107,7 @@ export function ProgressPanel({
                         className={`rounded border px-2 py-0.5 text-xs ${
                           a.score.heldFee
                             ? "border-ok/30 bg-ok-soft text-ok"
-                            : "border-accent/30 bg-accent-soft text-accent"
+                            : "border-warn/30 bg-warn-soft text-warn"
                         }`}
                       >
                         {a.score.heldFee ? "Held" : "Softened"}
