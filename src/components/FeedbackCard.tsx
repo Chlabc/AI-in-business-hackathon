@@ -1,11 +1,13 @@
 import type { PracticeScore } from "@/lib/rubric";
+import { DownloadPdfButton } from "./DownloadPdfButton";
 
 type FeedbackCardProps = {
   score: PracticeScore;
   whatYouSaid?: string[];
+  repName?: string;
 };
 
-export function FeedbackCard({ score, whatYouSaid = [] }: FeedbackCardProps) {
+export function FeedbackCard({ score, whatYouSaid = [], repName }: FeedbackCardProps) {
   const said =
     whatYouSaid.length > 0
       ? whatYouSaid.slice(-3)
@@ -35,6 +37,7 @@ export function FeedbackCard({ score, whatYouSaid = [] }: FeedbackCardProps) {
               {score.heldFee ? "Fee held" : "Fee softened"}
               {score.feeOfferedPct !== null ? ` · ${score.feeOfferedPct}%` : ""}
             </span>
+            <DownloadPdfButton score={score} whatYouSaid={whatYouSaid} repName={repName} />
           </div>
         </div>
       </div>
