@@ -132,29 +132,10 @@ body {
   transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
 }
 .btn-lift:hover {
-  transform: translateY(-1px) scale(1.015);
+  transform: translateY(-1px);
   box-shadow: 0 6px 14px -4px rgba(16, 20, 24, 0.18);
 }
 .btn-lift:active {
-  transform: translateY(0) scale(1);
-}
-
-/* Icon badge that grows slightly when its parent card is hovered — pair with `group` on the card. */
-.icon-pop {
-  transition: transform 200ms ease;
-}
-.group:hover .icon-pop {
-  transform: scale(1.12);
-}
-
-/* ---- scroll-triggered reveal: fades a section up the first time it enters view ---- */
-.scroll-reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.scroll-reveal.is-visible {
-  opacity: 1;
   transform: translateY(0);
 }
 
@@ -162,18 +143,11 @@ body {
   .page-enter,
   .stagger-children > *,
   .surface-card,
-  .btn-lift,
-  .icon-pop,
-  .scroll-reveal {
+  .btn-lift {
     animation: none !important;
     transition: none !important;
   }
-  .stagger-children > *,
-  .scroll-reveal {
+  .stagger-children > * {
     opacity: 1;
-    transform: none !important;
-  }
-  .group:hover .icon-pop {
-    transform: none;
   }
 }
