@@ -65,6 +65,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   const [lastDisconnect, setLastDisconnect] = useState<string | null>(null);
 
   const conversationRef = useRef<ConversationInstance | null>(null);
+  const conversationIdRef = useRef<string | null>(null);
   const endingRef = useRef(false);
   const scenarioRef = useRef(scenario);
   scenarioRef.current = scenario;
@@ -95,6 +96,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     setTurns([]);
     turnsRef.current = [];
     setConversationId(null);
+    conversationIdRef.current = null;
     setIsSpeaking(false);
   }, []);
 
@@ -121,44 +123,62 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     };
   }, [endSessionQuietly]);
 
-  const runScore = useCallback(async (cid: string | null) => {
-    const snapshot = turnsRef.current.filter((t) => t.role !== "system");
-    if (!snapshot.some((t) => t.role === "user")) {
-      // User hit End before speaking — not a failure, just nothing to score.
-      setError(null);
-      setScore(null);
-      setNotice(
-        "Session ended before you spoke — press Start drill when you’re ready to practice.",
-      );
-      return;
+  const waitForUserTurns = useCallback(async (maxMs = 2000) => {
+    const started = Date.now();
+    while (Date.now() - started < maxMs) {
+      const hasUser = turnsRef.current.some((t) => t.role === "user");
+      if (hasUser) return true;
+      await new Promise((r) => setTimeout(r, 150));
     }
-    setScoring(true);
-    setError(null);
-    setNotice(null);
-    try {
-      const res = await fetch("/api/practice/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversationId: cid,
-          scenarioId: scenarioRef.current.id,
-          turns: snapshot.map(({ role, text }) => ({ role, text })),
-        }),
-      });
-      const data = (await res.json()) as {
-        score?: PracticeScore;
-        error?: string;
-      };
-      if (!res.ok || !data.score) {
-        throw new Error(data.error ?? "Scoring failed");
-      }
-      setScore(data.score);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Scoring failed");
-    } finally {
-      setScoring(false);
-    }
+    return turnsRef.current.some((t) => t.role === "user");
   }, []);
+
+  const runScore = useCallback(
+    async (cid: string | null) => {
+      setScoring(true);
+      setError(null);
+      setNotice("Finishing transcript…");
+
+      // Final user ASR often arrives after endSession — wait briefly.
+      const hasUser = await waitForUserTurns(2000);
+      const snapshot = turnsRef.current.filter((t) => t.role !== "system");
+
+      if (!hasUser || !snapshot.some((t) => t.role === "user")) {
+        setScoring(false);
+        setScore(null);
+        setNotice(
+          "Session ended before we caught your reply — speak, pause a beat, then End & score.",
+        );
+        return;
+      }
+
+      setNotice(null);
+      try {
+        const res = await fetch("/api/practice/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversationId: cid,
+            scenarioId: scenarioRef.current.id,
+            turns: snapshot.map(({ role, text }) => ({ role, text })),
+          }),
+        });
+        const data = (await res.json()) as {
+          score?: PracticeScore;
+          error?: string;
+        };
+        if (!res.ok || !data.score) {
+          throw new Error(data.error ?? "Scoring failed");
+        }
+        setScore(data.score);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Scoring failed");
+      } finally {
+        setScoring(false);
+      }
+    },
+    [waitForUserTurns],
+  );
 
   const startingRef = useRef(false);
 
@@ -259,7 +279,9 @@ export function usePracticeConversation(scenario: PracticeScenario) {
 
       conversationRef.current = conv;
       try {
-        setConversationId(conv.getId?.() ?? null);
+        const id = conv.getId?.() ?? null;
+        conversationIdRef.current = id;
+        setConversationId(id);
       } catch {
         /* id may not be ready */
       }
@@ -276,8 +298,11 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   }, [pushTurn, resetLocal]);
 
   const end = useCallback(async () => {
-    const cid = conversationId;
+    const cid = conversationIdRef.current ?? conversationId;
     endingRef.current = true;
+    setScoring(true);
+    setError(null);
+    setNotice("Ending session…");
     const conv = conversationRef.current;
     conversationRef.current = null;
     try {
@@ -288,9 +313,8 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     } finally {
       setStatus("idle");
       setIsSpeaking(false);
-      setTimeout(() => {
-        void runScore(cid);
-      }, 450);
+      // Score after disconnect; runScore waits for late user ASR.
+      void runScore(cid);
     }
   }, [conversationId, runScore]);
 
