@@ -6,6 +6,7 @@ type AppShellProps = {
   focus?: string;
   /** Optional right-side header slot (e.g. share status) */
   headerExtra?: React.ReactNode;
+  variant?: "app" | "marketing";
 };
 
 /**
@@ -17,10 +18,11 @@ export function AppShell({
   repName,
   focus,
   headerExtra,
+  variant,
 }: AppShellProps) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <AppHeader repName={repName} focus={focus} />
+      <AppHeader repName={repName} focus={focus} variant={variant} />
       {headerExtra}
       <main className="page-enter mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:gap-8 lg:px-10 xl:px-12">
         {children}

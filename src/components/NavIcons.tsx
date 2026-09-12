@@ -48,6 +48,25 @@ export function ScoreIcon({ className }: IconProps) {
   );
 }
 
+export function LockIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...common}>
+      <rect x="5" y="10.5" width="14" height="10" rx="2" />
+      <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
+      <path d="M12 14.5v2.5" />
+    </svg>
+  );
+}
+
+export function LightbulbIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...common}>
+      <path d="M9 18h6M10 21h4" />
+      <path d="M12 3a6.5 6.5 0 0 0-3.8 11.8c.5.4.8 1 .8 1.7v.5h6v-.5c0-.7.3-1.3.8-1.7A6.5 6.5 0 0 0 12 3z" />
+    </svg>
+  );
+}
+
 export function ManagerIcon({ className }: IconProps) {
   return (
     <svg className={className} {...common}>

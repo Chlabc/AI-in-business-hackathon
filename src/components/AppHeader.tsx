@@ -14,6 +14,8 @@ import { useTheme } from "@/components/ThemeProvider";
 type AppHeaderProps = {
   repName?: string;
   focus?: string;
+  /** "marketing" is the public landing page — simpler nav, no rep context, one clear CTA. */
+  variant?: "app" | "marketing";
 };
 
 const NAV_LINKS = [
@@ -23,12 +25,67 @@ const NAV_LINKS = [
   { href: "/coach/manager", label: "Manager", Icon: ManagerIcon },
 ];
 
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border bg-card text-foreground transition hover:border-accent"
+      aria-label={
+        theme === "light" ? "Switch to night mode" : "Switch to day mode"
+      }
+      title={theme === "light" ? "Night mode" : "Day mode"}
+    >
+      {theme === "light" ? (
+        <NightIcon className="h-[18px] w-[18px]" />
+      ) : (
+        <DayIcon className="h-[18px] w-[18px]" />
+      )}
+    </button>
+  );
+}
+
 export function AppHeader({
   repName = "Alex Chen",
   focus = "Fee concessions",
+  variant = "app",
 }: AppHeaderProps) {
-  const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+
+  if (variant === "marketing") {
+    return (
+      <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur-sm">
+        <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10 xl:px-12">
+          <span className="text-base font-semibold tracking-tight text-foreground">
+            Cornerman
+          </span>
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <a
+              href="#how-it-works"
+              className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:inline-flex"
+            >
+              How it works
+            </a>
+            <a
+              href="#build-phases"
+              className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:inline-flex"
+            >
+              Build phases
+            </a>
+            <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
+            <ThemeToggle />
+            <Link
+              href="/coach"
+              className="btn-lift inline-flex h-9 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-fg transition hover:opacity-90"
+            >
+              Open coach
+            </Link>
+          </nav>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur-sm">
@@ -73,21 +130,7 @@ export function AppHeader({
             );
           })}
           <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground transition hover:border-accent"
-            aria-label={
-              theme === "light" ? "Switch to night mode" : "Switch to day mode"
-            }
-            title={theme === "light" ? "Night mode" : "Day mode"}
-          >
-            {theme === "light" ? (
-              <NightIcon className="h-[18px] w-[18px]" />
-            ) : (
-              <DayIcon className="h-[18px] w-[18px]" />
-            )}
-          </button>
+          <ThemeToggle />
         </div>
       </div>
       <div className="mx-auto flex w-full max-w-[1800px] gap-3 px-4 pb-3 text-xs text-muted sm:hidden sm:px-6 lg:px-10 xl:px-12">
