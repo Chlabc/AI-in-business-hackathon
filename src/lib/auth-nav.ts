@@ -7,6 +7,7 @@ export function navForRole(
   if (role === "employee") {
     return [
       { href: "/coach", label: "Diagnosis" },
+      { href: "/coach/learn", label: "Learn" },
       { href: "/coach/training", label: "Scenarios" },
       { href: "/coach/practice", label: "Drill" },
     ];
