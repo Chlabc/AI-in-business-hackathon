@@ -32,7 +32,7 @@ export function FeedbackCard({ score, whatYouSaid = [] }: FeedbackCardProps) {
                   : "border-accent/30 bg-accent-soft text-accent"
               }`}
             >
-              {score.heldFee ? "Fee held" : "Fee softened"}
+              {score.heldFee ? "Price held" : "Price softened"}
               {score.feeOfferedPct !== null ? ` · ${score.feeOfferedPct}%` : ""}
             </span>
           </div>

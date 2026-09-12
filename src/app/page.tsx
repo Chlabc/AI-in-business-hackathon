@@ -54,7 +54,7 @@ export default function Home() {
             {
               n: "02",
               title: "Drill",
-              body: "Live spoken fee objection. Client argues back.",
+              body: "Live spoken price objection. Buyer argues back.",
             },
             {
               n: "03",

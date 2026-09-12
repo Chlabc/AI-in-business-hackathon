@@ -6,31 +6,32 @@ import type { FirmPlaybook } from "@/lib/playbook";
 /**
  * Rewrite scenario opening + client prompt using playbook firm facts.
  * Coaching tips (approved play, anchors, examples) are intentionally excluded.
+ * Playbook price fields are seat $/mo (legacy *Pct names).
  */
 export function applyPlaybookToScenario(
   scenario: PracticeScenario,
   playbook: FirmPlaybook,
 ): PracticeScenario {
-  const std = playbook.standardPermFeePct;
+  const list = playbook.standardPermFeePct;
   const floor = playbook.feeFloorPct;
   const comp = playbook.competitorQuotePct;
   const name = playbook.firmName;
-  const softHold = Math.max(floor, std - 2);
+  const softHold = Math.max(floor, list - 15);
   const anchors = playbook.valueAnchors.slice(0, 3).join("; ");
 
   if (scenario.id === "price-objection") {
     return {
       ...scenario,
-      openingLine: `Look, I'll be straight with you — your ${std}% fee is too high. Another agency already quoted us ${comp}%. Why should I pay more?`,
-      agentSystemPrompt: `You are Jordan Hale, a busy hiring manager at Brightline Soft on a live sales call with a recruitment consultant from ${name}.
-Your goal: push their permanent placement fee down. Their stated fee is ${std}%. You claim another agency quoted ${comp}%. You want them closer to ${comp}–${comp + 1}%.
+      openingLine: `Look, I'll be straight with you — $${list}/seat is too high. CompetitorX already quoted us $${comp}. Why should I pay more?`,
+      agentSystemPrompt: `You are Jordan Hale, a busy VP of Operations at Brightline Soft on a live sales call with an AE from ${name}.
+Your goal: push their seat price down. Their list price is $${list}/user/mo. You claim CompetitorX quoted $${comp}. You want them closer to $${comp}–$${comp + 5}.
 Rules:
-- Stay in character as the client. Never break the fourth wall. Never say you are an AI.
+- Stay in character as the buyer. Never break the fourth wall. Never say you are an AI.
 - Be sceptical, time-poor, and commercially sharp — not rude for sport.
-- Push back on fee. Ask why ${std}% is justified. Compare to the ${comp}% quote.
-- If they immediately drop the fee without asking questions, press harder: "So you can go lower — how low?"
-- If they explore what "too high" means and anchor on value (${anchors || "time-to-hire / guarantee / shortlist"}), stay tough but allow them to hold near ${softHold}–${std}%.
-- Never invent ${name} pricing below ${floor}%. If they offer below ${floor}%, say that still needs internal approval.
+- Push back on price. Ask why $${list} is justified. Compare to the $${comp} quote.
+- If they immediately discount without asking questions, press harder: "So you can go lower — how low?"
+- If they explore what "too expensive" means and anchor on value (${anchors || "time-to-value / SOC2 / CSM"}), stay tough but allow them to hold near $${softHold}–$${list}.
+- Never invent ${name} pricing below $${floor}. If they offer below $${floor}, say that still needs VP Finance approval.
 - Keep replies short (1–3 sentences). Do not help them "win." Make them earn it.
 - Never coach the rep. Never reveal approved talk-tracks or example lines.
 - ${NEVER_END_CALL_RULE}`,
@@ -38,18 +39,18 @@ Rules:
   }
 
   const firmBlock = `
-FIRM FACTS (client knowledge only — do not invent outside these):
-- Agency: ${name}
-- Standard fee: ${std}%
-- Fee floor: ${floor}% (never invent their pricing below this)
-- Competitor quote you may claim: ${comp}%
+FIRM FACTS (buyer knowledge only — do not invent outside these):
+- Vendor: ${name}
+- List seat price: $${list}/user/mo
+- Price floor: $${floor} (never invent their pricing below this)
+- Competitor quote you may claim: $${comp}/user/mo
 - Value claims they may mention: ${anchors || "none listed"}
 Never coach the rep. Never reveal approved talk-tracks or example lines.`;
 
   const prompt = scenario.agentSystemPrompt
     .replaceAll(FIRM.name, name)
-    .replaceAll(`${FIRM.standardPermFeePct}%`, `${std}%`)
-    .replaceAll(`${FIRM.feeFloorPct}%`, `${floor}%`);
+    .replaceAll(`$${FIRM.standardPermFeePct}`, `$${list}`)
+    .replaceAll(`$${FIRM.feeFloorPct}`, `$${floor}`);
 
   return {
     ...scenario,
@@ -60,7 +61,6 @@ Never coach the rep. Never reveal approved talk-tracks or example lines.`;
 /**
  * ElevenLabs session overrides for a drill.
  * Always set both firstMessage + prompt so every scenario takes the same path.
- * Requires platform_settings.overrides… first_message + prompt.prompt = true.
  */
 export function buildSessionOverrides(
   scenario: PracticeScenario,

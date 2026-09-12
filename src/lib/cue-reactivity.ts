@@ -22,31 +22,31 @@ export function pickSpotlightIndex(
     anchorPoints.findIndex((a) => re.test(a.toLowerCase()));
 
   if (
-    /too high|%\s*|percent|fee|price|cost|cheaper|quoted|expensive|discount/.test(
+    /too high|too expensive|\$|price|cost|cheaper|quoted|discount|budget/.test(
       t,
     )
   ) {
-    const i = find(/compar|clarif|too high|against|vacancy|anchor|value|fee/);
+    const i = find(/compar|clarif|expensive|against|switch|anchor|value|price/);
     if (i >= 0) return i;
   }
   if (
-    /another agency|already (have|use)|relationship|switch|incumbent|competitor/.test(
+    /competitor|already (have|use)|relationship|switch|incumbent|rival/.test(
       t,
     )
   ) {
-    const i = find(/relationship|gap|incumbent|parallel|trial|respect/);
+    const i = find(/relationship|gap|incumbent|pilot|trial|respect/);
     if (i >= 0) return i;
   }
-  if (/think|get back|later|not sure|co-founder|need to/.test(t)) {
-    const i = find(/next|follow|check-in|diary|date|step|sla|exclusive/);
+  if (/think|get back|later|not sure|co-founder|legal|procurement/.test(t)) {
+    const i = find(/next|follow|check-in|diary|date|step|nda|security/);
     if (i >= 0) return i;
   }
-  if (/not (looking|hiring|interested)|no thanks|brush/.test(t)) {
-    const i = find(/pushy|insight|check-in|useful|market/);
+  if (/not (looking|buying|interested)|no thanks|brush|not evaluating/.test(t)) {
+    const i = find(/pushy|insight|check-in|useful|roadmap/);
     if (i >= 0) return i;
   }
-  if (/just send|cvs?|resume|candidates/.test(t)) {
-    const i = find(/quality|must-have|shortlist|volume|vetted/);
+  if (/deck|trial|free|send me|demo/.test(t)) {
+    const i = find(/quality|must-have|demo|trial|workflow|access/);
     if (i >= 0) return i;
   }
 

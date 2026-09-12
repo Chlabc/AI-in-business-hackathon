@@ -34,7 +34,7 @@ export default async function CoachPage() {
   const share = await getShareSettings(DEMO_REP_ID);
 
   return (
-    <AppShell repName={rep.name} focus="Fee concessions">
+    <AppShell repName={rep.name} focus="Price concessions">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-sm text-muted">

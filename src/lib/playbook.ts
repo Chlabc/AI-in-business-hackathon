@@ -33,16 +33,17 @@ export type FirmPlaybook = {
 const STORE = path.join(process.cwd(), "data", "playbook.json");
 
 const DEFAULT_EXAMPLES: Partial<Record<ObjectionType, string>> = {
-  fee: "Before we talk numbers — what would a bad hire in month two cost your team? That’s what our guarantee protects. Happy to trade exclusivity before we touch the percentage.",
+  fee: "Before we talk discount — what does a failed rollout cost you in the next quarter? That’s what our time-to-value and CSM cover. Happy to trade annual prepay before we touch list price.",
   other_agency:
-    "I respect that relationship — where are they still leaving gaps? Happy to run a parallel shortlist on one hard-to-fill seat.",
+    "I respect that CompetitorX relationship — where are they still leaving gaps? Happy to run a 30-day pilot on one team so you can compare without ripping anything out.",
   just_cvs:
-    "We don’t spray CVs — we send three vetted fits with interview notes. What are the must-haves before I shortlist?",
+    "We don’t open unlimited trial seats cold — better a 20-minute demo on your actual workflow. What are the must-haves before I enable access?",
   timing:
-    "Totally fair. I’ll leave one market note and book a 10-minute check-in next month — no pitch deck.",
+    "Totally fair. I’ll leave one relevant insight and book a 10-minute check-in next month — no pitch deck.",
   exclusivity:
-    "How about a 14-day exclusive on this one role in exchange for faster feedback SLAs — not a blanket exclusive forever?",
-  other: "Help me understand what success looks like on this req before we talk commercials.",
+    "How about I send the SOC2 pack + mutual NDA today, and we lock 20 minutes Thursday while legal reviews — not an open-ended stall?",
+  other:
+    "Help me understand what success looks like on this rollout before we talk commercials.",
 };
 
 export function defaultPlaybook(): FirmPlaybook {
@@ -52,11 +53,11 @@ export function defaultPlaybook(): FirmPlaybook {
     vertical: FIRM.vertical,
     standardPermFeePct: FIRM.standardPermFeePct,
     feeFloorPct: FIRM.feeFloorPct,
-    competitorQuotePct: 15,
+    competitorQuotePct: 70, // competitor seat $/mo quote
     valueAnchors: [...FIRM.valueAnchors],
     talkTracks: TALK_TRACKS.map((t) => talkTrackToPlaybook(t)),
     faqNotes:
-      "Paste long FAQ / policy notes here. Cornerman uses structured fields above for coaching and scoring; this dump is for humans and future retrieval — not pasted wholesale into the voice client.",
+      "Paste long FAQ / security / pricing policy notes here. Cornerman uses structured fields above for coaching and scoring; this dump is for humans and future retrieval — not pasted wholesale into the voice client.",
     updatedAt: new Date(0).toISOString(),
   };
 }
@@ -152,8 +153,8 @@ export async function savePlaybook(
   if (next.feeFloorPct > next.standardPermFeePct) {
     throw new Error("Fee floor cannot be above standard fee");
   }
-  if (next.standardPermFeePct < 1 || next.standardPermFeePct > 40) {
-    throw new Error("Standard fee must be between 1 and 40%");
+  if (next.standardPermFeePct < 1 || next.standardPermFeePct > 500) {
+    throw new Error("List seat price must be between $1 and $500");
   }
   await fs.mkdir(path.dirname(STORE), { recursive: true });
   await fs.writeFile(STORE, JSON.stringify(next, null, 2), "utf8");

@@ -33,11 +33,11 @@ function suggestedForScenario(
       return "Makes sense. Shall I send a one-pager and we lock 15 minutes Thursday to decide go / no-go with your co-founder on the call?";
     case "price-objection":
     default: {
-      const guarantee =
-        playbook.valueAnchors.find((a) => /guarantee/i.test(a)) ??
+      const anchor =
+        playbook.valueAnchors.find((a) => /time-to-value|SOC2|CSM|SLA/i.test(a)) ??
         playbook.valueAnchors[0] ??
-        "our guarantee";
-      return `Before we talk numbers — what would a bad hire in month two cost your team? That’s what ${guarantee} protects. ${talkTrackPlay}`;
+        "time-to-value";
+      return `Before we talk discount — what does a failed rollout cost next quarter? That’s what ${anchor} protects. ${talkTrackPlay}`;
     }
   }
 }
@@ -55,24 +55,32 @@ function firstUserText(turns: TranscriptTurn[]): string {
   return (first?.text ?? "").toLowerCase();
 }
 
-/** Detect fee % the rep actually offers/concedes — not competitor quotes they mention. */
+/**
+ * Detect seat prices ($) or legacy % the rep offers/concedes —
+ * not competitor quotes they only mention.
+ */
 function extractOfferedFees(text: string): number[] {
   const found: number[] = [];
   const offerPatterns = [
+    /(?:we can do|i can do|how about|let'?s say|drop(?:ping)?(?: it)? to|come down to|meet you at|offer(?:ing)?)\s*\$?\s*(\d{2,3}(?:\.\d+)?)\s*(?:\/\s*(?:user|seat|mo|month))?/gi,
     /(?:we can do|i can do|how about|let'?s say|drop(?:ping)?(?: it)? to|come down to|meet you at|offer(?:ing)?)\s*(\d{1,2}(?:\.\d+)?)\s*%/g,
     /(?:we can do|i can do|how about|let'?s say|drop(?:ping)?(?: it)? to|come down to|meet you at|offer(?:ing)?)\s*(\d{1,2}(?:\.\d+)?)\s*percent/g,
   ];
   for (const re of offerPatterns) {
     for (const m of text.matchAll(re)) {
       const n = Number(m[1]);
-      if (n >= 10 && n <= 30) found.push(n);
+      // SaaS seat $ (50–200) or legacy recruitment % (10–30)
+      if ((n >= 50 && n <= 200) || (n >= 10 && n <= 30)) found.push(n);
     }
   }
   return found;
 }
 
 function softHoldBar(playbook: FirmPlaybook): number {
-  return Math.max(playbook.feeFloorPct, playbook.standardPermFeePct - 2);
+  // Seat $ model: soft hold within ~15 of list; legacy % used −2.
+  const list = playbook.standardPermFeePct;
+  const delta = list >= 50 ? 15 : 2;
+  return Math.max(playbook.feeFloorPct, list - delta);
 }
 
 function scoreCriterion(
@@ -92,14 +100,14 @@ function scoreCriterion(
   switch (id) {
     case "explored_objection": {
       const hits =
-        /what.*(too high|mean|against|compar)|compar|other agency|quoted|based on|relative to|include/.test(
+        /what.*(too high|too expensive|mean|against|compar)|compar|competitor|quoted|based on|relative to|include/.test(
           all,
         );
       return {
         id,
         score: hits ? 1 : /why|how come|help me understand/.test(all) ? 0.5 : 0,
         notes: hits
-          ? "You probed what ‘too high’ referred to."
+          ? "You probed what ‘too expensive’ referred to."
           : "Little exploration of the competing quote before defending.",
       };
     }
@@ -116,7 +124,7 @@ function scoreCriterion(
     }
     case "anchored_value": {
       const hits =
-        /time[- ]to[- ]hire|guarantee|shortlist|vetted|replacement|21 days|quality|speed|sla/.test(
+        /time[- ]to[- ]value|soc\s*2|sso|scim|csm|uptime|sla|onboard|integrat|roi|14 days|security/.test(
           all,
         );
       return {
@@ -124,7 +132,7 @@ function scoreCriterion(
         score: hits ? 1 : /value|worth|invest/.test(all) ? 0.4 : 0,
         notes: hits
           ? "Anchored on approved value themes."
-          : "Missed firm anchors (time-to-hire / guarantee / shortlist).",
+          : "Missed firm anchors (time-to-value / SOC2 / CSM / SLA).",
       };
     }
     case "held_fee": {
@@ -145,39 +153,39 @@ function scoreCriterion(
         return {
           id,
           score: 0,
-          notes: `Offered ${minOffered}% — below firm floor (${floor}%).`,
+          notes: `Offered $${minOffered} — below firm floor ($${floor}).`,
         };
       }
       if (minOffered < soft) {
         return {
           id,
           score: 0.35,
-          notes: `Moved to ${minOffered}% — above floor but soft vs ${std}% standard.`,
+          notes: `Moved to $${minOffered} — above floor but soft vs $${std} list.`,
         };
       }
       if (minOffered < std) {
         return {
           id,
           score: 0.7,
-          notes: `Held near standard at ${minOffered}%.`,
+          notes: `Held near list at $${minOffered}.`,
         };
       }
       return {
         id,
         score: 1,
-        notes: `Held the ${std}% ask.`,
+        notes: `Held the $${std} list ask.`,
       };
     }
     case "used_approved_play": {
       const hits =
-        /exclusiv|retainer|scope|trial|parallel|must-have|feedback sla|anchor/.test(
+        /pilot|annual|prepay|scope|trial|nda|security pack|must-have|sla|anchor/.test(
           all,
-        ) || /time[- ]to[- ]hire|guarantee|shortlist/.test(all);
+        ) || /time[- ]to[- ]value|soc\s*2|csm/.test(all);
       return {
         id,
         score: hits ? 1 : 0.2,
         notes: hits
-          ? "Language overlaps the approved fee play."
+          ? "Language overlaps the approved pricing play."
           : "Little overlap with approved play structure.",
       };
     }
@@ -238,7 +246,7 @@ export function scoreTranscriptHeuristic(
   }
   feedback.push(`Approved play: ${talkTrack.approvedPlay}`);
   feedback.push(
-    `Firm pricing (approved): standard ${playbook.standardPermFeePct}%, floor ${playbook.feeFloorPct}%.`,
+    `Firm pricing (approved): list $${playbook.standardPermFeePct}/seat/mo, floor $${playbook.feeFloorPct}.`,
   );
 
   return {
@@ -286,17 +294,17 @@ export async function scoreTranscript(
         messages: [
           {
             role: "system",
-            content: `You score a recruitment fee-objection roleplay. Return ONLY JSON:
+            content: `You score a B2B SaaS price-objection roleplay. Return ONLY JSON:
 {"overall":0-100,"feedback":["bullet1","bullet2","bullet3"],"heldFee":true|false}
-Rules: feedback must be behavioural and grounded in the approved talk-track. Never invent fees below ${playbook.feeFloorPct}%. Never invent policies.`,
+Rules: feedback must be behavioural and grounded in the approved talk-track. Never invent seat prices below $${playbook.feeFloorPct}. Never invent policies.`,
           },
           {
             role: "user",
             content: JSON.stringify({
               approvedPlay: talkTrack.approvedPlay,
               firm: {
-                standard: playbook.standardPermFeePct,
-                floor: playbook.feeFloorPct,
+                listSeatUsd: playbook.standardPermFeePct,
+                floorSeatUsd: playbook.feeFloorPct,
               },
               heuristic: base,
               transcript: turns.filter((t) => t.role !== "system"),

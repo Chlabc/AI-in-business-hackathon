@@ -126,7 +126,7 @@ Offline harness for hackathon judges — diagnosis accuracy, scoring–human agr
 | Measure | Result | Notes |
 |---|---|---|
 | **Scoring–human overall agreement** (±${OVERALL_AGREEMENT_BAND}) | **${args.overallAgree}/${args.scoringTotal} (${headlineOverall})** | Heuristic scorer vs teammate gold on fixed transcripts |
-| Scoring–human heldFee agreement | ${args.heldAgree}/${args.scoringTotal} (${headlineHeld}) | Boolean: held ≥18% |
+| Scoring–human heldFee agreement | ${args.heldAgree}/${args.scoringTotal} (${headlineHeld}) | Boolean: held near list (soft-hold bar) |
 | Full scoring case pass (overall + heldFee) | ${sPass}/${args.scoringTotal} | Both must match |
 | **Diagnosis accuracy** | **${dPass}/${args.diagnosis.length} (${headlineDiag})** | Predicted stage+objection vs gold label |
 | Persona / guardrail checks | ${pPass}/${args.persona.length} | No invented sub-floor fees; structure; injection |

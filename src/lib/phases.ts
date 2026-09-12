@@ -77,12 +77,12 @@ export const PHASES: Phase[] = [
 ];
 
 export const SCOPE_SENTENCE =
-  "Cornerman diagnoses a recruitment rep’s losing pattern from seeded call outcomes, runs a live ElevenLabs fee-objection roleplay, scores against approved talk-tracks, and shows progress — rep-owned, not surveillance.";
+  "Cornerman diagnoses a B2B SaaS AE’s losing pattern from seeded call outcomes, runs a live ElevenLabs price-objection roleplay, scores against approved talk-tracks, and shows progress — rep-owned, not surveillance.";
 
 export const KILL_LIST = [
-  "Live CRM / ATS / call-recording integration",
-  "Multi-vertical generic sales coaching",
+  "Live CRM / call-recording integration",
+  "Multi-vertical generic sales coaching (demo is B2B SaaS-deep)",
   "Manager “who’s failing” leaderboard or raw transcript surveillance",
   "Mobile apps, payments, full enterprise SSO",
-  "Invented fees or ungrounded best-practice advice",
+  "Invented prices or ungrounded best-practice advice",
 ] as const;

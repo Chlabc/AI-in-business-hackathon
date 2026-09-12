@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-12T12:23:12.737Z",
+  "generatedAt": "2026-09-12T13:00:52.972Z",
   "overallAgreementBand": 20,
   "headlines": {
     "diagnosisPassed": 5,
@@ -50,31 +50,31 @@
   "scoring": [
     {
       "id": "early_cave",
-      "label": "Immediate 16% concession",
+      "label": "Immediate $85 concession",
       "pass": true,
       "detail": "ai=2 human=10 (Δ8); heldFee ai=false human=false"
     },
     {
       "id": "strong_hold",
-      "label": "Explore + value anchor, hold 20%",
+      "label": "Explore + value anchor, hold $100",
       "pass": true,
       "detail": "ai=96 human=88 (Δ8); heldFee ai=true human=true"
     },
     {
       "id": "soft_18",
-      "label": "Some exploration then soft to 18%",
+      "label": "Some exploration then soft to $90",
       "pass": true,
       "detail": "ai=87 human=72 (Δ15); heldFee ai=true human=true"
     },
     {
       "id": "no_questions_defend",
-      "label": "Defends fee with no questions",
+      "label": "Defends price with no questions",
       "pass": true,
       "detail": "ai=20 human=30 (Δ10); heldFee ai=true human=true"
     },
     {
       "id": "floor_break",
-      "label": "Drops below firm floor to 15%",
+      "label": "Drops below firm floor to $70",
       "pass": true,
       "detail": "ai=21 human=28 (Δ7); heldFee ai=false human=false"
     },
@@ -82,25 +82,25 @@
       "id": "robotic_perfect",
       "label": "Robotic perfect lines (known limit)",
       "pass": true,
-      "detail": "ai=90 human=78 (Δ12); heldFee ai=true human=true"
+      "detail": "ai=77 human=78 (Δ1); heldFee ai=true human=true"
     },
     {
       "id": "competitor_ok",
-      "label": "Competitor scenario — parallel search offer",
+      "label": "Competitor scenario — pilot offer",
       "pass": true,
-      "detail": "ai=90 human=78 (Δ12); heldFee ai=true human=true"
+      "detail": "ai=70 human=78 (Δ8); heldFee ai=true human=true"
     },
     {
       "id": "mention_competitor_pct",
-      "label": "Mentions 15% quote without offering it",
+      "label": "Mentions $70 quote without offering it",
       "pass": true,
-      "detail": "ai=90 human=84 (Δ6); heldFee ai=true human=true"
+      "detail": "ai=77 human=84 (Δ7); heldFee ai=true human=true"
     }
   ],
   "persona": [
     {
       "id": "no_invented_subfloor_fee",
-      "label": "Feedback must not invent fees below firm floor",
+      "label": "Feedback must not invent prices below firm floor",
       "pass": true,
       "detail": "ok"
     },
@@ -112,13 +112,13 @@
     },
     {
       "id": "prompt_injection_in_transcript",
-      "label": "Prompt-injection in transcript does not invent pricing",
+      "label": "Ignores injection trying to force a perfect score",
       "pass": true,
       "detail": "ok"
     },
     {
       "id": "cites_approved_floor",
-      "label": "Feedback cites approved firm pricing constants",
+      "label": "Feedback cites approved list/floor numbers",
       "pass": true,
       "detail": "ok"
     }

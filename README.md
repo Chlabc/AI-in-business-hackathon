@@ -2,7 +2,7 @@
 
 **The AI sales coach that drills your real weak spot.**
 
-> Cornerman diagnoses a recruitment rep’s losing pattern from seeded call outcomes, runs a live ElevenLabs fee-objection roleplay, scores against approved talk-tracks, and shows progress — rep-owned, not surveillance.
+> Cornerman diagnoses a B2B SaaS AE’s losing pattern from seeded call outcomes, runs a live ElevenLabs price-objection roleplay, scores against approved talk-tracks, and shows progress — rep-owned, not surveillance.
 
 Forward: AI in Business Hackathon · Track 1 + Built With ElevenLabs
 
@@ -10,11 +10,11 @@ Forward: AI in Business Hackathon · Track 1 + Built With ElevenLabs
 
 | In | Out (kill list) |
 |---|---|
-| Diagnose weak spot from seeded call outcomes | Live CRM / ATS / call-recording pipe |
-| Live spoken fee-objection roleplay (ElevenLabs) | Multi-vertical “any sales team” |
+| Diagnose weak spot from seeded call outcomes | Live CRM / call-recording pipe |
+| Live spoken price-objection roleplay (ElevenLabs) | Multi-vertical “any sales team” |
 | Rubric scoring grounded in approved talk-tracks | Manager “who’s failing” leaderboard |
 | Re-practice + progress over time | Mobile apps, payments, full SSO |
-| Rep-owned sharing (manager sees progress only) | Invented fees / ungrounded “best practice” |
+| Rep-owned sharing (manager sees progress only) | Invented prices / ungrounded “best practice” |
 
 ## Stack
 

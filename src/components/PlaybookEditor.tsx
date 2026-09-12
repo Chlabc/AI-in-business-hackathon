@@ -74,16 +74,16 @@ export function PlaybookEditor({ initial }: PlaybookEditorProps) {
       <section className="surface-card rounded-xl p-5 sm:p-6">
         <p className="eyebrow">Firm facts</p>
         <h2 className="mt-1 text-lg font-semibold text-foreground">
-          Pricing & positioning
+          Pricing & positioning (B2B SaaS)
         </h2>
         <p className="mt-2 text-sm text-muted">
-          These numbers feed the AI client (thin facts only) and scoring. Coaching
+          Seat prices feed the AI buyer (thin facts only) and scoring. Coaching
           tips below never go into ElevenLabs.
         </p>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
-            Firm name
+            Company name
             <input
               className={fieldClass}
               value={draft.firmName}
@@ -99,11 +99,11 @@ export function PlaybookEditor({ initial }: PlaybookEditorProps) {
             />
           </label>
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
-            Standard fee %
+            List seat $/mo
             <input
               type="number"
               min={1}
-              max={40}
+              max={500}
               className={fieldClass}
               value={draft.standardPermFeePct}
               onChange={(e) =>
@@ -112,22 +112,22 @@ export function PlaybookEditor({ initial }: PlaybookEditorProps) {
             />
           </label>
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
-            Fee floor %
+            Floor seat $/mo
             <input
               type="number"
               min={1}
-              max={40}
+              max={500}
               className={fieldClass}
               value={draft.feeFloorPct}
               onChange={(e) => update("feeFloorPct", Number(e.target.value))}
             />
           </label>
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
-            Competitor quote %
+            Competitor quote $/mo
             <input
               type="number"
               min={1}
-              max={40}
+              max={500}
               className={fieldClass}
               value={draft.competitorQuotePct}
               onChange={(e) =>

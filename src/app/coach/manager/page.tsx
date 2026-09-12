@@ -130,7 +130,7 @@ export default async function ManagerPage() {
                   </p>
                 </div>
                 <div className="rounded-lg border border-border bg-background p-3">
-                  <p className="text-xs text-muted">Fee hold</p>
+                  <p className="text-xs text-muted">Price hold</p>
                   <p className="mt-1 text-2xl font-semibold">
                     {practice.feeHoldRate === null
                       ? "—"
