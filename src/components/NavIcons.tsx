@@ -39,6 +39,15 @@ export function DrillIcon({ className }: IconProps) {
   );
 }
 
+export function ScoreIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...common}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M8.5 12.3l2.3 2.3 4.7-5.1" />
+    </svg>
+  );
+}
+
 export function ManagerIcon({ className }: IconProps) {
   return (
     <svg className={className} {...common}>
