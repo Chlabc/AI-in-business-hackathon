@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
-import evalSnapshot from "@/data/eval-snapshot.json";
-import type { EvalCaseRow, EvalSnapshot } from "@/lib/eval-snapshot";
+import type { EvalCaseRow } from "@/lib/eval-snapshot";
+import { loadEvalSnapshot } from "@/lib/load-eval-snapshot";
 
 export const dynamic = "force-static";
-
-const snapshot = evalSnapshot as EvalSnapshot;
 
 function CaseTable({
   title,
@@ -63,6 +61,7 @@ function CaseTable({
 }
 
 export default function HealthPage() {
+  const snapshot = loadEvalSnapshot();
   const h = snapshot.headlines;
   const cards = [
     {
