@@ -8,6 +8,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { AudioWaveform } from "@/components/AudioWaveform";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { SignalStreamGuard } from "@/components/SignalStreamGuard";
+import type { PracticeScenario } from "@/data/scenarios";
 import type { PracticeScore } from "@/lib/rubric";
 
 type Turn = {
@@ -18,7 +19,7 @@ type Turn = {
 };
 
 type PracticeSessionProps = {
-  scenarioLine: string;
+  scenario: PracticeScenario;
   approvedPlay: string;
   diagnosisHeadline: string;
 };
@@ -50,10 +51,11 @@ function formatErr(err: unknown): string {
 }
 
 function PracticeControls({
-  scenarioLine,
+  scenario,
   approvedPlay,
   diagnosisHeadline,
 }: PracticeSessionProps) {
+  const scenarioLine = scenario.openingLine;
   const [turns, setTurns] = useState<Turn[]>([]);
   const turnsRef = useRef<Turn[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +98,7 @@ function PracticeControls({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversationId: cid,
+          scenarioId: scenario.id,
           turns: snapshot.map(({ role, text }) => ({ role, text })),
         }),
       });
@@ -112,9 +115,17 @@ function PracticeControls({
     } finally {
       setScoring(false);
     }
-  }, []);
+  }, [scenario.id]);
 
   const conversation = useConversation({
+    overrides: {
+      agent: {
+        firstMessage: scenario.openingLine,
+        prompt: {
+          prompt: scenario.agentSystemPrompt,
+        },
+      },
+    },
     onConnect: () => {
       setError(null);
       endingRef.current = false;
@@ -237,9 +248,9 @@ function PracticeControls({
     <div className="space-y-6">
       <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
         <section className="surface-card rounded-xl p-5 sm:p-6 lg:p-8">
-          <p className="eyebrow">2 · Live drill</p>
+          <p className="eyebrow">2 · Live drill · {scenario.title}</p>
           <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
-            Fee-objection roleplay
+            {scenario.customerPersona}
           </h2>
           <p className="mt-2 text-sm text-muted">{diagnosisHeadline}</p>
 

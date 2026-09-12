@@ -130,12 +130,20 @@ export default async function CoachPage() {
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 {talkTrack.approvedPlay}
               </p>
-              <Link
-                href="/coach/practice"
-                className="mt-6 inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
-              >
-                Start fee-objection drill
-              </Link>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link
+                  href="/coach/practice?scenario=price-objection"
+                  className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
+                >
+                  Start fee drill
+                </Link>
+                <Link
+                  href="/coach/training"
+                  className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-5 text-sm font-medium text-foreground transition hover:border-accent"
+                >
+                  All scenarios
+                </Link>
+              </div>
             </div>
           </div>
         </section>

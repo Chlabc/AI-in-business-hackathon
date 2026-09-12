@@ -44,6 +44,12 @@ export function AppHeader({
             Diagnosis
           </Link>
           <Link
+            href="/coach/training"
+            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground sm:inline"
+          >
+            Scenarios
+          </Link>
+          <Link
             href="/coach/practice"
             className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground sm:inline"
           >

@@ -72,6 +72,9 @@ export type PracticeScore = {
   criteria: CriterionScore[];
   feedback: string[];
   approvedPlayReminder: string;
+  /** Huey-style model answer the rep can rehearse next */
+  suggestedResponse: string;
   method: "heuristic" | "llm+heuristic";
   talkTrackId: string;
+  scenarioId: string;
 };

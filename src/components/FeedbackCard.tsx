@@ -72,6 +72,15 @@ export function FeedbackCard({ score, whatYouSaid = [] }: FeedbackCardProps) {
         </div>
       </div>
 
+      <div className="border-b border-border bg-background px-5 py-4 sm:px-6">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Suggested response (rehearse this)
+        </h3>
+        <p className="mt-2 text-sm italic leading-relaxed text-foreground">
+          “{score.suggestedResponse}”
+        </p>
+      </div>
+
       <div className="p-5 sm:p-6">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
           Rubric breakdown

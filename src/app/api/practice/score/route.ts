@@ -7,6 +7,7 @@ export async function POST(request: Request) {
   let body: {
     repId?: string;
     conversationId?: string | null;
+    scenarioId?: string;
     turns?: TranscriptTurn[];
   };
   try {
@@ -27,7 +28,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const score = await scoreTranscript(turns);
+  const score = await scoreTranscript(
+    turns,
+    body.scenarioId ?? "price-objection",
+  );
   const attempt = await saveAttempt({
     repId: body.repId ?? DEMO_REP_ID,
     conversationId: body.conversationId ?? null,

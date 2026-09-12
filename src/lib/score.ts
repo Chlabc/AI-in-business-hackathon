@@ -1,3 +1,4 @@
+import { getScenario } from "@/data/scenarios";
 import { FIRM, getTalkTrackForObjection } from "@/data/seed";
 import {
   FEE_RUBRIC,
@@ -10,6 +11,20 @@ export type TranscriptTurn = {
   role: "user" | "agent" | "system";
   text: string;
 };
+
+function suggestedForScenario(scenarioId: string, talkTrackPlay: string): string {
+  switch (scenarioId) {
+    case "competitor":
+      return "I respect that relationship — where are they still leaving gaps? Happy to run a parallel shortlist on one hard-to-fill seat so you can compare without ripping anything up.";
+    case "not-interested":
+      return "Totally fair. If helpful I’ll leave one market note and book a 10-minute check-in next month — no pitch deck, just signal on roles like yours.";
+    case "need-to-think":
+      return "Makes sense. Shall I send a one-pager and we lock 15 minutes Thursday to decide go / no-go with your co-founder on the call?";
+    case "price-objection":
+    default:
+      return `Before we talk numbers — what would a bad hire in month two cost your team? That’s what our ${FIRM.valueAnchors[1]} protects. ${talkTrackPlay}`;
+  }
+}
 
 function userText(turns: TranscriptTurn[]): string {
   return turns
@@ -160,8 +175,10 @@ function scoreCriterion(
 
 export function scoreTranscriptHeuristic(
   turns: TranscriptTurn[],
+  scenarioId = "price-objection",
 ): PracticeScore {
-  const talkTrack = getTalkTrackForObjection("fee");
+  const scenario = getScenario(scenarioId);
+  const talkTrack = getTalkTrackForObjection(scenario.objectionType);
   const criteria: CriterionScore[] = FEE_RUBRIC.map((c) => {
     const raw = scoreCriterion(c.id, turns);
     return {
@@ -208,8 +225,10 @@ export function scoreTranscriptHeuristic(
     criteria,
     feedback: feedback.slice(0, 5),
     approvedPlayReminder: talkTrack.approvedPlay,
+    suggestedResponse: suggestedForScenario(scenario.id, talkTrack.approvedPlay),
     method: "heuristic",
     talkTrackId: talkTrack.id,
+    scenarioId: scenario.id,
   };
 }
 
@@ -218,8 +237,9 @@ export function scoreTranscriptHeuristic(
  */
 export async function scoreTranscript(
   turns: TranscriptTurn[],
+  scenarioId = "price-objection",
 ): Promise<PracticeScore> {
-  const base = scoreTranscriptHeuristic(turns);
+  const base = scoreTranscriptHeuristic(turns, scenarioId);
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) return base;
 
