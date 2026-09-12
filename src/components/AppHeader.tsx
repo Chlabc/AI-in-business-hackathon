@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { DayIcon, NightIcon } from "@/components/ThemeIcons";
 import { useTheme } from "@/components/ThemeProvider";
 
@@ -9,11 +10,19 @@ type AppHeaderProps = {
   focus?: string;
 };
 
+const NAV_LINKS = [
+  { href: "/coach", label: "Diagnosis" },
+  { href: "/coach/training", label: "Scenarios" },
+  { href: "/coach/practice", label: "Drill" },
+  { href: "/coach/manager", label: "Manager" },
+];
+
 export function AppHeader({
   repName = "Alex Chen",
   focus = "Fee concessions",
 }: AppHeaderProps) {
   const { theme, toggleTheme } = useTheme();
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur-sm">
@@ -37,31 +46,26 @@ export function AppHeader({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/coach"
-            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground sm:inline"
-          >
-            Diagnosis
-          </Link>
-          <Link
-            href="/coach/training"
-            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground sm:inline"
-          >
-            Scenarios
-          </Link>
-          <Link
-            href="/coach/practice"
-            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground sm:inline"
-          >
-            Drill
-          </Link>
-          <Link
-            href="/coach/manager"
-            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground md:inline"
-          >
-            Manager
-          </Link>
+        <div className="flex items-center gap-1">
+          {NAV_LINKS.map((link, i) => {
+            const active = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`hidden rounded-md px-3 py-1.5 text-sm font-medium transition sm:inline ${
+                  i === 3 ? "md:inline" : ""
+                } ${
+                  active
+                    ? "bg-accent-soft text-accent"
+                    : "text-muted hover:bg-accent-soft hover:text-foreground"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+          <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
           <button
             type="button"
             onClick={toggleTheme}
