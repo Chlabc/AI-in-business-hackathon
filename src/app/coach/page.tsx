@@ -23,179 +23,149 @@ export default async function CoachPage() {
   const dash = getRepDashboard(DEMO_REP_ID);
 
   if (!dash) {
-    return (
-      <div className="px-6 py-12 text-muted">Demo rep not found.</div>
-    );
+    return <div className="px-6 py-12 text-muted">Demo rep not found.</div>;
   }
 
-  const { rep, firm, kpis, diagnosis, talkTrack, recentCalls } = dash;
+  const { rep, firm, kpis, diagnosis, recentCalls } = dash;
   const attempts = await listAttempts(DEMO_REP_ID);
   const practice = practiceKpisFromAttempts(attempts);
   kpis.practice = practice;
   const share = await getShareSettings(DEMO_REP_ID);
 
+  /** Each number gets a sentence saying what it actually means. */
+  const numbers = [
+    {
+      value: pct(kpis.feeConcessionRate),
+      meaning: "of your fee conversations ended with you dropping the price",
+      isProblem: true,
+    },
+    {
+      value: pct(kpis.winRate),
+      meaning: "of all your calls ended in a win",
+      isProblem: false,
+    },
+    {
+      value: `${pct(kpis.avgFeeAskedPct)} → ${pct(kpis.avgFeeEndedPct)}`,
+      meaning: `you open at ${pct(kpis.avgFeeAskedPct)} and settle at ${pct(kpis.avgFeeEndedPct)} on average (firm floor is ${firm.feeFloorPct}%)`,
+      isProblem: false,
+    },
+  ];
+
   return (
     <AppShell repName={rep.name} focus="Fee concessions">
       <OnboardingBanner />
+
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-sm text-muted">
-            {rep.title} · {rep.agency} · {rep.weeksInRole} weeks in role
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-            Performance breakdown
+          <p className="eyebrow">Your diagnosis</p>
+          <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
+            Where you&apos;re losing deals
           </h1>
+          <p className="mt-2 text-sm text-muted">
+            {rep.name} · {rep.title} at {rep.agency} · {rep.weeksInRole} weeks in
+            role
+          </p>
         </div>
         <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
           Seeded demo data · not a live CRM
         </span>
       </div>
 
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: "Calls analysed", value: String(kpis.callsAnalysed) },
-          { label: "Win rate", value: pct(kpis.winRate) },
-          {
-            label: "Fee concession rate",
-            value: pct(kpis.feeConcessionRate),
-            warn: true,
-          },
-          {
-            label: "Avg fee asked → ended",
-            value: `${pct(kpis.avgFeeAskedPct)} → ${pct(kpis.avgFeeEndedPct)}`,
-          },
-        ].map((card) => (
-          <div
-            key={card.label}
-            className={`surface-card rounded-xl px-4 py-4 ${
-              card.warn ? "border-warn/40 bg-warn-soft" : ""
-            }`}
+      {/* ── The verdict, and the one thing to do about it ───────────── */}
+      <section className="surface-card rounded-xl border-l-4 border-l-danger p-6 lg:p-8">
+        <p className="text-xs font-semibold uppercase tracking-wider text-danger">
+          The pattern costing you deals
+        </p>
+        <h2 className="display-serif mt-3 max-w-4xl text-2xl leading-snug text-foreground lg:text-3xl">
+          {diagnosis.headline}
+        </h2>
+        <p className="mt-3 text-sm text-muted">
+          Found across{" "}
+          <strong className="font-medium text-foreground">
+            {kpis.callsAnalysed} calls
+          </strong>
+          , with {diagnosis.confidence} confidence. It shows up most in the{" "}
+          <strong className="font-medium text-foreground">
+            {label(diagnosis.primaryStage)}
+          </strong>{" "}
+          part of the conversation.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center gap-4">
+          <Link
+            href="/coach/practice?scenario=price-objection"
+            className="btn-lift inline-flex h-12 items-center justify-center rounded-full bg-accent px-7 text-base font-semibold text-accent-fg transition hover:opacity-90"
           >
-            <p className="text-xs uppercase tracking-wider text-muted">
-              {card.label}
-            </p>
-            <p className="mt-2 text-2xl font-semibold text-foreground">
-              {card.value}
-            </p>
-          </div>
-        ))}
+            Practice this now
+          </Link>
+          <Link
+            href="/coach/training"
+            className="text-sm font-medium text-muted transition hover:text-accent"
+          >
+            Or pick a different scenario →
+          </Link>
+        </div>
       </section>
 
-      {/* Wide two-column: diagnosis + progress */}
-      <div className="grid gap-6 xl:grid-cols-[1.35fr_1fr]">
-        <section className="surface-card overflow-hidden rounded-xl">
-          <div className="border-b border-border px-6 py-5 lg:px-8 lg:py-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="eyebrow">1 · Diagnosis</p>
-              <span className="rounded border border-border px-2 py-0.5 text-xs text-muted">
-                confidence {diagnosis.confidence}
+      {/* ── Why we think that ───────────────────────────────────────── */}
+      <section className="surface-card rounded-xl p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Why we think that — {diagnosis.evidence.length} recent losses
+        </h2>
+        <ol className="mt-4 space-y-3">
+          {diagnosis.evidence.map((line, i) => (
+            <li key={line} className="flex gap-3 text-sm text-foreground">
+              <span className="mt-0.5 font-mono text-xs text-muted">
+                {String(i + 1).padStart(2, "0")}
               </span>
-            </div>
-            <h2 className="mt-3 max-w-4xl text-2xl font-semibold leading-snug tracking-tight text-foreground lg:text-3xl">
-              {diagnosis.headline}
-            </h2>
-            <p className="mt-3 text-sm text-muted">
-              Weak spot:{" "}
-              <span className="font-medium text-foreground">
-                {label(diagnosis.primaryStage)} stage ·{" "}
-                {label(diagnosis.primaryObjection)} objection
-              </span>
-              {" · "}
-              firm standard {firm.standardPermFeePct}% (floor {firm.feeFloorPct}
-              %)
-            </p>
-          </div>
+              <span className="leading-relaxed">{line}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-          <div className="grid lg:grid-cols-[1.4fr_1fr]">
-            <div className="border-b border-border p-6 lg:border-b-0 lg:border-r lg:p-8">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
-                Evidence from recent losses
-              </h3>
-              <ol className="mt-4 space-y-3">
-                {diagnosis.evidence.map((line, i) => (
-                  <li key={line} className="flex gap-3 text-sm text-foreground">
-                    <span className="font-mono text-xs text-accent">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="leading-relaxed">{line}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="bg-accent-soft/60 p-6 lg:p-8">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
-                Prescribed drill
-              </h3>
-              <p className="mt-3 text-sm font-medium text-foreground">
-                {talkTrack.title}
+      {/* ── The numbers, each with a plain-English meaning ───────────── */}
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Your numbers
+        </h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {numbers.map((n) => (
+            <div
+              key={n.meaning}
+              className={`surface-card rounded-xl p-5 ${
+                n.isProblem ? "border-warn/40 bg-warn-soft" : ""
+              }`}
+            >
+              <p
+                className={`text-3xl font-semibold ${
+                  n.isProblem ? "text-warn" : "text-foreground"
+                }`}
+              >
+                {n.value}
               </p>
               <p className="mt-2 text-sm leading-relaxed text-muted">
-                {talkTrack.approvedPlay}
+                {n.meaning}
               </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/coach/practice?scenario=price-objection"
-                  className="btn-lift inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
-                >
-                  Start fee drill
-                </Link>
-                <Link
-                  href="/coach/training"
-                  className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-5 text-sm font-medium text-foreground transition hover:border-accent"
-                >
-                  All scenarios
-                </Link>
-              </div>
+              {n.isProblem ? (
+                <p className="mt-2 text-xs font-medium text-warn">
+                  ← this is the one to fix
+                </p>
+              ) : null}
             </div>
-          </div>
-        </section>
-
-        <div className="flex flex-col gap-6">
-          <ProgressPanel
-            attempts={attempts}
-            feeHoldRate={practice.feeHoldRate}
-            trendLabel={practice.trendLabel}
-          />
-          <ShareControls
-            initialShared={share.shareProgressWithManager}
-            repId={DEMO_REP_ID}
-          />
+          ))}
         </div>
-      </div>
+      </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* ── Where it breaks down + your practice so far ──────────────── */}
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         <section className="surface-card rounded-xl p-6">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Approved talk-track
+            Where the conversation breaks down
           </h2>
-          <h3 className="mt-2 text-lg font-semibold text-foreground">
-            {talkTrack.title}
-          </h3>
-          <div className="mt-4 grid gap-6 sm:grid-cols-2">
-            <div>
-              <p className="text-xs font-semibold text-ok">Do</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted">
-                {talkTrack.anchorPoints.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-danger">Never</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-muted">
-                {talkTrack.neverDo.map((p) => (
-                  <li key={p}>{p}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section className="surface-card rounded-xl p-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Loss rate by stage
-          </h2>
-          <ul className="mt-4 space-y-2">
+          <p className="mt-1 text-sm text-muted">
+            Share of calls at each stage that ended lost or conceded.
+          </p>
+          <ul className="mt-4 space-y-2.5">
             {kpis.byStage.map((s) => (
               <li key={s.stage} className="flex items-center gap-3 text-sm">
                 <span className="w-24 capitalize text-foreground">
@@ -207,19 +177,31 @@ export default async function CoachPage() {
                     style={{ width: `${Math.min(s.lossRate, 100)}%` }}
                   />
                 </div>
-                <span className="w-16 text-right font-mono text-muted">
+                <span className="w-14 text-right font-mono text-muted">
                   {pct(s.lossRate)}
                 </span>
               </li>
             ))}
           </ul>
         </section>
+
+        <ProgressPanel
+          attempts={attempts}
+          feeHoldRate={practice.feeHoldRate}
+          trendLabel={practice.trendLabel}
+        />
       </div>
 
-      <section className="surface-card rounded-xl p-6">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-          Recent call outcomes
-        </h2>
+      <ShareControls
+        initialShared={share.shareProgressWithManager}
+        repId={DEMO_REP_ID}
+      />
+
+      {/* ── The raw data, available but not shouting ─────────────────── */}
+      <details className="surface-card rounded-xl p-6">
+        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-muted transition hover:text-foreground">
+          See all {recentCalls.length} calls we analysed
+        </summary>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="text-xs uppercase tracking-wider text-muted">
@@ -256,7 +238,7 @@ export default async function CoachPage() {
             </tbody>
           </table>
         </div>
-      </section>
+      </details>
     </AppShell>
   );
 }

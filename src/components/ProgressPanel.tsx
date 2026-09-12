@@ -17,9 +17,8 @@ export function ProgressPanel({
   return (
     <section className="surface-card flex h-full flex-col rounded-xl">
       <div className="border-b border-border px-5 py-4">
-        <p className="eyebrow">4 · Track</p>
-        <h2 className="mt-1 text-lg font-semibold text-foreground">
-          Progress over attempts
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Your practice so far
         </h2>
         <p className="mt-1 text-sm text-muted">{trendLabel}</p>
       </div>

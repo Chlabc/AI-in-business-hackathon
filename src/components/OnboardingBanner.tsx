@@ -25,9 +25,9 @@ export function OnboardingBanner() {
         <p className="text-sm font-semibold text-accent">New here? Here's what this page does</p>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-foreground">
           Below is your <strong>weakest pattern</strong>, found from your real call
-          outcomes. Click <strong>&ldquo;Start fee drill&rdquo;</strong> to practice it
-          live against an AI client — you&apos;ll get scored the moment you finish, and
-          your progress is tracked on the right.
+          outcomes. Hit <strong>&ldquo;Practice this now&rdquo;</strong> to drill it
+          live against an AI client — you&apos;ll get scored the moment you finish,
+          and every attempt is tracked further down.
         </p>
       </div>
       <button
