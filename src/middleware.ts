@@ -23,6 +23,7 @@ async function readUser(
 }
 
 const EMPLOYEE_ONLY = [
+  "/coach/learn",
   "/coach/training",
   "/coach/practice",
 ];
