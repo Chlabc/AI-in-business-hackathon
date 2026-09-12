@@ -8,23 +8,20 @@ type DownloadPdfButtonProps = {
   repName?: string;
 };
 
-// Matches the app's actual design tokens (src/app/globals.css, light theme)
+// A restrained palette: the app's actual accent (#d9480f) used as a genuine
+// accent — rules, numbers, data — not as background fill.
 const COLOR = {
   accent: [217, 72, 15] as const, // #d9480f
-  accentDeep: [190, 60, 12] as const,
-  accentSoft: [255, 244, 239] as const, // #fff4ef
   ok: [43, 138, 62] as const, // #2b8a3e
-  okSoft: [235, 251, 238] as const, // #ebfbee
   danger: [201, 42, 42] as const, // #c92a2a
-  foreground: [26, 29, 32] as const, // #1a1d20
-  muted: [92, 101, 112] as const, // #5c6570
-  border: [233, 236, 239] as const, // #e9ecef
-  gridLine: [214, 220, 226] as const,
-  white: [255, 255, 255] as const,
+  ink: [26, 29, 32] as const,
+  muted: [110, 118, 128] as const,
+  hairline: [225, 228, 231] as const,
+  track: [237, 239, 241] as const,
 };
 type RGB = readonly [number, number, number];
 
-const PAGE_MARGIN = 16;
+const PAGE_MARGIN = 18;
 const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
 const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2;
@@ -57,31 +54,34 @@ export function DownloadPdfButton({
 
     function drawHeader() {
       doc.setFillColor(...COLOR.accent);
-      doc.rect(0, 0, PAGE_WIDTH, 26, "F");
-      doc.setFillColor(...COLOR.accentDeep);
-      doc.rect(0, 22, PAGE_WIDTH, 4, "F");
-      doc.setTextColor(...COLOR.white);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.text("CORNERMAN", PAGE_MARGIN, 12);
+      doc.rect(0, 0, PAGE_WIDTH, 1.6, "F");
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.5);
-      doc.text("Sales Practice Report", PAGE_MARGIN, 19);
+      doc.setFontSize(8);
+      doc.setTextColor(...COLOR.accent);
+      doc.text("S A L E S   P R A C T I C E   R E P O R T", PAGE_MARGIN, 16);
+      doc.setFont("times", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(...COLOR.ink);
+      doc.text("Cornerman", PAGE_MARGIN, 27);
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
+      doc.setTextColor(...COLOR.muted);
+      doc.text(repName, PAGE_WIDTH - PAGE_MARGIN, 16, { align: "right" });
       const dateLabel = new Date().toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
       });
-      doc.text(repName, PAGE_WIDTH - PAGE_MARGIN, 11, { align: "right" });
-      doc.text(dateLabel, PAGE_WIDTH - PAGE_MARGIN, 17, { align: "right" });
-      doc.setTextColor(...COLOR.foreground);
+      doc.text(dateLabel, PAGE_WIDTH - PAGE_MARGIN, 21, { align: "right" });
+      doc.setDrawColor(...COLOR.hairline);
+      doc.setLineWidth(0.3);
+      doc.line(PAGE_MARGIN, 34, PAGE_WIDTH - PAGE_MARGIN, 34);
     }
 
     function newPage() {
       doc.addPage();
       drawHeader();
-      y = 40;
+      y = 42;
     }
 
     function ensureSpace(need: number) {
@@ -89,43 +89,45 @@ export function DownloadPdfButton({
     }
 
     function sectionTitle(text: string) {
-      ensureSpace(12);
+      ensureSpace(10);
       doc.setFillColor(...COLOR.accent);
-      doc.rect(PAGE_MARGIN, y, 4, 4, "F");
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11.5);
-      doc.setTextColor(...COLOR.foreground);
-      doc.text(text, PAGE_MARGIN + 7, y + 3.4);
-      y += 10;
+      doc.rect(PAGE_MARGIN, y - 2.6, 2.2, 2.2, "F");
+      doc.setFont("times", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(...COLOR.ink);
+      doc.text(text, PAGE_MARGIN + 6, y);
+      y += 8;
     }
 
     function bulletList(items: string[]) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(...COLOR.foreground);
+      doc.setTextColor(...COLOR.ink);
       for (const item of items) {
         const lines = doc.splitTextToSize(item, CONTENT_WIDTH - 10);
         ensureSpace(lines.length * 5 + 2);
         doc.setFillColor(...COLOR.accent);
-        doc.circle(PAGE_MARGIN + 3.5, y - 1.3, 0.8, "F");
-        doc.text(lines, PAGE_MARGIN + 7, y);
+        doc.circle(PAGE_MARGIN + 2.2, y - 1.3, 0.7, "F");
+        doc.text(lines, PAGE_MARGIN + 6, y);
         y += lines.length * 5 + 2.5;
       }
     }
 
-    function calloutBox(text: string, bg: RGB, opts: { italic?: boolean } = {}) {
+    /** Restrained callout: white background, thin hairline border, one accent stripe. No fill wash. */
+    function calloutBox(text: string, opts: { italic?: boolean } = {}) {
       doc.setFont("helvetica", opts.italic ? "italic" : "normal");
       doc.setFontSize(10);
-      const lines = doc.splitTextToSize(text, CONTENT_WIDTH - 10);
-      const boxHeight = lines.length * 5 + 8;
+      const lines = doc.splitTextToSize(text, CONTENT_WIDTH - 14);
+      const boxHeight = lines.length * 5 + 10;
       ensureSpace(boxHeight + 2);
-      doc.setFillColor(...bg);
-      doc.roundedRect(PAGE_MARGIN, y, CONTENT_WIDTH, boxHeight, 2, 2, "F");
+      doc.setDrawColor(...COLOR.hairline);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(PAGE_MARGIN, y, CONTENT_WIDTH, boxHeight, 1.5, 1.5, "S");
       doc.setFillColor(...COLOR.accent);
-      doc.rect(PAGE_MARGIN, y, 1.2, boxHeight, "F");
-      doc.setTextColor(...COLOR.foreground);
-      doc.text(lines, PAGE_MARGIN + 6, y + 6.5);
-      y += boxHeight + 5;
+      doc.rect(PAGE_MARGIN, y, 1, boxHeight, "F");
+      doc.setTextColor(...COLOR.ink);
+      doc.text(lines, PAGE_MARGIN + 7, y + 6.5);
+      y += boxHeight + 6;
     }
 
     /** Single continuous ring-segment path (annulus sector) — one fill, no seams. */
@@ -153,12 +155,12 @@ export function DownloadPdfButton({
     /** Overall score: semi-circular donut gauge + a fee/context side panel. */
     function scoreSection() {
       sectionTitle("Overall score");
-      const gaugeHeight = 62;
+      const gaugeHeight = 58;
       ensureSpace(gaugeHeight);
-      const cx = PAGE_MARGIN + 40;
-      const cyBase = y + 34;
-      const outerR = 30;
-      const innerR = 20;
+      const cx = PAGE_MARGIN + 38;
+      const cyBase = y + 32;
+      const outerR = 28;
+      const innerR = 19;
       const midR = (outerR + innerR) / 2;
       const capR = (outerR - innerR) / 2;
       const color = tierColor(score.overall / 100);
@@ -167,47 +169,46 @@ export function DownloadPdfButton({
       const endDeg = 360;
       const fillEnd = startDeg + (endDeg - startDeg) * fraction;
 
-      ringSector(cx, cyBase, outerR, innerR, startDeg, endDeg, COLOR.border);
+      ringSector(cx, cyBase, outerR, innerR, startDeg, endDeg, COLOR.track);
       ringSector(cx, cyBase, outerR, innerR, startDeg, fillEnd, color);
-      const startAngle = (startDeg * Math.PI) / 180;
-      const endAngle = (fillEnd * Math.PI) / 180;
+      const a0 = (startDeg * Math.PI) / 180;
+      const a1 = (fillEnd * Math.PI) / 180;
       doc.setFillColor(...color);
-      doc.circle(cx + midR * Math.cos(startAngle), cyBase + midR * Math.sin(startAngle), capR, "F");
-      doc.circle(cx + midR * Math.cos(endAngle), cyBase + midR * Math.sin(endAngle), capR, "F");
+      doc.circle(cx + midR * Math.cos(a0), cyBase + midR * Math.sin(a0), capR, "F");
+      doc.circle(cx + midR * Math.cos(a1), cyBase + midR * Math.sin(a1), capR, "F");
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(26);
+      doc.setFont("times", "bold");
+      doc.setFontSize(28);
       doc.setTextColor(...color);
-      doc.text(String(score.overall), cx, cyBase - 2, { align: "center" });
+      doc.text(String(score.overall), cx, cyBase - 1, { align: "center" });
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(...COLOR.muted);
-      doc.text("out of 100", cx, cyBase + 5, { align: "center" });
+      doc.text("OUT OF 100", cx, cyBase + 6, { align: "center" });
 
-      const panelX = PAGE_MARGIN + 88;
-      const panelW = CONTENT_WIDTH - 88;
-      let py = y + 4;
+      const panelX = PAGE_MARGIN + 84;
+      const panelW = CONTENT_WIDTH - 84;
+      let py = y + 2;
       const feeColor: RGB = score.heldFee ? COLOR.ok : COLOR.accent;
-      const feeSoft: RGB = score.heldFee ? COLOR.okSoft : COLOR.accentSoft;
-      doc.setFillColor(...feeSoft);
-      doc.roundedRect(panelX, py, panelW, 14, 2, 2, "F");
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(10.5);
+      doc.setFontSize(11);
       doc.setTextColor(...feeColor);
-      doc.text(score.heldFee ? "Fee held" : "Fee softened", panelX + 5, py + 6);
+      doc.text(score.heldFee ? "Fee held" : "Fee softened", panelX, py + 4);
+      doc.setDrawColor(...COLOR.hairline);
+      doc.setLineWidth(0.3);
+      doc.line(panelX, py + 7, panelX + panelW, py + 7);
+      py += 13;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
       doc.setTextColor(...COLOR.muted);
       doc.text(
         score.feeOfferedPct !== null ? `Lowest offered: ${score.feeOfferedPct}%` : "No explicit fee offered",
-        panelX + 5,
-        py + 11.5
+        panelX,
+        py
       );
-      py += 20;
-      doc.setFontSize(8.5);
-      doc.setTextColor(...COLOR.muted);
+      py += 6;
       doc.text(`Scenario: ${score.scenarioId.replace(/-/g, " ")}`, panelX, py);
-      py += 5;
+      py += 6;
       doc.text(`Scoring method: ${score.method}`, panelX, py);
 
       y += gaugeHeight;
@@ -217,11 +218,11 @@ export function DownloadPdfButton({
     function radarChart() {
       sectionTitle("Skill radar");
       const n = score.criteria.length;
-      const R = 32;
-      const chartHeight = R * 2 + 26;
+      const R = 30;
+      const chartHeight = R * 2 + 24;
       ensureSpace(chartHeight);
       const cx = PAGE_MARGIN + CONTENT_WIDTH / 2;
-      const cy = y + R + 4;
+      const cy = y + R + 6;
 
       const angleFor = (i: number) => ((-90 + i * (360 / n)) * Math.PI) / 180;
       const pt = (i: number, frac: number): [number, number] => [
@@ -229,7 +230,7 @@ export function DownloadPdfButton({
         cy + R * frac * Math.sin(angleFor(i)),
       ];
 
-      doc.setDrawColor(...COLOR.gridLine);
+      doc.setDrawColor(...COLOR.hairline);
       doc.setLineWidth(0.25);
       for (const level of [0.25, 0.5, 0.75, 1]) {
         const pts = Array.from({ length: n }, (_, i) => pt(i, level));
@@ -245,9 +246,9 @@ export function DownloadPdfButton({
       }
 
       const dataPts = score.criteria.map((c, i) => pt(i, Math.max(c.score, 0.04)));
-      doc.setFillColor(...COLOR.accentSoft);
+      doc.setFillColor(255, 244, 239);
       doc.setDrawColor(...COLOR.accent);
-      doc.setLineWidth(0.6);
+      doc.setLineWidth(0.7);
       const first = dataPts[0];
       const deltas = dataPts.slice(1).map((p, idx) => [p[0] - dataPts[idx][0], p[1] - dataPts[idx][1]] as [number, number]);
       deltas.push([first[0] - dataPts[n - 1][0], first[1] - dataPts[n - 1][1]]);
@@ -262,12 +263,12 @@ export function DownloadPdfButton({
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
       for (let i = 0; i < n; i++) {
-        const [x, yy] = pt(i, 1.16);
+        const [x, yy] = pt(i, 1.18);
         const cos = Math.cos(angleFor(i));
         const sin = Math.sin(angleFor(i));
         const align: "left" | "center" | "right" = Math.abs(cos) > 0.2 ? (cos > 0 ? "left" : "right") : "center";
         const dy = sin > 0.5 ? 3 : sin < -0.5 ? -1 : 1.5;
-        doc.setTextColor(...COLOR.foreground);
+        doc.setTextColor(...COLOR.ink);
         doc.text(SHORT_LABEL[score.criteria[i].id] ?? score.criteria[i].label, x, yy + dy, { align });
         doc.setTextColor(...COLOR.muted);
         doc.setFontSize(7.5);
@@ -281,11 +282,11 @@ export function DownloadPdfButton({
     /** Detailed per-criterion bars with notes — the radar's numbers, explained. */
     function rubricBreakdown() {
       sectionTitle("Rubric breakdown, in detail");
-      const labelW = 58;
+      const labelW = 56;
       const ptsW = 16;
       const barX = PAGE_MARGIN + labelW;
       const barW = CONTENT_WIDTH - labelW - ptsW;
-      const barH = 4.2;
+      const barH = 4;
 
       for (const c of score.criteria) {
         const noteLines = doc.splitTextToSize(c.notes, CONTENT_WIDTH - labelW);
@@ -294,19 +295,21 @@ export function DownloadPdfButton({
         const color = tierColor(c.score);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9.5);
-        doc.setTextColor(...COLOR.foreground);
+        doc.setTextColor(...COLOR.ink);
         const labelLines = doc.splitTextToSize(c.label, labelW - 3);
         doc.text(labelLines, PAGE_MARGIN, y + 3);
 
-        doc.setFillColor(...COLOR.border);
-        doc.roundedRect(barX, y, barW, barH, 1, 1, "F");
+        doc.setDrawColor(...COLOR.hairline);
+        doc.setLineWidth(0.2);
+        doc.setFillColor(...COLOR.track);
+        doc.roundedRect(barX, y, barW, barH, 1, 1, "FD");
         doc.setFillColor(...color);
         doc.roundedRect(barX, y, Math.max(barW * c.score, 3), barH, 1, 1, "F");
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...color);
-        doc.text(`${Math.round(c.score * c.max)}/${c.max}`, PAGE_MARGIN + labelW + barW + 2, y + 3.3);
+        doc.text(`${Math.round(c.score * c.max)}/${c.max}`, PAGE_MARGIN + labelW + barW + 2, y + 3.1);
 
         y += barH + 4;
         doc.setFont("helvetica", "normal");
@@ -321,7 +324,8 @@ export function DownloadPdfButton({
       const total = doc.getNumberOfPages();
       for (let i = 1; i <= total; i++) {
         doc.setPage(i);
-        doc.setDrawColor(...COLOR.border);
+        doc.setDrawColor(...COLOR.hairline);
+        doc.setLineWidth(0.3);
         doc.line(PAGE_MARGIN, FOOTER_Y - 4, PAGE_WIDTH - PAGE_MARGIN, FOOTER_Y - 4);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
@@ -333,10 +337,10 @@ export function DownloadPdfButton({
 
     // --- Build the document ---
     drawHeader();
-    y = 40;
+    y = 42;
 
     scoreSection();
-    y += 8;
+    y += 6;
     radarChart();
     y += 4;
 
@@ -345,14 +349,14 @@ export function DownloadPdfButton({
     y += 2;
 
     sectionTitle("Approved talk-track");
-    calloutBox(score.approvedPlayReminder, COLOR.accentSoft);
+    calloutBox(score.approvedPlayReminder);
 
     sectionTitle("Feedback");
     bulletList(score.feedback);
     y += 2;
 
     sectionTitle("Suggested response — rehearse this");
-    calloutBox(`“${score.suggestedResponse}”`, COLOR.border, { italic: true });
+    calloutBox(`“${score.suggestedResponse}”`, { italic: true });
 
     rubricBreakdown();
 
