@@ -30,8 +30,8 @@ Forward: AI in Business Hackathon · Track 1 + Built With ElevenLabs
 |------|--------|--------|
 | 0 | **done** | Scaffold + scope lock + landing |
 | 1 | **done** | Seed data + diagnosis API/UI + KPI stats |
-| 2 | **next** | ElevenLabs voice roleplay |
-| 3 | pending | Scoring + grounded feedback |
+| 2 | **done** | ElevenLabs voice roleplay + transcript |
+| 3 | **next** | Scoring + grounded feedback |
 | 4 | pending | Full loop + progress + share controls |
 | 5 | pending | Eval harness |
 | 6 | pending | User tests + value |

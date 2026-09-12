@@ -28,14 +28,14 @@ export const PHASES: Phase[] = [
     id: 2,
     title: "Voice client persona",
     hours: "6–12",
-    status: "active",
-    summary: "ElevenLabs fee-objection roleplay on production URL",
+    status: "done",
+    summary: "ElevenLabs fee-objection roleplay + transcript UI",
   },
   {
     id: 3,
     title: "Scoring & feedback",
     hours: "12–18",
-    status: "pending",
+    status: "active",
     summary: "Rubric scores grounded in approved talk-tracks",
   },
   {
