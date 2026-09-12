@@ -8,16 +8,19 @@ type DownloadPdfButtonProps = {
   repName?: string;
 };
 
-// A restrained palette: the app's actual accent (#d9480f) used as a genuine
-// accent — rules, numbers, data — not as background fill.
+// Navy is the brand/structural color (headers, titles, text). Tier colors
+// (teal/gold/burgundy) are deliberately distinct from it, so the page reads
+// as a proper multi-color report instead of one hue washed over everything.
 const COLOR = {
-  accent: [217, 72, 15] as const, // #d9480f
-  ok: [43, 138, 62] as const, // #2b8a3e
-  danger: [201, 42, 42] as const, // #c92a2a
-  ink: [26, 29, 32] as const,
-  muted: [110, 118, 128] as const,
-  hairline: [225, 228, 231] as const,
-  track: [237, 239, 241] as const,
+  navy: [27, 58, 92] as const,
+  gold: [191, 149, 33] as const,
+  teal: [26, 122, 109] as const,
+  burgundy: [163, 52, 68] as const,
+  ink: [30, 34, 40] as const,
+  muted: [108, 117, 128] as const,
+  hairline: [222, 227, 232] as const,
+  track: [237, 240, 243] as const,
+  headerText: [220, 226, 232] as const,
 };
 type RGB = readonly [number, number, number];
 
@@ -28,19 +31,10 @@ const CONTENT_WIDTH = PAGE_WIDTH - PAGE_MARGIN * 2;
 const FOOTER_Y = PAGE_HEIGHT - 12;
 
 function tierColor(fraction: number): RGB {
-  if (fraction >= 0.8) return COLOR.ok;
-  if (fraction >= 0.5) return COLOR.accent;
-  return COLOR.danger;
+  if (fraction >= 0.8) return COLOR.teal;
+  if (fraction >= 0.5) return COLOR.gold;
+  return COLOR.burgundy;
 }
-
-const SHORT_LABEL: Record<string, string> = {
-  explored_objection: "Explored objection",
-  asked_clarifying_q: "Clarifying Qs",
-  anchored_value: "Anchored value",
-  held_fee: "Held fee",
-  used_approved_play: "Approved play",
-  no_early_cave: "No early cave",
-};
 
 export function DownloadPdfButton({
   score,
@@ -53,35 +47,31 @@ export function DownloadPdfButton({
     let y = 0;
 
     function drawHeader() {
-      doc.setFillColor(...COLOR.accent);
-      doc.rect(0, 0, PAGE_WIDTH, 1.6, "F");
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
-      doc.setTextColor(...COLOR.accent);
-      doc.text("S A L E S   P R A C T I C E   R E P O R T", PAGE_MARGIN, 16);
-      doc.setFont("times", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(...COLOR.ink);
-      doc.text("Cornerman", PAGE_MARGIN, 27);
+      doc.setFillColor(...COLOR.navy);
+      doc.rect(0, 0, PAGE_WIDTH, 30, "F");
+      doc.setFillColor(...COLOR.gold);
+      doc.rect(0, 30, PAGE_WIDTH, 1.2, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(17);
+      doc.setTextColor(255, 255, 255);
+      doc.text("CORNERMAN", PAGE_MARGIN, 14);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.setTextColor(...COLOR.muted);
-      doc.text(repName, PAGE_WIDTH - PAGE_MARGIN, 16, { align: "right" });
+      doc.setTextColor(...COLOR.headerText);
+      doc.text("SALES PRACTICE REPORT", PAGE_MARGIN, 21.5);
+      doc.text(repName, PAGE_WIDTH - PAGE_MARGIN, 13, { align: "right" });
       const dateLabel = new Date().toLocaleDateString(undefined, {
         year: "numeric",
         month: "short",
         day: "numeric",
       });
-      doc.text(dateLabel, PAGE_WIDTH - PAGE_MARGIN, 21, { align: "right" });
-      doc.setDrawColor(...COLOR.hairline);
-      doc.setLineWidth(0.3);
-      doc.line(PAGE_MARGIN, 34, PAGE_WIDTH - PAGE_MARGIN, 34);
+      doc.text(dateLabel, PAGE_WIDTH - PAGE_MARGIN, 19, { align: "right" });
     }
 
     function newPage() {
       doc.addPage();
       drawHeader();
-      y = 42;
+      y = 44;
     }
 
     function ensureSpace(need: number) {
@@ -89,14 +79,17 @@ export function DownloadPdfButton({
     }
 
     function sectionTitle(text: string) {
-      ensureSpace(10);
-      doc.setFillColor(...COLOR.accent);
+      ensureSpace(11);
+      doc.setFillColor(...COLOR.navy);
       doc.rect(PAGE_MARGIN, y - 2.6, 2.2, 2.2, "F");
-      doc.setFont("times", "bold");
-      doc.setFontSize(13);
-      doc.setTextColor(...COLOR.ink);
-      doc.text(text, PAGE_MARGIN + 6, y);
-      y += 8;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(...COLOR.navy);
+      doc.text(text.toUpperCase(), PAGE_MARGIN + 6, y);
+      doc.setDrawColor(...COLOR.hairline);
+      doc.setLineWidth(0.25);
+      doc.line(PAGE_MARGIN, y + 2, PAGE_WIDTH - PAGE_MARGIN, y + 2);
+      y += 9;
     }
 
     function bulletList(items: string[]) {
@@ -106,14 +99,14 @@ export function DownloadPdfButton({
       for (const item of items) {
         const lines = doc.splitTextToSize(item, CONTENT_WIDTH - 10);
         ensureSpace(lines.length * 5 + 2);
-        doc.setFillColor(...COLOR.accent);
+        doc.setFillColor(...COLOR.navy);
         doc.circle(PAGE_MARGIN + 2.2, y - 1.3, 0.7, "F");
         doc.text(lines, PAGE_MARGIN + 6, y);
         y += lines.length * 5 + 2.5;
       }
     }
 
-    /** Restrained callout: white background, thin hairline border, one accent stripe. No fill wash. */
+    /** White box, hairline border, single navy stripe. No color-wash fill. */
     function calloutBox(text: string, opts: { italic?: boolean } = {}) {
       doc.setFont("helvetica", opts.italic ? "italic" : "normal");
       doc.setFontSize(10);
@@ -123,7 +116,7 @@ export function DownloadPdfButton({
       doc.setDrawColor(...COLOR.hairline);
       doc.setLineWidth(0.3);
       doc.roundedRect(PAGE_MARGIN, y, CONTENT_WIDTH, boxHeight, 1.5, 1.5, "S");
-      doc.setFillColor(...COLOR.accent);
+      doc.setFillColor(...COLOR.navy);
       doc.rect(PAGE_MARGIN, y, 1, boxHeight, "F");
       doc.setTextColor(...COLOR.ink);
       doc.text(lines, PAGE_MARGIN + 7, y + 6.5);
@@ -152,7 +145,7 @@ export function DownloadPdfButton({
       doc.lines(deltas, start[0], start[1], [1, 1], "F", true);
     }
 
-    /** Overall score: semi-circular donut gauge + a fee/context side panel. */
+    /** Overall score: semi-circular donut gauge (tier-colored) + a fee/context side panel. */
     function scoreSection() {
       sectionTitle("Overall score");
       const gaugeHeight = 58;
@@ -177,19 +170,19 @@ export function DownloadPdfButton({
       doc.circle(cx + midR * Math.cos(a0), cyBase + midR * Math.sin(a0), capR, "F");
       doc.circle(cx + midR * Math.cos(a1), cyBase + midR * Math.sin(a1), capR, "F");
 
-      doc.setFont("times", "bold");
-      doc.setFontSize(28);
-      doc.setTextColor(...color);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(27);
+      doc.setTextColor(...COLOR.navy);
       doc.text(String(score.overall), cx, cyBase - 1, { align: "center" });
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
+      doc.setFontSize(8);
       doc.setTextColor(...COLOR.muted);
       doc.text("OUT OF 100", cx, cyBase + 6, { align: "center" });
 
       const panelX = PAGE_MARGIN + 84;
       const panelW = CONTENT_WIDTH - 84;
       let py = y + 2;
-      const feeColor: RGB = score.heldFee ? COLOR.ok : COLOR.accent;
+      const feeColor: RGB = score.heldFee ? COLOR.teal : COLOR.burgundy;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
       doc.setTextColor(...feeColor);
@@ -214,7 +207,16 @@ export function DownloadPdfButton({
       y += gaugeHeight;
     }
 
-    /** Radar chart across all rubric criteria — the "shape" of the performance at a glance. */
+    const SHORT_LABEL: Record<string, string> = {
+      explored_objection: "Explored objection",
+      asked_clarifying_q: "Clarifying Qs",
+      anchored_value: "Anchored value",
+      held_fee: "Held fee",
+      used_approved_play: "Approved play",
+      no_early_cave: "No early cave",
+    };
+
+    /** Radar chart across all rubric criteria — navy grid, tier-colored vertices. */
     function radarChart() {
       sectionTitle("Skill radar");
       const n = score.criteria.length;
@@ -246,8 +248,8 @@ export function DownloadPdfButton({
       }
 
       const dataPts = score.criteria.map((c, i) => pt(i, Math.max(c.score, 0.04)));
-      doc.setFillColor(255, 244, 239);
-      doc.setDrawColor(...COLOR.accent);
+      doc.setFillColor(230, 236, 242);
+      doc.setDrawColor(...COLOR.navy);
       doc.setLineWidth(0.7);
       const first = dataPts[0];
       const deltas = dataPts.slice(1).map((p, idx) => [p[0] - dataPts[idx][0], p[1] - dataPts[idx][1]] as [number, number]);
@@ -257,7 +259,7 @@ export function DownloadPdfButton({
       for (let i = 0; i < n; i++) {
         const c = score.criteria[i];
         doc.setFillColor(...tierColor(c.score));
-        doc.circle(dataPts[i][0], dataPts[i][1], 1.3, "F");
+        doc.circle(dataPts[i][0], dataPts[i][1], 1.4, "F");
       }
 
       doc.setFont("helvetica", "normal");
@@ -279,45 +281,60 @@ export function DownloadPdfButton({
       y += chartHeight;
     }
 
-    /** Detailed per-criterion bars with notes — the radar's numbers, explained. */
-    function rubricBreakdown() {
-      sectionTitle("Rubric breakdown, in detail");
-      const labelW = 56;
-      const ptsW = 16;
+    /** Rubric bar chart with axis gridlines and tick labels — reads as a real chart. */
+    function rubricChart() {
+      sectionTitle("Rubric breakdown");
+      const labelW = 42;
+      const ptsW = 14;
       const barX = PAGE_MARGIN + labelW;
       const barW = CONTENT_WIDTH - labelW - ptsW;
-      const barH = 4;
+      const barH = 5.5;
 
+      const rowHeights = score.criteria.map(
+        (c) => barH + 2 + doc.splitTextToSize(c.notes, barW).length * 3.6 + 4
+      );
+      const chartTotalHeight = rowHeights.reduce((a, b) => a + b, 0) + 6;
+      ensureSpace(Math.min(chartTotalHeight, PAGE_HEIGHT - 60));
+
+      const chartTop = y + 4;
+      doc.setDrawColor(...COLOR.hairline);
+      doc.setLineWidth(0.2);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(...COLOR.muted);
+      const rowsHeight = rowHeights.reduce((a, b) => a + b, 0);
+      for (const pct of [0, 25, 50, 75, 100]) {
+        const gx = barX + barW * (pct / 100);
+        doc.line(gx, chartTop - 3, gx, chartTop + rowsHeight);
+        doc.text(`${pct}`, gx, chartTop - 5, { align: "center" });
+      }
+
+      let yy = chartTop;
       for (const c of score.criteria) {
-        const noteLines = doc.splitTextToSize(c.notes, CONTENT_WIDTH - labelW);
-        ensureSpace(barH + noteLines.length * 4.4 + 6);
-
         const color = tierColor(c.score);
+        ensureSpace(barH + 2);
         doc.setFont("helvetica", "normal");
-        doc.setFontSize(9.5);
+        doc.setFontSize(9);
         doc.setTextColor(...COLOR.ink);
-        const labelLines = doc.splitTextToSize(c.label, labelW - 3);
-        doc.text(labelLines, PAGE_MARGIN, y + 3);
+        doc.text(c.label, PAGE_MARGIN, yy + barH - 1.2, { maxWidth: labelW - 3 });
 
-        doc.setDrawColor(...COLOR.hairline);
-        doc.setLineWidth(0.2);
-        doc.setFillColor(...COLOR.track);
-        doc.roundedRect(barX, y, barW, barH, 1, 1, "FD");
         doc.setFillColor(...color);
-        doc.roundedRect(barX, y, Math.max(barW * c.score, 3), barH, 1, 1, "F");
+        doc.rect(barX, yy, Math.max(barW * c.score, 1.5), barH, "F");
 
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(...color);
-        doc.text(`${Math.round(c.score * c.max)}/${c.max}`, PAGE_MARGIN + labelW + barW + 2, y + 3.1);
-
-        y += barH + 4;
-        doc.setFont("helvetica", "normal");
         doc.setFontSize(8.5);
+        doc.setTextColor(...color);
+        doc.text(`${Math.round(c.score * c.max)}/${c.max}`, barX + barW + 2, yy + barH - 1.2);
+
+        yy += barH + 2;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
         doc.setTextColor(...COLOR.muted);
-        doc.text(noteLines, PAGE_MARGIN, y);
-        y += noteLines.length * 4.4 + 4;
+        const noteLines = doc.splitTextToSize(c.notes, barW);
+        doc.text(noteLines, barX, yy + 3);
+        yy += noteLines.length * 3.6 + 4;
       }
+      y = yy + 4;
     }
 
     function stampFooters() {
@@ -337,7 +354,7 @@ export function DownloadPdfButton({
 
     // --- Build the document ---
     drawHeader();
-    y = 42;
+    y = 44;
 
     scoreSection();
     y += 6;
@@ -358,7 +375,7 @@ export function DownloadPdfButton({
     sectionTitle("Suggested response — rehearse this");
     calloutBox(`“${score.suggestedResponse}”`, { italic: true });
 
-    rubricBreakdown();
+    rubricChart();
 
     stampFooters();
     doc.save(`sales-practice-report-${score.scenarioId}-${Date.now()}.pdf`);
