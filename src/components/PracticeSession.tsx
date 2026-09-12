@@ -150,9 +150,11 @@ export function PracticeSession({
     endingRef.current = false;
     setStatus("connecting");
 
+    // Permission probe only — stop tracks immediately so ElevenLabs owns the mic.
+    // Holding a parallel MediaStream was racing LiveKit and aborting DataChannels ~2s in.
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      micStreamRef.current = stream;
+      const probe = await navigator.mediaDevices.getUserMedia({ audio: true });
+      probe.getTracks().forEach((t) => t.stop());
     } catch {
       setError(
         "Microphone permission is required for the spoken drill. Allow mic access and try again.",
@@ -163,11 +165,11 @@ export function PracticeSession({
 
     try {
       const sc = scenarioRef.current;
-      const agentId = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID;
 
-      // Prefer public agentId (auth disabled). Fall back to server conversation token.
-      let sessionOpts: Parameters<typeof Conversation.startSession>[0];
-
+      // Prefer server-issued conversation token + default WebRTC.
+      // Do NOT pre-hold a mic stream (races LiveKit). Keep overrides light —
+      // firstMessage only on the fee drill so we don't replace the agent's
+      // tool/policy config (that was re-enabling end_call behavior).
       const callbacks = {
         onConnect: () => {
           if (endingRef.current) return;
@@ -219,39 +221,46 @@ export function PracticeSession({
             roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
           pushTurn(role, text);
         },
-        onAgentToolResponse: (tool: { tool_name?: string; toolName?: string }) => {
+        onAgentToolResponse: (tool: {
+          tool_name?: string;
+          toolName?: string;
+        }) => {
           const name = tool.tool_name ?? tool.toolName ?? "tool";
           pushTurn("system", `Agent tool: ${name}`);
         },
         overrides: {
           agent: {
             firstMessage: sc.openingLine,
-            prompt: { prompt: sc.agentSystemPrompt },
+            // Keep the platform agent prompt (no end_call). Only nudge scenario
+            // context via first message for non-default drills when needed.
+            ...(sc.id === "price-objection"
+              ? {}
+              : { prompt: { prompt: sc.agentSystemPrompt } }),
           },
         },
         userId: "rep_demo_alex",
       };
 
-      if (agentId) {
-        sessionOpts = { agentId, ...callbacks };
-      } else {
-        const res = await fetch("/api/elevenlabs/conversation-token");
-        const data = (await res.json()) as {
-          token?: string;
-          error?: string;
-          detail?: string;
-        };
-        if (!res.ok || !data.token) {
-          throw new Error(
-            data.error
-              ? `${data.error}${data.detail ? ` — ${data.detail}` : ""}`
-              : "Could not get conversation token",
-          );
-        }
-        sessionOpts = { conversationToken: data.token, ...callbacks };
+      // Always mint a short-lived token server-side (correct agent id from env).
+      const res = await fetch("/api/elevenlabs/conversation-token");
+      const data = (await res.json()) as {
+        token?: string;
+        agentId?: string;
+        error?: string;
+        detail?: string;
+      };
+      if (!res.ok || !data.token) {
+        throw new Error(
+          data.error
+            ? `${data.error}${data.detail ? ` — ${data.detail}` : ""}`
+            : "Could not get conversation token",
+        );
       }
 
-      const conv = await Conversation.startSession(sessionOpts);
+      const conv = await Conversation.startSession({
+        conversationToken: data.token,
+        ...callbacks,
+      });
 
       if (endingRef.current) {
         await conv.endSession().catch(() => {});
