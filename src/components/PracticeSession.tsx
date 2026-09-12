@@ -94,7 +94,7 @@ export function PracticeSession({
                 type="button"
                 onClick={() => void start()}
                 disabled={connecting || scoring}
-                className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="btn-lift inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
               >
                 {connecting ? "Connecting…" : "Start drill"}
               </button>
@@ -182,7 +182,7 @@ export function PracticeSession({
               type="button"
               onClick={() => void practiceAgain()}
               disabled={connecting || scoring || connected}
-              className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-lift inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
             >
               Practice again
             </button>

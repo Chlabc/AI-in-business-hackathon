@@ -32,11 +32,12 @@ export default function TrainingPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="stagger-children grid gap-4 lg:grid-cols-2">
         {SCENARIOS.map((s) => (
-          <div
+          <Link
             key={s.id}
-            className={`surface-card flex flex-col justify-between rounded-xl p-6 ${
+            href={`/coach/practice?scenario=${s.id}`}
+            className={`card-interactive surface-card flex flex-col justify-between rounded-xl p-6 ${
               s.recommended ? "border-accent/40" : ""
             }`}
           >
@@ -64,13 +65,10 @@ export default function TrainingPage() {
                 “{s.openingLine}”
               </p>
             </div>
-            <Link
-              href={`/coach/practice?scenario=${s.id}`}
-              className="mt-5 inline-flex h-10 w-fit items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-fg transition hover:opacity-90"
-            >
+            <span className="btn-lift mt-5 inline-flex h-10 w-fit items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-fg">
               Start drill
-            </Link>
-          </div>
+            </span>
+          </Link>
         ))}
       </div>
     </AppShell>

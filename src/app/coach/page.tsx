@@ -133,7 +133,7 @@ export default async function CoachPage() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/coach/practice?scenario=price-objection"
-                  className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
+                  className="btn-lift inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
                 >
                   Start fee drill
                 </Link>

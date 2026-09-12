@@ -3,6 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DayIcon, NightIcon } from "@/components/ThemeIcons";
+import {
+  DiagnosisIcon,
+  DrillIcon,
+  ManagerIcon,
+  ScenariosIcon,
+} from "@/components/NavIcons";
 import { useTheme } from "@/components/ThemeProvider";
 
 type AppHeaderProps = {
@@ -11,10 +17,10 @@ type AppHeaderProps = {
 };
 
 const NAV_LINKS = [
-  { href: "/coach", label: "Diagnosis" },
-  { href: "/coach/training", label: "Scenarios" },
-  { href: "/coach/practice", label: "Drill" },
-  { href: "/coach/manager", label: "Manager" },
+  { href: "/coach", label: "Diagnosis", Icon: DiagnosisIcon },
+  { href: "/coach/training", label: "Scenarios", Icon: ScenariosIcon },
+  { href: "/coach/practice", label: "Drill", Icon: DrillIcon },
+  { href: "/coach/manager", label: "Manager", Icon: ManagerIcon },
 ];
 
 export function AppHeader({
@@ -53,14 +59,15 @@ export function AppHeader({
               <Link
                 key={link.href}
                 href={link.href}
-                className={`hidden rounded-md px-3 py-1.5 text-sm font-medium transition sm:inline ${
-                  i === 3 ? "md:inline" : ""
+                className={`hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 sm:inline-flex ${
+                  i === 3 ? "md:inline-flex" : ""
                 } ${
                   active
                     ? "bg-accent-soft text-accent"
                     : "text-muted hover:bg-accent-soft hover:text-foreground"
                 }`}
               >
+                <link.Icon className="h-4 w-4" />
                 {link.label}
               </Link>
             );

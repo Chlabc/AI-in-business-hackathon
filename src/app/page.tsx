@@ -31,7 +31,7 @@ export default function Home() {
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               href="/coach"
-              className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
+              className="btn-lift inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90"
             >
               Open coach
             </Link>
@@ -44,7 +44,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+        <div className="stagger-children grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
           {[
             {
               n: "01",
@@ -73,6 +73,17 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="border-t border-border pt-8">
+        <p className="eyebrow">For the team &amp; judges</p>
+        <h2 className="mt-1 text-lg font-semibold text-foreground">
+          Build transparency
+        </h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted">
+          The honest state of the build — not part of the pitch, kept here so
+          nothing is hidden.
+        </p>
       </section>
 
       <section className="grid gap-8 lg:grid-cols-2">

@@ -22,7 +22,7 @@ export function AppShell({
     <div className="flex min-h-full flex-1 flex-col">
       <AppHeader repName={repName} focus={focus} />
       {headerExtra}
-      <main className="mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:gap-8 lg:px-10 xl:px-12">
+      <main className="page-enter mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:gap-8 lg:px-10 xl:px-12">
         {children}
       </main>
     </div>
