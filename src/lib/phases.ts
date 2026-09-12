@@ -21,14 +21,14 @@ export const PHASES: Phase[] = [
     id: 1,
     title: "Seed data & diagnosis",
     hours: "2–6",
-    status: "active",
-    summary: "Call histories, talk-tracks, diagnosis API + UI",
+    status: "done",
+    summary: "Call histories, talk-tracks, diagnosis API + KPI coach UI",
   },
   {
     id: 2,
     title: "Voice client persona",
     hours: "6–12",
-    status: "pending",
+    status: "active",
     summary: "ElevenLabs fee-objection roleplay on production URL",
   },
   {
