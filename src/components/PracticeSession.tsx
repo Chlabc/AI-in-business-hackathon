@@ -4,7 +4,7 @@ import {
   ConversationProvider,
   useConversation,
 } from "@elevenlabs/react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AudioWaveform } from "@/components/AudioWaveform";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { SignalStreamGuard } from "@/components/SignalStreamGuard";
@@ -40,8 +40,14 @@ function PracticeControls({
   const [starting, setStarting] = useState(false);
   const [scoring, setScoring] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const conversationIdRef = useRef<string | null>(null);
   const [score, setScore] = useState<PracticeScore | null>(null);
   const endingRef = useRef(false);
+  const scenarioIdRef = useRef(scenario.id);
+
+  useEffect(() => {
+    scenarioIdRef.current = scenario.id;
+  }, [scenario.id]);
 
   const pushTurn = useCallback((role: Turn["role"], text: string) => {
     const cleaned = text.trim();
@@ -76,7 +82,7 @@ function PracticeControls({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversationId: cid,
-          scenarioId: scenario.id,
+          scenarioId: scenarioIdRef.current,
           turns: snapshot.map(({ role, text }) => ({ role, text })),
         }),
       });
@@ -93,54 +99,83 @@ function PracticeControls({
     } finally {
       setScoring(false);
     }
-  }, [scenario.id]);
+  }, []);
 
-  const conversation = useConversation({
-    overrides: {
+  // Stable overrides — new object only when scenario content changes
+  const overrides = useMemo(
+    () => ({
       agent: {
         firstMessage: scenario.openingLine,
         prompt: {
           prompt: scenario.agentSystemPrompt,
         },
       },
-    },
-    onConnect: () => {
-      setError(null);
-      endingRef.current = false;
-      pushTurn("system", "Connected — speak as the recruitment consultant.");
-    },
-    onDisconnect: () => {
-      pushTurn("system", "Session ended.");
-      setStarting(false);
-    },
-    onError: (err) => {
-      const message = formatUnknownError(err);
-      // ElevenLabs often emits empty / signal-stream noise on clean hangup
-      if (
-        endingRef.current ||
-        isBenignElevenLabsError(message, err) ||
-        !message
-      ) {
-        return;
-      }
-      setError(message);
-      pushTurn("system", `Error: ${message}`);
-      setStarting(false);
-    },
-    onMessage: (message) => {
-      const roleRaw =
-        (message as { role?: string; source?: string }).role ??
-        (message as { source?: string }).source ??
-        "";
-      const text =
-        (message as { message?: string }).message ??
-        (message as { text?: string }).text ??
-        "";
-      if (!text) return;
-      const role: Turn["role"] =
-        roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
-      pushTurn(role, text);
-    },
+    }),
+    [scenario.openingLine, scenario.agentSystemPrompt],
+  );
+
+  // Keep handlers in refs so useConversation options stay referentially stable.
+  // Previously, pushTurn → setState → new onMessage/onConnect → SDK tore down
+  // the WebRTC session right after the agent's first line.
+  const handlersRef = useRef({
+    onConnect: () => {},
+    onDisconnect: () => {},
+    onError: (_err: unknown) => {},
+    onMessage: (_message: unknown) => {},
+  });
+
+  handlersRef.current.onConnect = () => {
+    setError(null);
+    endingRef.current = false;
+    pushTurn("system", "Connected — speak as the recruitment consultant.");
+  };
+
+  handlersRef.current.onDisconnect = () => {
+    pushTurn("system", "Session ended.");
+    setStarting(false);
+  };
+
+  handlersRef.current.onError = (err: unknown) => {
+    const message = formatUnknownError(err);
+    if (
+      endingRef.current ||
+      isBenignElevenLabsError(message, err) ||
+      !message
+    ) {
+      return;
+    }
+    setError(message);
+    pushTurn("system", `Error: ${message}`);
+    setStarting(false);
+  };
+
+  handlersRef.current.onMessage = (message: unknown) => {
+    const roleRaw =
+      (message as { role?: string; source?: string }).role ??
+      (message as { source?: string }).source ??
+      "";
+    const text =
+      (message as { message?: string }).message ??
+      (message as { text?: string }).text ??
+      "";
+    if (!text) return;
+    const role: Turn["role"] =
+      roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
+    pushTurn(role, text);
+  };
+
+  const conversation = useConversation({
+    overrides,
+    onConnect: useCallback(() => handlersRef.current.onConnect(), []),
+    onDisconnect: useCallback(() => handlersRef.current.onDisconnect(), []),
+    onError: useCallback(
+      (err: unknown) => handlersRef.current.onError(err),
+      [],
+    ),
+    onMessage: useCallback(
+      (message: unknown) => handlersRef.current.onMessage(message),
+      [],
+    ),
   });
 
   const status = conversation.status;
@@ -167,6 +202,7 @@ function PracticeControls({
     setTurns([]);
     turnsRef.current = [];
     setConversationId(null);
+    conversationIdRef.current = null;
     endingRef.current = false;
 
     try {
@@ -198,18 +234,25 @@ function PracticeControls({
       const id = await conversation.startSession({
         conversationToken: data.token,
         userId: "rep_demo_alex",
-      });
+        // Pass overrides at session start so a later parent re-render cannot
+        // replace the live session config mid-call.
+        overrides,
+      } as Parameters<typeof conversation.startSession>[0]);
+      conversationIdRef.current = id ?? null;
       setConversationId(id ?? null);
+      setStarting(false);
     } catch (e) {
       const message =
-        e instanceof Error ? e.message : formatUnknownError(e) || "Failed to start session";
+        e instanceof Error
+          ? e.message
+          : formatUnknownError(e) || "Failed to start session";
       if (!isBenignElevenLabsError(message, e)) setError(message);
       setStarting(false);
     }
   };
 
   const end = async () => {
-    const cid = conversationId;
+    const cid = conversationIdRef.current;
     endingRef.current = true;
     try {
       await conversation.endSession();
@@ -264,7 +307,7 @@ function PracticeControls({
             {!connected ? (
               <button
                 type="button"
-                onClick={start}
+                onClick={() => void start()}
                 disabled={connecting || scoring}
                 className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -273,7 +316,7 @@ function PracticeControls({
             ) : (
               <button
                 type="button"
-                onClick={end}
+                onClick={() => void end()}
                 disabled={scoring}
                 className="inline-flex h-11 items-center justify-center rounded-md border border-danger/40 bg-danger-soft px-5 text-sm font-semibold text-danger transition hover:opacity-90 disabled:opacity-60"
               >
@@ -343,6 +386,7 @@ function PracticeControls({
                 setTurns([]);
                 turnsRef.current = [];
                 setConversationId(null);
+                conversationIdRef.current = null;
                 void start();
               }}
               disabled={connecting || scoring || connected}
@@ -364,8 +408,9 @@ function PracticeControls({
 }
 
 export function PracticeSession(props: PracticeSessionProps) {
+  // Remount provider only when scenario changes — not on every transcript turn.
   return (
-    <ConversationProvider>
+    <ConversationProvider key={props.scenario.id}>
       <SignalStreamGuard />
       <PracticeControls {...props} />
     </ConversationProvider>
