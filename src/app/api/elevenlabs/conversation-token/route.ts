@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
+import { AuthError, requireRole } from "@/lib/auth";
 
 /**
  * Issues a short-lived conversation token for WebRTC sessions.
- * Keeps ELEVENLABS_API_KEY on the server. Works with or without agent auth.
+ * Keeps ELEVENLABS_API_KEY on the server. Employee-only (managers don't drill).
  */
 export async function GET() {
+  try {
+    await requireRole("employee");
+  } catch (e) {
+    if (e instanceof AuthError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
+    throw e;
+  }
+
   const apiKey = process.env.ELEVENLABS_API_KEY;
   const agentId = process.env.ELEVENLABS_AGENT_ID;
 

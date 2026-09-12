@@ -20,7 +20,7 @@ export default async function ManagerPage() {
   };
 
   return (
-    <AppShell repName={rep?.name} focus="Team progress">
+    <AppShell focus="Team progress">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link href="/coach" className="text-sm text-muted hover:text-accent">
           ← Back to coach
