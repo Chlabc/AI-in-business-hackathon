@@ -219,6 +219,45 @@ function main() {
   writeFileSync(out, md, "utf8");
   console.log(`Wrote ${out}`);
 
+  const snapshot = {
+    generatedAt,
+    overallAgreementBand: OVERALL_AGREEMENT_BAND,
+    headlines: {
+      diagnosisPassed: dPass,
+      diagnosisTotal: diagnosis.length,
+      diagnosisPct: pct(dPass, diagnosis.length),
+      scoringOverallAgree: scoring.overallAgree,
+      scoringHeldAgree: scoring.heldAgree,
+      scoringFullPass: sPass,
+      scoringTotal: scoring.total,
+      scoringOverallPct: pct(scoring.overallAgree, scoring.total),
+      scoringHeldPct: pct(scoring.heldAgree, scoring.total),
+      personaPassed: pPass,
+      personaTotal: persona.length,
+      personaPct: pct(pPass, persona.length),
+    },
+    diagnosis,
+    scoring: scoring.rows,
+    persona,
+    method: [
+      "Diagnosis: deterministic aggregation over call outcomes (diagnoseCalls).",
+      "Scoring: heuristic rubric only in this harness (no live XAI_API_KEY dependency).",
+      "Human gold: teammate ratings on synthetic transcripts / labelled histories — not live CRM data.",
+      `Agreement band for overall score: absolute difference ≤ ${OVERALL_AGREEMENT_BAND}.`,
+    ],
+    knownLimits: [
+      "Reps can game rubrics by reciting approved lines robotically (robotic_perfect) — shallow delivery detection is out of scope.",
+      "Heuristic keyword matching will miss nuanced delivery and can false-positive on some phrasings.",
+      "Diagnosis needs ≥2 calls in a stage×objection bucket; thin histories fall back to fee-biased defaults.",
+      "Voice persona faithfulness (live ElevenLabs) is not covered here — manual demo check.",
+      "Product diagnosis uses labelled demo calls, not a live CRM pipe.",
+    ],
+    reproduce: "npm run eval",
+  };
+  const snapPath = resolve(process.cwd(), "src/data/eval-snapshot.json");
+  writeFileSync(snapPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
+  console.log(`Wrote ${snapPath}`);
+
   const failed =
     diagnosis.some((r) => !r.pass) ||
     persona.some((r) => !r.pass) ||

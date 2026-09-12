@@ -57,6 +57,12 @@ export function AppHeader({
             Drill
           </Link>
           <Link
+            href="/coach/health"
+            className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground sm:inline"
+          >
+            Health
+          </Link>
+          <Link
             href="/coach/manager"
             className="hidden rounded-md px-3 py-1.5 text-sm text-muted transition hover:bg-accent-soft hover:text-foreground md:inline"
           >
@@ -79,14 +85,33 @@ export function AppHeader({
           </button>
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-[1800px] gap-3 px-4 pb-3 text-xs text-muted sm:hidden sm:px-6 lg:px-10 xl:px-12">
-        <span>
-          Rep: <span className="text-foreground">{repName}</span>
-        </span>
-        <span>·</span>
-        <span>
-          Focus: <span className="text-accent">{focus}</span>
-        </span>
+      <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-2 px-4 pb-3 text-xs text-muted sm:hidden">
+        <div className="flex gap-3">
+          <span>
+            Rep: <span className="text-foreground">{repName}</span>
+          </span>
+          <span>·</span>
+          <span>
+            Focus: <span className="text-accent">{focus}</span>
+          </span>
+        </div>
+        <nav className="flex flex-wrap gap-1">
+          {[
+            { href: "/coach", label: "Diagnosis" },
+            { href: "/coach/training", label: "Scenarios" },
+            { href: "/coach/practice", label: "Drill" },
+            { href: "/coach/health", label: "Health" },
+            { href: "/coach/manager", label: "Manager" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-md px-2 py-1 text-muted transition hover:bg-accent-soft hover:text-foreground"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </header>
   );
