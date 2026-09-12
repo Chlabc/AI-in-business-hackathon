@@ -61,6 +61,11 @@ export default function Home() {
               title: "Track",
               body: "Score, re-practice, share progress — not transcripts.",
             },
+            {
+              n: "04",
+              title: "Prove",
+              body: "Before/after hold rate + ROI blurb for judges.",
+            },
           ].map((card) => (
             <div key={card.title} className="surface-card rounded-xl p-5">
               <p className="font-mono text-xs text-muted">{card.n}</p>

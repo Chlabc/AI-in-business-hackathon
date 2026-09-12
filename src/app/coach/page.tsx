@@ -47,9 +47,17 @@ export default async function CoachPage() {
             Performance breakdown
           </h1>
         </div>
-        <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
-          Seeded demo data · not a live CRM
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/coach/value"
+            className="rounded border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent hover:opacity-90"
+          >
+            Value / evidence →
+          </Link>
+          <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
+            Seeded demo data · not a live CRM
+          </span>
+        </div>
       </div>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
