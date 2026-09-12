@@ -18,7 +18,7 @@ export const TEAM: TeamMember[] = [
     name: "Alex Chen",
     role: "Recruitment Consultant",
     conversionRate: 22,
-    weakestSkill: "Fee objection handling",
+    weakestSkill: "Pricing objection handling",
     flagged: true,
     sessionsCompleted: 0, // filled live from attempts when rendering
     kpiHistory: [

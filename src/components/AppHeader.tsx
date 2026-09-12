@@ -11,7 +11,7 @@ type AppHeaderProps = {
 
 export function AppHeader({
   repName = "Alex Chen",
-  focus = "Fee concessions",
+  focus = "Price concessions",
 }: AppHeaderProps) {
   const { theme, toggleTheme } = useTheme();
 

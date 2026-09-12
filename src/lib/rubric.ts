@@ -39,7 +39,7 @@ export const FEE_RUBRIC: RubricCriterion[] = [
     label: "Held near standard fee",
     weight: 25,
     description:
-      "Did not drop below firm floor (17%). Preferred holding 18–20%.",
+      "Did not drop below firm floor ($80). Preferred holding near list ($100).",
   },
   {
     id: "used_approved_play",

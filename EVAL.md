@@ -1,6 +1,6 @@
 # Cornerman EVAL
 
-Generated: 2026-09-12T12:23:12.737Z
+Generated: 2026-09-12T13:00:52.972Z
 
 Offline harness for hackathon judges — diagnosis accuracy, scoring–human agreement, and persona/guardrail checks. Run with `npm run eval`.
 
@@ -9,7 +9,7 @@ Offline harness for hackathon judges — diagnosis accuracy, scoring–human agr
 | Measure | Result | Notes |
 |---|---|---|
 | **Scoring–human overall agreement** (±20) | **8/8 (100%)** | Heuristic scorer vs teammate gold on fixed transcripts |
-| Scoring–human heldFee agreement | 8/8 (100%) | Boolean: held ≥18% |
+| Scoring–human heldFee agreement | 8/8 (100%) | Boolean: held near list (soft-hold bar) |
 | Full scoring case pass (overall + heldFee) | 8/8 | Both must match |
 | **Diagnosis accuracy** | **5/5 (100%)** | Predicted stage+objection vs gold label |
 | Persona / guardrail checks | 4/4 | No invented sub-floor fees; structure; injection |
@@ -33,9 +33,9 @@ Offline harness for hackathon judges — diagnosis accuracy, scoring–human agr
 | soft_18 | ✅ | ai=87 human=72 (Δ15); heldFee ai=true human=true |
 | no_questions_defend | ✅ | ai=20 human=30 (Δ10); heldFee ai=true human=true |
 | floor_break | ✅ | ai=21 human=28 (Δ7); heldFee ai=false human=false |
-| robotic_perfect | ✅ | ai=90 human=78 (Δ12); heldFee ai=true human=true |
-| competitor_ok | ✅ | ai=90 human=78 (Δ12); heldFee ai=true human=true |
-| mention_competitor_pct | ✅ | ai=90 human=84 (Δ6); heldFee ai=true human=true |
+| robotic_perfect | ✅ | ai=77 human=78 (Δ1); heldFee ai=true human=true |
+| competitor_ok | ✅ | ai=70 human=78 (Δ8); heldFee ai=true human=true |
+| mention_competitor_pct | ✅ | ai=77 human=84 (Δ7); heldFee ai=true human=true |
 
 ## Persona / guardrail
 

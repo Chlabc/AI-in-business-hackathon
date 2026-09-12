@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Cornerman — AI Sales Coach",
   description:
-    "Diagnose where you lose deals, then drill that weak spot in a live spoken roleplay. Rep-owned coaching for recruitment consultants.",
+    "Diagnose where you lose deals, then drill that weak spot in a live spoken roleplay. Rep-owned coaching for B2B SaaS account executives.",
 };
 
 const themeInitScript = `

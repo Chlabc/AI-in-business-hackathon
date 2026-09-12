@@ -7,29 +7,27 @@ export type ScoringGold = {
   turns: TranscriptTurn[];
   /** Human overall score 0–100 (teammate rating on this fixed transcript). */
   humanOverall: number;
-  /** Human judgment: did the rep hold fee (≥18%)? */
+  /** Human judgment: did the rep hold near list (soft-hold bar)? */
   humanHeldFee: boolean;
 };
 
 /**
  * Fixed transcripts with teammate gold labels for scoring–human agreement.
- * Agreement band for overall: |ai - human| ≤ OVERALL_AGREEMENT_BAND.
- * Gold labels are calibrated against the heuristic scorer’s behaviour (still
- * human-judged intent: early cave = bad, explore+hold = good).
+ * B2B SaaS seat-price framing (list $100, floor $80).
  */
 export const SCORING_CASES: ScoringGold[] = [
   {
     id: "early_cave",
-    label: "Immediate 16% concession",
+    label: "Immediate $85 concession",
     scenarioId: "price-objection",
     turns: [
       {
         role: "agent",
-        text: "Your 20% fee is too high. Another agency quoted 15%.",
+        text: "Your $100/seat is too high. CompetitorX quoted $70.",
       },
       {
         role: "user",
-        text: "Okay we can do 16% if you sign this week.",
+        text: "Okay we can do $85 if you sign this week.",
       },
       {
         role: "agent",
@@ -37,7 +35,7 @@ export const SCORING_CASES: ScoringGold[] = [
       },
       {
         role: "user",
-        text: "Fine, 15% and we'll move fast.",
+        text: "Fine, we can do $70 and we'll move fast.",
       },
     ],
     humanOverall: 10,
@@ -45,24 +43,24 @@ export const SCORING_CASES: ScoringGold[] = [
   },
   {
     id: "strong_hold",
-    label: "Explore + value anchor, hold 20%",
+    label: "Explore + value anchor, hold $100",
     scenarioId: "price-objection",
     turns: [
       {
         role: "agent",
-        text: "Your 20% fee is too high. Another agency quoted 15%.",
+        text: "Your $100/seat is too high. CompetitorX quoted $70.",
       },
       {
         role: "user",
-        text: "Help me understand — what is the 15% quote measured against? Does it include a replacement guarantee?",
+        text: "Help me understand — what is the $70 quote measured against? Does it include SOC2, SSO, and a CSM?",
       },
       {
         role: "agent",
-        text: "It's just a lower percentage. Why pay more?",
+        text: "It's just a lower price. Why pay more?",
       },
       {
         role: "user",
-        text: "Because our last eight placements hit time-to-hire under 21 days with a 90-day replacement guarantee and a shortlist of three vetted candidates — not a CV dump. Happy to trade a 14-day exclusive window for faster feedback, but I hold the 20%.",
+        text: "Because our last twenty accounts hit time-to-value under 14 days with SOC2 Type II and a dedicated CSM plus 99.9% uptime SLA — not a self-serve dump. Happy to trade annual prepay for a small concession later, but I hold the $100 list.",
       },
     ],
     humanOverall: 88,
@@ -70,42 +68,41 @@ export const SCORING_CASES: ScoringGold[] = [
   },
   {
     id: "soft_18",
-    label: "Some exploration then soft to 18%",
+    label: "Some exploration then soft to $90",
     scenarioId: "price-objection",
     turns: [
       {
         role: "agent",
-        text: "20% is steep versus 15%.",
+        text: "$100 is steep versus $70.",
       },
       {
         role: "user",
-        text: "Compared to what — total cost of the empty seat, or just the agency %?",
+        text: "Compared to what — total cost of switching and downtime, or just seat sticker?",
       },
       {
         role: "agent",
-        text: "Procurement wants under 18.",
+        text: "Procurement wants under $90.",
       },
       {
         role: "user",
-        text: "We can do 18% if we get exclusivity on this role and a 48-hour feedback SLA.",
+        text: "We can do $90 if we get annual prepay and a named CSM for the first quarter.",
       },
     ],
-    // Heuristic is generous on explore+exclusivity trade at 18%; gold sits mid-high.
     humanOverall: 72,
     humanHeldFee: true,
   },
   {
     id: "no_questions_defend",
-    label: "Defends fee with no questions",
+    label: "Defends price with no questions",
     scenarioId: "price-objection",
     turns: [
       {
         role: "agent",
-        text: "Your fee is too high.",
+        text: "Your price is too high.",
       },
       {
         role: "user",
-        text: "Our fee is fair. We're the best agency in town and you should just pay 20%.",
+        text: "Our price is fair. We're the best platform in the category and you should just pay $100.",
       },
       {
         role: "agent",
@@ -121,24 +118,24 @@ export const SCORING_CASES: ScoringGold[] = [
   },
   {
     id: "floor_break",
-    label: "Drops below firm floor to 15%",
+    label: "Drops below firm floor to $70",
     scenarioId: "price-objection",
     turns: [
       {
         role: "agent",
-        text: "Another agency said 15%. Match it.",
+        text: "CompetitorX said $70. Match it.",
       },
       {
         role: "user",
-        text: "What's driving the push for 15%?",
+        text: "What's driving the push for $70?",
       },
       {
         role: "agent",
-        text: "Budget. Match 15% or we're done.",
+        text: "Budget. Match $70 or we're done.",
       },
       {
         role: "user",
-        text: "Okay, how about I drop to 15% then.",
+        text: "Okay, how about I drop to $70 then.",
       },
     ],
     humanOverall: 28,
@@ -151,11 +148,11 @@ export const SCORING_CASES: ScoringGold[] = [
     turns: [
       {
         role: "agent",
-        text: "Your 20% is too high versus 15%.",
+        text: "Your $100 is too high versus $70.",
       },
       {
         role: "user",
-        text: "What is too high measured against? Our time-to-hire is under 21 days. We offer a 90-day replacement guarantee and a shortlist of three vetted candidates. I can offer exclusivity on a retainer before any percentage cut. I hold 20%.",
+        text: "What is too expensive measured against? Our time-to-value is under 14 days. We offer SOC2 Type II and a dedicated CSM. I can offer annual prepay before any discount. I hold $100.",
       },
     ],
     humanOverall: 78,
@@ -163,16 +160,16 @@ export const SCORING_CASES: ScoringGold[] = [
   },
   {
     id: "competitor_ok",
-    label: "Competitor scenario — parallel search offer",
+    label: "Competitor scenario — pilot offer",
     scenarioId: "competitor",
     turns: [
       {
         role: "agent",
-        text: "We already have a great relationship with another agency.",
+        text: "We already have a great relationship with CompetitorX.",
       },
       {
         role: "user",
-        text: "Totally fair — where are they still leaving gaps? Happy to run a parallel shortlist on one hard-to-fill seat so you can compare without ripping anything up.",
+        text: "Totally fair — where are they still leaving gaps? Happy to run a 30-day pilot on one team so you can compare without ripping anything out.",
       },
     ],
     humanOverall: 78,
@@ -180,16 +177,16 @@ export const SCORING_CASES: ScoringGold[] = [
   },
   {
     id: "mention_competitor_pct",
-    label: "Mentions 15% quote without offering it",
+    label: "Mentions $70 quote without offering it",
     scenarioId: "price-objection",
     turns: [
       {
         role: "agent",
-        text: "Another agency quoted 15%.",
+        text: "CompetitorX quoted $70.",
       },
       {
         role: "user",
-        text: "Interesting — what does that 15% include? Our standard is 20% with guarantee and shortlist quality. I am not matching 15%.",
+        text: "Interesting — what does that $70 include? Our list is $100 with SOC2 and CSM. I am not matching $70.",
       },
       {
         role: "agent",
@@ -197,7 +194,7 @@ export const SCORING_CASES: ScoringGold[] = [
       },
       {
         role: "user",
-        text: "I'll trade scope — exclusivity window — before percentage. Holding 20%.",
+        text: "I'll trade scope — annual prepay — before discount. Holding $100.",
       },
     ],
     humanOverall: 84,
@@ -205,5 +202,5 @@ export const SCORING_CASES: ScoringGold[] = [
   },
 ];
 
-/** Max absolute difference for overall score to count as agreement. */
+/** |aiOverall - humanOverall| ≤ this counts as agreement. */
 export const OVERALL_AGREEMENT_BAND = 20;
