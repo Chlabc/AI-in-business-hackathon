@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+import path from "path";
 import { dataStorePath } from "@/lib/file-store";
 import type { PracticeScore } from "@/lib/rubric";
 import type { TranscriptTurn } from "@/lib/score";

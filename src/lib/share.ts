@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+import path from "path";
 import { DEMO_REP_ID } from "@/data/seed";
 import { dataStorePath } from "@/lib/file-store";
 
