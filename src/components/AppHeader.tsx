@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DayIcon, NightIcon } from "@/components/ThemeIcons";
 import { useTheme } from "@/components/ThemeProvider";
 
 type AppHeaderProps = {
@@ -64,10 +65,17 @@ export function AppHeader({
           <button
             type="button"
             onClick={toggleTheme}
-            className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent"
-            aria-label="Toggle day and night mode"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground transition hover:border-accent"
+            aria-label={
+              theme === "light" ? "Switch to night mode" : "Switch to day mode"
+            }
+            title={theme === "light" ? "Night mode" : "Day mode"}
           >
-            {theme === "light" ? "Night" : "Day"}
+            {theme === "light" ? (
+              <NightIcon className="h-[18px] w-[18px]" />
+            ) : (
+              <DayIcon className="h-[18px] w-[18px]" />
+            )}
           </button>
         </div>
       </div>
