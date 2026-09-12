@@ -4,6 +4,7 @@ import { Conversation } from "@elevenlabs/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PracticeScenario } from "@/data/scenarios";
 import {
+  explainElevenLabsError,
   formatUnknownError,
   isBenignElevenLabsError,
 } from "@/lib/elevenlabs-errors";
@@ -268,11 +269,12 @@ export function usePracticeConversation(scenario: PracticeScenario) {
           if (endingRef.current || isBenignElevenLabsError(message, context)) {
             return;
           }
-          const text =
+          const raw =
             typeof message === "string" && message.trim()
               ? message
               : formatUnknownError(context) || "Voice session error";
-          if (!text) return;
+          if (!raw) return;
+          const text = explainElevenLabsError(raw);
           setError(text);
           pushTurn("system", `Error: ${text}`);
           setStatus("error");
@@ -325,10 +327,11 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     } catch (e) {
       conversationRef.current = null;
       startingRef.current = false;
-      const message =
+      const raw =
         e instanceof Error
           ? e.message
           : formatUnknownError(e) || "Failed to start session";
+      const message = explainElevenLabsError(raw);
       if (!isBenignElevenLabsError(message, e)) setError(message);
       setStatus("idle");
     }

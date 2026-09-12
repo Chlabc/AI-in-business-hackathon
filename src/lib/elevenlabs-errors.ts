@@ -51,3 +51,25 @@ export function isBenignElevenLabsError(...parts: unknown[]): boolean {
 
   return BENIGN_SUBSTRINGS.some((s) => text.includes(s));
 }
+
+/** Map known ElevenLabs config errors to actionable copy for the drill UI. */
+export function explainElevenLabsError(raw: string): string {
+  const text = raw.trim();
+  if (!text) return text;
+  if (/missing overrides permissions/i.test(text)) {
+    return (
+      `${text}\n\n` +
+      "Fix in ElevenLabs → Agents → Cornerman Buyer → Security: enable overrides for " +
+      "First message and System prompt, then try Start drill again. " +
+      "(Cornerman sends per-scenario buyer prompts; those toggles must be on.)"
+    );
+  }
+  if (/conversation not found/i.test(text)) {
+    return (
+      `${text}\n\n` +
+      "Usually a follow-on from a failed start (e.g. overrides not enabled). " +
+      "Hard-refresh, fix any override error above, then Start drill again."
+    );
+  }
+  return text;
+}
