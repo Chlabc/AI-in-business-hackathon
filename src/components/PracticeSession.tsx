@@ -2,14 +2,18 @@
 
 import { useMemo } from "react";
 import { AudioWaveform } from "@/components/AudioWaveform";
+import { CoachStrip } from "@/components/CoachStrip";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { SignalStreamGuard } from "@/components/SignalStreamGuard";
 import type { PracticeScenario } from "@/data/scenarios";
 import { usePracticeConversation } from "@/hooks/usePracticeConversation";
+import type { PlaybookTalkTrack } from "@/lib/playbook";
 
 type PracticeSessionProps = {
   scenario: PracticeScenario;
-  approvedPlay: string;
+  track: PlaybookTalkTrack;
+  standardFeePct: number;
+  feeFloorPct: number;
   diagnosisHeadline: string;
 };
 
@@ -26,7 +30,9 @@ function formatTurnTime(iso: string): string {
 
 export function PracticeSession({
   scenario,
-  approvedPlay,
+  track,
+  standardFeePct,
+  feeFloorPct,
   diagnosisHeadline,
 }: PracticeSessionProps) {
   const {
@@ -44,6 +50,7 @@ export function PracticeSession({
     getInputLevels,
     getOutputLevels,
     userLines,
+    latestClientText,
   } = usePracticeConversation(scenario);
 
   const connected = status === "connected";
@@ -74,11 +81,19 @@ export function PracticeSession({
             <p className="mt-1 text-sm font-medium leading-relaxed text-foreground">
               “{scenario.openingLine}”
             </p>
+            <p className="mt-2 text-xs text-muted">
+              Live session uses playbook fees ({standardFeePct}% / floor{" "}
+              {feeFloorPct}%) — edit under Playbook (Manager).
+            </p>
           </div>
 
-          <p className="mt-3 text-xs leading-relaxed text-muted">
-            Approved play (for you): {approvedPlay}
-          </p>
+          <CoachStrip
+            track={track}
+            latestClientText={latestClientText}
+            standardFeePct={standardFeePct}
+            feeFloorPct={feeFloorPct}
+            connected={connected}
+          />
 
           <div className="mt-5">
             <AudioWaveform
@@ -132,6 +147,12 @@ export function PracticeSession({
               <span className="font-mono">{lastDisconnect}</span>
             </div>
           ) : null}
+
+          <p className="mt-3 font-mono text-[10px] text-muted/70">
+            build{" "}
+            {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ??
+              "local"}
+          </p>
         </section>
 
         <section className="surface-card flex min-h-[320px] flex-col rounded-xl p-5 sm:p-6">

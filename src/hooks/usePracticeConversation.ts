@@ -8,10 +8,21 @@ import {
   isBenignElevenLabsError,
 } from "@/lib/elevenlabs-errors";
 import type { PracticeScore } from "@/lib/rubric";
+import type { FirmPlaybook } from "@/lib/playbook";
 import {
   buildSessionOverrides,
   formatDisconnectDetails,
 } from "@/lib/scenario-session";
+
+async function fetchPlaybook(): Promise<FirmPlaybook | undefined> {
+  try {
+    const res = await fetch("/api/playbook");
+    if (!res.ok) return undefined;
+    return (await res.json()) as FirmPlaybook;
+  } catch {
+    return undefined;
+  }
+}
 
 export type TranscriptTurn = {
   id: string;
@@ -123,27 +134,47 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     };
   }, [endSessionQuietly]);
 
-  const waitForUserTurns = useCallback(async (maxMs = 2000) => {
-    const started = Date.now();
-    while (Date.now() - started < maxMs) {
-      const hasUser = turnsRef.current.some((t) => t.role === "user");
-      if (hasUser) return true;
-      await new Promise((r) => setTimeout(r, 150));
-    }
-    return turnsRef.current.some((t) => t.role === "user");
-  }, []);
+  const mergeTurnSnapshots = useCallback(
+    (...lists: TranscriptTurn[][]) => {
+      const byKey = new Map<string, TranscriptTurn>();
+      for (const list of lists) {
+        for (const t of list) {
+          const key = `${t.role}:${t.text}`;
+          if (!byKey.has(key)) byKey.set(key, t);
+        }
+      }
+      return Array.from(byKey.values()).sort((a, b) =>
+        a.at.localeCompare(b.at),
+      );
+    },
+    [],
+  );
+
+  const waitForUserTurns = useCallback(
+    async (seed: TranscriptTurn[], maxMs = 2500) => {
+      const started = Date.now();
+      while (Date.now() - started < maxMs) {
+        const merged = mergeTurnSnapshots(seed, turnsRef.current);
+        if (merged.some((t) => t.role === "user")) return merged;
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      return mergeTurnSnapshots(seed, turnsRef.current);
+    },
+    [mergeTurnSnapshots],
+  );
 
   const runScore = useCallback(
-    async (cid: string | null) => {
+    async (cid: string | null, seedTurns: TranscriptTurn[]) => {
       setScoring(true);
       setError(null);
       setNotice("Finishing transcript…");
 
-      // Final user ASR often arrives after endSession — wait briefly.
-      const hasUser = await waitForUserTurns(2000);
-      const snapshot = turnsRef.current.filter((t) => t.role !== "system");
+      // Seed = turns already on screen when End was clicked.
+      // Also wait briefly for any late ASR that arrives after endSession.
+      const merged = await waitForUserTurns(seedTurns, 2500);
+      const snapshot = merged.filter((t) => t.role !== "system");
 
-      if (!hasUser || !snapshot.some((t) => t.role === "user")) {
+      if (!snapshot.some((t) => t.role === "user")) {
         setScoring(false);
         setScore(null);
         setNotice(
@@ -152,6 +183,9 @@ export function usePracticeConversation(scenario: PracticeScenario) {
         return;
       }
 
+      // Keep UI in sync with whatever we scored
+      turnsRef.current = merged;
+      setTurns(merged);
       setNotice(null);
       try {
         const res = await fetch("/api/practice/score", {
@@ -203,12 +237,15 @@ export function usePracticeConversation(scenario: PracticeScenario) {
 
     try {
       const sc = scenarioRef.current;
-      const token = await fetchConversationToken();
+      const [token, playbook] = await Promise.all([
+        fetchConversationToken(),
+        fetchPlaybook(),
+      ]);
 
       const conv = await Conversation.startSession({
         conversationToken: token,
         userId: "rep_demo_alex",
-        overrides: buildSessionOverrides(sc),
+        overrides: buildSessionOverrides(sc, playbook),
         onConnect: () => {
           if (endingRef.current) return;
           startingRef.current = false;
@@ -299,6 +336,8 @@ export function usePracticeConversation(scenario: PracticeScenario) {
 
   const end = useCallback(async () => {
     const cid = conversationIdRef.current ?? conversationId;
+    // Capture whatever is already on screen NOW — before teardown races.
+    const seedTurns = turnsRef.current.slice();
     endingRef.current = true;
     setScoring(true);
     setError(null);
@@ -313,8 +352,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     } finally {
       setStatus("idle");
       setIsSpeaking(false);
-      // Score after disconnect; runScore waits for late user ASR.
-      void runScore(cid);
+      void runScore(cid, seedTurns);
     }
   }, [conversationId, runScore]);
 
@@ -335,6 +373,9 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     [],
   );
 
+  const latestClientText =
+    [...turns].reverse().find((t) => t.role === "agent")?.text ?? null;
+
   return {
     turns,
     error,
@@ -351,5 +392,6 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     getInputLevels,
     getOutputLevels,
     userLines: turns.filter((t) => t.role === "user").map((t) => t.text),
+    latestClientText,
   };
 }
