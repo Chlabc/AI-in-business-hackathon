@@ -3,7 +3,7 @@ import { findDemoAccount, defaultPathForRole } from "@/data/users";
 import { sessionCookieOptions, signSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
-  let body: { email?: string };
+  let body: { email?: string; name?: string };
   try {
     body = await request.json();
   } catch {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   const user = {
     email: account.email,
-    name: account.name,
+    name: body.name?.trim() || account.name,
     role: account.role,
     repId: account.repId,
   };

@@ -102,10 +102,10 @@ export function AppHeader({
               How it works
             </a>
             <a
-              href="#build-phases"
+              href="#what-you-get"
               className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:inline-flex"
             >
-              Build phases
+              What you get
             </a>
             <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
             <ThemeToggle />

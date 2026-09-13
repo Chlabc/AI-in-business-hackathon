@@ -9,17 +9,21 @@ function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
   const [email, setEmail] = useState("");
+  const [name, setName] = useState(DEMO_ACCOUNTS[0].name);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function submit(nextEmail: string) {
+  async function submit(nextEmail: string, nextName?: string) {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: nextEmail }),
+        body: JSON.stringify({
+          email: nextEmail,
+          name: (nextName ?? name).trim(),
+        }),
       });
       const data = (await res.json()) as {
         error?: string;
@@ -32,7 +36,7 @@ function LoginForm() {
       const dest =
         search.get("next") && data.redirectTo
           ? // Prefer role home over a forbidden next path
-            data.redirectTo
+          data.redirectTo
           : (data.redirectTo ?? "/coach");
       router.replace(dest);
       router.refresh();
@@ -45,7 +49,7 @@ function LoginForm() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    void submit(email);
+    void submit(email, name);
   }
 
   return (
@@ -56,8 +60,8 @@ function LoginForm() {
           Open as employee or manager
         </h1>
         <p className="mt-3 text-sm text-muted">
-          Passwordless allowlisted emails — not a real identity provider. Two
-          accounts for the Northline demo firm.
+          Passwordless allowlisted emails — not a real identity provider. You
+          can personalize the display name for the demo, too.
         </p>
       </div>
 
@@ -73,7 +77,8 @@ function LoginForm() {
             disabled={loading}
             onClick={() => {
               setEmail(a.email);
-              void submit(a.email);
+              setName(a.name);
+              void submit(a.email, a.name);
             }}
             className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:border-accent disabled:opacity-50"
           >
@@ -83,6 +88,18 @@ function LoginForm() {
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
+        <label className="text-sm text-muted">
+          Your name
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Alex Chen"
+            className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-foreground outline-none focus:border-accent"
+            autoComplete="name"
+          />
+        </label>
+
         <label className="text-sm text-muted">
           Email
           <input

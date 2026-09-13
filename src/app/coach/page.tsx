@@ -65,7 +65,7 @@ export default async function CoachPage() {
             Where you&apos;re losing deals
           </h1>
           <p className="mt-2 text-sm text-muted">
-            {rep.name} · {rep.title} at {rep.agency} · {rep.weeksInRole} weeks in
+            {user.name} · {rep.title} at {rep.agency} · {rep.weeksInRole} weeks in
             role
           </p>
         </div>
@@ -143,14 +143,12 @@ export default async function CoachPage() {
           {numbers.map((n) => (
             <div
               key={n.meaning}
-              className={`surface-card rounded-xl p-5 ${
-                n.isProblem ? "border-warn/40 bg-warn-soft" : ""
-              }`}
+              className={`surface-card rounded-xl p-5 ${n.isProblem ? "border-warn/40 bg-warn-soft" : ""
+                }`}
             >
               <p
-                className={`text-3xl font-semibold ${
-                  n.isProblem ? "text-warn" : "text-foreground"
-                }`}
+                className={`text-3xl font-semibold ${n.isProblem ? "text-warn" : "text-foreground"
+                  }`}
               >
                 {n.value}
               </p>

@@ -33,9 +33,10 @@ export async function verifySessionToken(
     if (!email || (role !== "employee" && role !== "manager")) return null;
     const account = findDemoAccount(email);
     if (!account || account.role !== role) return null;
+    const customName = typeof payload.name === "string" ? payload.name.trim() : "";
     return {
       email: account.email,
-      name: account.name,
+      name: customName || account.name,
       role: account.role,
       repId: account.repId,
     };
