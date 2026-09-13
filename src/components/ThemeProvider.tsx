@@ -4,9 +4,8 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react";
 
 type Theme = "light" | "dark";
@@ -20,15 +19,44 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "cornerman-theme";
 
-function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+/**
+ * localStorage is not reactive and is not readable on the server, so the theme
+ * is exposed through useSyncExternalStore instead of useState.
+ *
+ * Reading storage inside useState ran on the client only: the server rendered
+ * "light" while a client with a saved dark theme rendered "dark", and React
+ * reported a hydration mismatch on the theme toggle's icon. getServerSnapshot
+ * pins the server (and the first client render) to the same deterministic
+ * value the pre-paint script assumes.
+ */
+const listeners = new Set<() => void>();
+
+function emit() {
+  listeners.forEach((l) => l());
+}
+
+function subscribe(onChange: () => void) {
+  listeners.add(onChange);
+  // Another tab changing the theme should update this one too.
+  window.addEventListener("storage", onChange);
+  return () => {
+    listeners.delete(onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function getSnapshot(): Theme {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    // First visit defaults to day; only honor an explicit saved choice.
-    return stored === "light" || stored === "dark" ? stored : "light";
+    // First visit defaults to day; only honour an explicit saved choice.
+    return stored === "dark" ? "dark" : "light";
   } catch {
     return "light";
   }
+}
+
+function getServerSnapshot(): Theme {
+  return "light";
 }
 
 function applyTheme(theme: Theme) {
@@ -39,20 +67,21 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
-
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      /* storage can be blocked; the class below still applies for this page */
+    }
+    applyTheme(next);
+    emit();
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme(theme === "light" ? "dark" : "light");
-  }, [setTheme, theme]);
+    setTheme(getSnapshot() === "light" ? "dark" : "light");
+  }, [setTheme]);
 
   const value = useMemo(
     () => ({ theme, setTheme, toggleTheme }),

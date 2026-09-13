@@ -1,12 +1,17 @@
 import type { PracticeAttempt } from "@/lib/attempts";
 
 type ProgressPanelProps = {
+  /** Page-scoped presentation hook; the component keeps its own data behaviour. */
+  className?: string;
+  heading?: string;
   attempts: PracticeAttempt[];
   feeHoldRate: number | null;
   trendLabel: string;
 };
 
 export function ProgressPanel({
+  className = "",
+  heading = "Your practice so far",
   attempts,
   feeHoldRate,
   trendLabel,
@@ -15,10 +20,12 @@ export function ProgressPanel({
   const maxScore = Math.max(100, ...chronological.map((a) => a.score.overall));
 
   return (
-    <section className="surface-card flex h-full flex-col rounded-xl">
+    <section
+      className={`surface-card flex h-full flex-col rounded-xl ${className}`}
+    >
       <div className="border-b border-border px-5 py-4">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-          Your practice so far
+          {heading}
         </h2>
         <p className="mt-1 text-sm text-muted">{trendLabel}</p>
       </div>
