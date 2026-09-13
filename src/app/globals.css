@@ -94,6 +94,126 @@ body {
   gap: 1.5rem;
 }
 
+/* ── Cover ──────────────────────────────────────────────────────────────
+   Full-bleed opening panel. To use a photograph instead of the drawn
+   graphic, drop the file in /public and set --cover-image on .cover:
+     --cover-image: url("/cover.jpg");
+   The dark scrim and every text colour below already assume a dark ground,
+   so a photo needs no other change. */
+.cover {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  min-height: min(86vh, 44rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.75rem, 5vw, 5rem);
+  background-color: var(--brand-navy);
+  background-image:
+    radial-gradient(
+      ellipse 120% 80% at 75% -10%,
+      rgba(91, 155, 213, 0.3),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 5% 110%,
+      rgba(201, 169, 97, 0.22),
+      transparent 60%
+    ),
+    linear-gradient(160deg, #16304d 0%, #0f2238 55%, #16304d 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Photo layer — inert until --cover-image is set. */
+.cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--cover-image, none);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Scrim so headline text stays legible over a photo or the gradient. */
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    rgba(10, 24, 40, 0.82) 0%,
+    rgba(10, 24, 40, 0.55) 45%,
+    rgba(10, 24, 40, 0.25) 100%
+  );
+}
+
+.cover-waves {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cover-inner {
+  position: relative;
+  max-width: 46rem;
+}
+
+.cover-rule {
+  width: 3.5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--brand-gold);
+}
+
+.cover-scroll {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1rem, 3vw, 2rem);
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s ease;
+}
+
+.cover-scroll:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cover-scroll span:last-child {
+  animation: cover-bob 2.4s ease-in-out infinite;
+}
+
+@keyframes cover-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-scroll span:last-child {
+    animation: none;
+  }
+}
+
 .hero-panel {
   position: relative;
   overflow: hidden;

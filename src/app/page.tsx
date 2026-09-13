@@ -35,6 +35,44 @@ const WHAT_YOU_GET = [
 
 const scenario = SCENARIOS.find((s) => s.recommended) ?? SCENARIOS[0];
 
+/**
+ * Cover photograph. Put the file in /public and name it cover.jpg.
+ * If it isn't there, url() paints nothing and the drawn gradient behind it
+ * shows through — so a missing file degrades instead of breaking the page.
+ */
+const COVER_STYLE = {
+  "--cover-image": 'url("/cover.jpg")',
+} as React.CSSProperties;
+
+/** Soundwave motif — the product is voice, so the cover says so without a photo. */
+function CoverWaves() {
+  const bars = Array.from({ length: 48 }, (_, i) => {
+    // Deterministic pseudo-random so the server and client render identically.
+    const wave = Math.sin(i * 0.7) * 0.5 + Math.sin(i * 0.29) * 0.5;
+    return 8 + Math.abs(wave) * 46;
+  });
+  return (
+    <svg
+      className="cover-waves"
+      viewBox="0 0 480 120"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      {bars.map((h, i) => (
+        <rect
+          key={i}
+          x={i * 10 + 2}
+          y={60 - h / 2}
+          width={3.5}
+          height={h}
+          rx={1.75}
+          fill="rgba(201,169,97,0.22)"
+        />
+      ))}
+    </svg>
+  );
+}
+
 /** A small, honest preview of the real drill — actual scenario copy, not a stock photo. */
 function LivePreviewCard() {
   return (
@@ -76,77 +114,89 @@ export default function Home() {
   return (
     <AppShell variant="marketing">
       <div className="marketing-shell">
-        <section className="hero-panel">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-white/[0.07] blur-3xl"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-brand-gold/10 blur-3xl"
-          />
+        {/* ── Cover ───────────────────────────────────────────────────
+            COVER_IMAGE points at a file in /public. If the file isn't there
+            the url() simply fails to paint and the drawn gradient shows
+            instead, so the page never breaks over a missing image. */}
+        <section className="cover" style={COVER_STYLE}>
+          <CoverWaves />
+          <div className="cover-inner">
+            <p className="hero-kicker">
+              AI sales coaching for reps and managers
+            </p>
+            <div className="cover-rule mt-5" />
+            <h1 className="display-serif mt-6 text-4xl leading-[1.04] text-white sm:text-5xl lg:text-[3.75rem]">
+              Practise the call you keep losing.
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/75">
+              Cornerman finds the moment you lose deals, puts you in a live
+              spoken roleplay against a client who pushes back, and scores you
+              against your own firm&apos;s playbook.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link
+                href="/login"
+                className="btn-lift inline-flex h-12 items-center justify-center rounded-full bg-brand-gold px-8 text-base font-semibold text-brand-gold-fg"
+              >
+                Let&apos;s get started ›
+              </Link>
+              <a
+                href="#how-it-works"
+                className="text-sm font-medium text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
+              >
+                See how it works first ›
+              </a>
+            </div>
+          </div>
 
-          <div className="hero-grid relative">
-            <div className="hero-copy">
-              <p className="hero-kicker">
-                AI sales coaching for reps and managers
-              </p>
-              <h1 className="display-serif mt-4 text-4xl leading-[1.04] text-white sm:text-5xl lg:text-6xl">
-                Turn the fee objection into a practiced move.
-              </h1>
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-white/70">
+          <a href="#how-it-works" className="cover-scroll">
+            <span>Scroll</span>
+            <span aria-hidden>↓</span>
+          </a>
+        </section>
+
+        {/* A real slice of the product, right under the cover: the scenario
+            copy is pulled from the same data the live drill uses. */}
+        <section className="surface-card rounded-2xl p-6 lg:p-8">
+          <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
+            <div>
+              <p className="eyebrow">A real drill</p>
+              <h2 className="display-serif mt-1 text-2xl text-foreground sm:text-3xl">
+                This is what a session looks like.
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted lg:text-base">
                 {SCOPE_SENTENCE}
               </p>
-              <div className="hero-cta mt-8">
-                <Link
-                  href="/login"
-                  className="btn-lift inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-gold-fg"
-                >
-                  Start the demo ›
-                </Link>
-                <a
-                  href="#how-it-works"
-                  className="text-sm font-medium text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
-                >
-                  See how it works ›
-                </a>
-              </div>
-
-              <div className="hero-stats mt-8">
-                <div className="hero-stat">
-                  <strong>12</strong>
-                  <span>calls analysed</span>
-                </div>
-                <div className="hero-stat">
-                  <strong>6</strong>
-                  <span>rubric checks</span>
-                </div>
-                <div className="hero-stat">
-                  <strong>1</strong>
-                  <span>clear next step</span>
-                </div>
-              </div>
+              <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
+                {[
+                  ["12", "calls analysed"],
+                  ["6", "rubric checks"],
+                  ["1", "clear next step"],
+                ].map(([n, label]) => (
+                  <div key={label}>
+                    <dt className="text-2xl font-semibold text-foreground">{n}</dt>
+                    <dd className="mt-0.5 text-xs uppercase tracking-wider text-muted">
+                      {label}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-
             <div className="flex justify-center lg:justify-end">
               <LivePreviewCard />
             </div>
           </div>
 
-          <div className="relative mt-10 border-t border-white/10 pt-6">
-            <p className="text-center text-[0.7rem] uppercase tracking-[0.16em] text-white/40">
+          <div className="mt-8 border-t border-border pt-6">
+            <p className="text-center text-[0.7rem] uppercase tracking-[0.16em] text-muted">
               Built with
             </p>
-            <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm font-medium text-white/55">
-              {[
-                "ElevenLabs",
-                "Next.js",
-                "React",
-                "TypeScript",
-                "Tailwind CSS",
-              ].map((tech) => (
-                <li key={tech}>{tech}</li>
-              ))}
+            <ul className="mt-3 flex flex-wrap items-center justify-center gap-x-10 gap-y-2 text-sm font-medium text-muted">
+              {["ElevenLabs", "Next.js", "React", "TypeScript", "Tailwind CSS"].map(
+                (tech) => (
+                  <li key={tech}>{tech}</li>
+                ),
+              )}
             </ul>
           </div>
         </section>

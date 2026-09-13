@@ -70,10 +70,9 @@ export function AppHeader({
   const [signingOut, setSigningOut] = useState(false);
 
   const nav = navForRole(user?.role ?? null);
+  const firstName = user?.name.trim().split(/\s+/)[0] ?? "";
   const identityLabel = user
-    ? user.role === "manager"
-      ? `Manager: ${user.name}`
-      : `Rep: ${user.name}`
+    ? `Hi, ${firstName} · ${user.role === "manager" ? "Manager" : "Rep"}`
     : "Not signed in";
 
   async function signOut() {

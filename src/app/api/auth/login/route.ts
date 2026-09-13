@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
-import { findDemoAccount, defaultPathForRole } from "@/data/users";
+import {
+  DEMO_ACCOUNTS,
+  findDemoAccount,
+  defaultPathForRole,
+} from "@/data/users";
 import { sessionCookieOptions, signSession } from "@/lib/auth";
 
 export async function POST(request: Request) {
-  let body: { email?: string; name?: string };
+  let body: { email?: string; name?: string; role?: string };
   try {
     body = await request.json();
   } catch {
@@ -11,20 +15,34 @@ export async function POST(request: Request) {
   }
 
   const email = body.email?.trim() ?? "";
-  const account = findDemoAccount(email);
+  const requestedRole = body.role?.trim();
+
+  // Sign in as yourself: pick a side, and we attach your name to that side's
+  // demo profile so the seeded history and every role guard still apply.
+  const account =
+    findDemoAccount(email) ??
+    (requestedRole === "employee" || requestedRole === "manager"
+      ? DEMO_ACCOUNTS.find((a) => a.role === requestedRole)
+      : undefined);
+
   if (!account) {
     return NextResponse.json(
-      {
-        error:
-          "Unknown demo account. Use alex@northline.demo or jordan@northline.demo.",
-      },
+      { error: "Choose whether you're a rep or a manager." },
       { status: 401 },
+    );
+  }
+
+  const name = body.name?.trim() ?? "";
+  if (name.length > 40) {
+    return NextResponse.json(
+      { error: "That name is too long — 40 characters max." },
+      { status: 400 },
     );
   }
 
   const user = {
     email: account.email,
-    name: body.name?.trim() || account.name,
+    name: name || account.name,
     role: account.role,
     repId: account.repId,
   };

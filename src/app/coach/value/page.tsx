@@ -170,6 +170,9 @@ function BeforeAfterScore({
       <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
         Score across {attemptCount} drills
       </h2>
+      <p className="mt-1 text-sm text-muted">
+        Each drill is marked out of 100 against six criteria.
+      </p>
 
       <div className="mt-5 flex flex-wrap items-center gap-6 sm:gap-10">
         <ScoreBlock label="First drill" score={firstScore} />
@@ -185,10 +188,10 @@ function BeforeAfterScore({
           </span>
           <span className="mt-1 text-sm font-medium">
             {improved
-              ? "points better"
+              ? "points better, out of 100"
               : flat
                 ? "no change"
-                : "points worse"}
+                : "points worse, out of 100"}
           </span>
         </div>
       </div>

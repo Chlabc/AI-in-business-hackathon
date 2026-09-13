@@ -90,13 +90,24 @@ export function ProgressPanel({
           </div>
 
           <div className="flex-1 overflow-x-auto p-5">
+            {/* Holding the price is one of six scored criteria, so "Held" next to
+                a low score is correct and needs saying — people read it as a bug. */}
+            <p className="mb-3 text-xs leading-relaxed text-muted">
+              <strong className="font-medium text-foreground">Score</strong> is
+              out of 100 across six things — did you explore the objection, ask
+              questions, anchor on value, hold the price, use the approved play,
+              and avoid caving early.{" "}
+              <strong className="font-medium text-foreground">Held</strong> is
+              only the fourth of those. You can hold the price and still score
+              low by skipping the other five.
+            </p>
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase tracking-wider text-muted">
                 <tr>
                   <th className="pb-2 pr-3 font-medium">#</th>
                   <th className="pb-2 pr-3 font-medium">When</th>
-                  <th className="pb-2 pr-3 font-medium">Score</th>
-                  <th className="pb-2 font-medium">Fee</th>
+                  <th className="pb-2 pr-3 font-medium">Score /100</th>
+                  <th className="pb-2 font-medium">Price</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
