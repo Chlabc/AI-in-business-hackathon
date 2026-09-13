@@ -116,7 +116,7 @@ export default async function ManagerPage() {
         <section className="surface-card rounded-xl p-6">
           <ConversionChart
             data={liveAe.kpiHistory}
-            label={`${liveAe.name} — conversion trend (illustrative)`}
+            label={`${liveAe.name} — conversion trend`}
           />
           <p className="mt-2 text-xs text-muted">
             Illustrative measurement alongside training — not proof that

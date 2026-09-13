@@ -123,7 +123,7 @@ export function ManagerReportPdfButton({
       setRgb(doc, COLOR.muted);
       doc.setFontSize(9);
       const honesty = doc.splitTextToSize(
-        "Development tool, not surveillance. Team conversion KPIs are illustrative demo data. Practice summaries appear only when the AE opts in to share — transcripts are never included.",
+        "Practice summaries appear only when the AE opts in to share — transcripts are never included.",
         CONTENT_WIDTH,
       );
       doc.text(honesty, PAGE_MARGIN, y);

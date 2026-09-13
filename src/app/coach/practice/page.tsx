@@ -27,11 +27,11 @@ export default async function PracticePage({ searchParams }: Props) {
   const headline =
     scenario.id === "price-objection"
       ? (diagnosis?.headline ??
-        "Drill the fee conversation — your seeded weak spot.")
+        "Drill the price conversation — your diagnosed weak spot.")
       : `${scenario.skill}: ${scenario.description}`;
 
   return (
-    <AppShell focus={scenario.skill}>
+    <AppShell>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-4 text-sm">
           <Link href="/coach" className="text-muted transition hover:text-accent">

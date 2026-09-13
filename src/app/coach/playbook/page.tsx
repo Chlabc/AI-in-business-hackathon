@@ -9,7 +9,7 @@ export default async function PlaybookPage() {
   const playbook = await getPlaybook();
 
   return (
-    <AppShell focus="Firm playbook">
+    <AppShell>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/coach/manager"

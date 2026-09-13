@@ -91,7 +91,7 @@ export default function HealthPage() {
   ];
 
   return (
-    <AppShell focus="Measured evidence">
+    <AppShell>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/coach/manager"
@@ -99,9 +99,6 @@ export default function HealthPage() {
         >
           ← Manager
         </Link>
-        <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
-          Seeded demo data · offline eval · not a live CRM
-        </span>
       </div>
 
       <div className="flex flex-wrap items-end justify-between gap-3">
