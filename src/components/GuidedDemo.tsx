@@ -180,13 +180,20 @@ export function GuidedDemo() {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted">
               Your last 5 attempts
             </p>
-            <div className="mt-4 flex h-32 items-end gap-3">
+            {/* No items-end on the row: the columns must stretch to h-32, or the
+                bars' percentage heights resolve against a zero-height parent. */}
+            <div className="mt-4 flex h-32 gap-3">
               {TREND.map((v, i) => (
-                <div key={i} className="flex flex-1 flex-col items-center gap-2">
-                  <div
-                    className={`w-full rounded-t ${i === TREND.length - 1 ? "bg-ok" : "bg-border"}`}
-                    style={{ height: `${v}%` }}
-                  />
+                <div
+                  key={i}
+                  className="flex h-full flex-1 flex-col items-center gap-2"
+                >
+                  <div className="flex w-full flex-1 items-end">
+                    <div
+                      className={`w-full rounded-t ${i === TREND.length - 1 ? "bg-ok" : "bg-border"}`}
+                      style={{ height: `${v}%` }}
+                    />
+                  </div>
                   <span
                     className={`text-xs ${i === TREND.length - 1 ? "font-semibold text-ok" : "text-muted"}`}
                   >

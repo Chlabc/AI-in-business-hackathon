@@ -95,17 +95,13 @@ export function AppHeader({
             Cornerman
           </span>
           <nav className="flex items-center gap-1 sm:gap-2">
+            {/* One anchor only — the landing page is a single scroll, and a second
+                link to a neighbouring section reads as a second page that repeats it. */}
             <a
               href="#how-it-works"
               className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:inline-flex"
             >
               How it works
-            </a>
-            <a
-              href="#what-you-get"
-              className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:bg-accent-soft hover:text-foreground sm:inline-flex"
-            >
-              What you get
             </a>
             <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
             <ThemeToggle />
