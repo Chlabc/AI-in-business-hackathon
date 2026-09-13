@@ -15,26 +15,36 @@ export default async function LearnPage() {
 
   return (
     <AppShell focus="Firm facts">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/coach" className="text-sm text-muted hover:text-accent">
-          ← Diagnosis
-        </Link>
-        <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
-          From live playbook · not a generic sales course
-        </span>
-      </div>
+      <Link href="/coach" className="text-sm text-muted hover:text-accent">
+        ← Back to your diagnosis
+      </Link>
 
       <div>
-        <p className="eyebrow">Learn</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-          Know the facts before you defend them
+        <p className="eyebrow">Optional warm-up</p>
+        <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
+          Know your own prices before you defend them
         </h1>
-        <p className="mt-3 max-w-3xl text-sm text-muted lg:text-base">
-          Flashcards and a five-question quiz pulled from{" "}
-          <strong className="text-foreground">{playbook.firmName}</strong>
-          &apos;s playbook — list price, floor, anchors, and never-dos. Then
-          drill.
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted lg:text-base">
+          You can&apos;t hold a price you can&apos;t remember. These cards drill
+          the handful of facts you need at your fingertips mid-call — what{" "}
+          <strong className="font-medium text-foreground">
+            {playbook.firmName}
+          </strong>{" "}
+          charges, how low you&apos;re allowed to go, and what to point at
+          instead of discounting.
         </p>
+      </div>
+
+      {/* People kept asking what this page was for and where "Northline" came
+          from, so the answer sits at the top rather than in a corner pill. */}
+      <div className="rounded-xl border border-border bg-card p-4 text-sm leading-relaxed text-muted">
+        <strong className="font-medium text-foreground">
+          {playbook.firmName}
+        </strong>{" "}
+        is the made-up company you work for in this demo. Every card below is
+        generated from its playbook — the same one the AI client argues against
+        and the scorer marks you on. Change the playbook and these cards change
+        too; they are not a generic sales course.
       </div>
 
       <LearnModule

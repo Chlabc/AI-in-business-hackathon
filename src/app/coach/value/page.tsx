@@ -5,7 +5,6 @@ import { listAttempts } from "@/lib/attempts";
 import { getSession } from "@/lib/auth";
 import {
   beforeAfterFromAttempts,
-  DEFAULT_USER_TEST_SESSIONS,
   USER_TEST_PROTOCOL,
 } from "@/lib/value-evidence";
 
@@ -16,20 +15,20 @@ export default async function ValuePage() {
   const repId = user?.repId ?? DEMO_REP_ID;
   const attempts = await listAttempts(repId);
   const evidence = beforeAfterFromAttempts(attempts);
-  const sessions = DEFAULT_USER_TEST_SESSIONS;
 
   return (
     <AppShell focus="Value evidence">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="eyebrow">Does this actually work?</p>
+          <p className="eyebrow">Step 3 of 3 · Track</p>
           <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
-            The evidence
+            Are you actually getting better?
           </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted lg:text-base">
-            Whether reps get better, measured only from drills they actually
-            completed. We report score and price-hold — never a win rate or a
-            revenue figure, because we have no way to measure those.
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted lg:text-base">
+            Two questions only: is your score going up, and have you stopped
+            discounting? Both come from drills you finished — nothing here is
+            estimated, and we never claim a win rate or a revenue number,
+            because we have no way to measure those.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -60,61 +59,24 @@ export default async function ValuePage() {
         latePct={evidence.holdRateLatePct}
       />
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <section className="surface-card rounded-xl p-5 sm:p-6">
-          <p className="eyebrow">Protocol</p>
-          <h2 className="mt-1 text-lg font-semibold text-foreground">
-            How to run 3–5 user tests
-          </h2>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
-            {USER_TEST_PROTOCOL.map((step) => (
-              <li key={step}>
-                <span className="text-foreground">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </section>
+      <section className="surface-card rounded-xl p-5 sm:p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          How we would prove this properly
+        </h2>
+        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-muted">
+          The numbers above are one person practising. Real evidence needs real
+          reps, so this is the protocol we would run next — written down rather
+          than filled in with invented quotes.
+        </p>
+        <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
+          {USER_TEST_PROTOCOL.map((step) => (
+            <li key={step}>
+              <span className="text-foreground">{step}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-        <section className="surface-card rounded-xl p-5 sm:p-6">
-          <p className="eyebrow">User-test log</p>
-          <h2 className="mt-1 text-lg font-semibold text-foreground">
-            Sessions ({sessions.length})
-          </h2>
-          <p className="mt-2 text-xs text-muted">
-            Rows marked <strong className="text-foreground">demo_labeled</strong>{" "}
-            are pitch templates — swap in live quotes after real tests.
-          </p>
-          <div className="mt-4 space-y-3">
-            {sessions.map((s) => (
-              <article
-                key={s.id}
-                className="rounded-lg border border-border bg-background px-4 py-3"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-foreground">
-                    {s.participant}{" "}
-                    <span className="font-normal text-muted">· {s.role}</span>
-                  </p>
-                  <span className="rounded border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
-                    {s.source} · {s.date}
-                  </span>
-                </div>
-                <p className="mt-2 text-xs text-muted">
-                  <span className="font-semibold text-foreground">Before: </span>
-                  {s.beforeNote}
-                </p>
-                <p className="mt-1 text-xs text-muted">
-                  <span className="font-semibold text-foreground">After: </span>
-                  {s.afterNote}
-                </p>
-                <p className="mt-2 text-sm italic text-foreground">
-                  “{s.quote}”
-                </p>
-              </article>
-            ))}
-          </div>
-        </section>
-      </div>
     </AppShell>
   );
 }

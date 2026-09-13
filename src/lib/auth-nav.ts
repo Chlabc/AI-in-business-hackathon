@@ -10,15 +10,15 @@ export function navForRole(
       { href: "/coach/learn", label: "Learn" },
       { href: "/coach/training", label: "Scenarios" },
       { href: "/coach/practice", label: "Drill" },
-      { href: "/coach/value", label: "Value" },
+      { href: "/coach/value", label: "My progress" },
     ];
   }
   if (role === "manager") {
     return [
-      { href: "/coach/manager", label: "Manager" },
+      { href: "/coach/manager", label: "Team" },
       { href: "/coach/playbook", label: "Playbook" },
-      { href: "/coach/health", label: "Health" },
-      { href: "/coach/value", label: "Value" },
+      { href: "/coach/health", label: "Accuracy" },
+      { href: "/coach/value", label: "Does it work?" },
     ];
   }
   return [{ href: "/login", label: "Sign in" }];

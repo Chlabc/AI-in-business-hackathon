@@ -13,24 +13,19 @@ const difficultyClass: Record<string, string> = {
 export default function TrainingPage() {
   return (
     <AppShell focus="Scenario selection">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/coach" className="text-sm text-muted hover:text-accent">
-          ← Back to diagnosis
-        </Link>
-        <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
-          Lifted from Huey · live voice on our stack
-        </span>
-      </div>
+      <Link href="/coach" className="text-sm text-muted hover:text-accent">
+        ← Back to your diagnosis
+      </Link>
 
       <div>
-        <p className="eyebrow">Training</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-          Choose a practice scenario
+        <p className="eyebrow">Pick a situation</p>
+        <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
+          What do you want to practise?
         </h1>
-        <p className="mt-3 max-w-3xl text-sm text-muted lg:text-base">
-          Price / fee objection is recommended from Alex&apos;s diagnosis. Other
-          scenarios come from the Huey prototype — same live ElevenLabs drill,
-          different client pushback.
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted lg:text-base">
+          Each one is a real spoken call against an AI client with its own
+          personality and its own way of pushing back. The starred one is picked
+          from your diagnosis — start there if you&apos;re not sure.
         </p>
       </div>
 

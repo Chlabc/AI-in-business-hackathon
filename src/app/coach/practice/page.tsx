@@ -46,21 +46,49 @@ export default async function PracticePage({ searchParams }: Props) {
       </div>
 
       <div>
-        <p className="eyebrow">Live practice</p>
+        <p className="eyebrow">Step 2 of 3 · Practise</p>
         {/* The title is repeated inside PracticeSession's step header, so it is stated once here. */}
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
+        <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
           {scenario.title}
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted lg:text-base">
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted lg:text-base">
           {scenario.description}
         </p>
-        <p className="mt-2 text-sm text-muted">
-          Difficulty:{" "}
-          <span className="font-medium capitalize text-foreground">
-            {scenario.difficulty}
-          </span>
-        </p>
       </div>
+
+      {/* A three-line guide, because "what am I meant to do here" was the most
+          common reaction to this page. */}
+      <ol className="grid gap-3 sm:grid-cols-3">
+        {[
+          [
+            "Press the button",
+            "Your browser will ask for the microphone. Say yes.",
+          ],
+          [
+            "Talk to the client",
+            "They'll push back on price. Answer out loud, like a real call.",
+          ],
+          [
+            "Press done",
+            "You get a score out of 100 and a better line for next time.",
+          ],
+        ].map(([title, body], i) => (
+          <li
+            key={title}
+            className="surface-card flex gap-3 rounded-xl p-4 text-sm"
+          >
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-fg">
+              {i + 1}
+            </span>
+            <span>
+              <span className="font-medium text-foreground">{title}</span>
+              <span className="mt-1 block leading-relaxed text-muted">
+                {body}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ol>
 
       <PracticeSession
         key={scenario.id}
