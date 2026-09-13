@@ -434,7 +434,6 @@ body {
     inset 2px 0 1px rgb(255 255 255 / 72%),
     inset -1px 0 2px color-mix(in srgb, #ccecf2 24%, transparent),
     inset 0 -2px 4px color-mix(in srgb, var(--fc-ink) 20%, transparent);
-  transform: rotateY(0deg);
   transform-origin: center;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;

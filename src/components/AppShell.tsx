@@ -36,9 +36,7 @@ export async function AppShell({
       {variant === "marketing" ? (
         <main className="page-enter flex w-full flex-1 flex-col">{children}</main>
       ) : (
-        /* No page-enter here: a transformed <main> flattens preserve-3d and
-           breaks the employee-credential / flashcard flips. */
-        <main className="mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:gap-8 lg:px-10 xl:px-12">
+        <main className="page-enter mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:gap-8 lg:px-10 xl:px-12">
           {children}
         </main>
       )}
