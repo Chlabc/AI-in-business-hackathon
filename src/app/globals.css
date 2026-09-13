@@ -10,18 +10,25 @@ html.light {
   --muted: #5c6570;
   --muted-fg: #5c6570;
   --border: #e9ecef;
-  --accent: #d9480f;
+  --accent: #1b3a5c;
   --accent-fg: #ffffff;
-  --accent-soft: #fff4ef;
+  --accent-soft: #eaf0f6;
   --ok: #2b8a3e;
   --ok-soft: #ebfbee;
-  --warn: #d9480f;
-  --warn-soft: #fff4ef;
+  --warn: #bf9521;
+  --warn-soft: #fdf6e3;
   --danger: #c92a2a;
   --danger-soft: #fff5f5;
   --audio: #1c7ed6;
   --audio-soft: #e7f5ff;
   --header: #ffffff;
+  /* Marketing-only brand accent — deliberately distinct from --warn (a status colour). */
+  --brand-navy: #16304d;
+  --brand-gold: #c9a961;
+  --brand-gold-fg: #16304d;
+  /* Alternating band ground — a hair warmer than --background so full-width
+     sections separate without needing borders. */
+  --band-alt: #f1f3f5;
 }
 
 /* Option B — High-Performance Dark (navy + copper) */
@@ -33,18 +40,23 @@ html.dark {
   --muted: #9aa4af;
   --muted-fg: #9aa4af;
   --border: #2c353f;
-  --accent: #e85d04;
-  --accent-fg: #12161a;
-  --accent-soft: #2a1c12;
+  --accent: #5b9bd5;
+  --accent-fg: #0d1520;
+  --accent-soft: #1a2b3d;
   --ok: #40c057;
   --ok-soft: #13251a;
-  --warn: #e85d04;
-  --warn-soft: #2a1c12;
+  --warn: #d4af37;
+  --warn-soft: #2e2510;
   --danger: #ff6b6b;
   --danger-soft: #2a1515;
   --audio: #4d96ff;
   --audio-soft: #152033;
   --header: #1c232b;
+  /* The hero band stays dark in both themes, so these hold steady. */
+  --brand-navy: #16304d;
+  --brand-gold: #d0b06c;
+  --brand-gold-fg: #16304d;
+  --band-alt: #171d24;
 }
 
 @theme inline {
@@ -66,8 +78,12 @@ html.dark {
   --color-audio: var(--audio);
   --color-audio-soft: var(--audio-soft);
   --color-header: var(--header);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-fg: var(--brand-gold-fg);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
 }
 
 body {
@@ -76,9 +92,794 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* ── Emphasis primitives ────────────────────────────────────────────────
+   Small shared pieces so "this bit matters" reads the same everywhere,
+   instead of every page inventing its own badge. */
+
+/* Status pills — rounded, filled, readable at a glance. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.pill-ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 28%, transparent);
+}
+.pill-warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+}
+.pill-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+}
+.pill-accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.pill-neutral {
+  background: var(--background);
+  color: var(--muted);
+  border-color: var(--border);
+}
+
+/* Marker-pen highlight for a key phrase inside running text. */
+.mark {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--warn) 30%, transparent) 0%,
+    color-mix(in srgb, var(--warn) 30%, transparent) 38%,
+    transparent 38%
+  );
+  padding-inline: 0.1em;
+  font-weight: 500;
+  color: inherit;
+}
+
+/* Framed callout — for the one thing on a page that must not be missed. */
+.callout {
+  position: relative;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-left: 4px solid var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--card));
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.4rem;
+}
+.callout-warn {
+  border-color: color-mix(in srgb, var(--warn) 30%, var(--border));
+  border-left-color: var(--warn);
+  background: color-mix(in srgb, var(--warn-soft) 60%, var(--card));
+}
+
+/* ── Scenario cards ───────────────────────────────────────────────────
+   The cards sit on their own grey ground so the group reads as one block
+   separated from the intro copy above it, and the white cards gain an edge
+   they don't have against the page's own off-white. */
+.scenario-stage {
+  border-radius: 1.25rem;
+  border: 1px solid var(--border);
+  /* A step darker than --band-alt: that token is only a few RGB units from the
+     page ground, which was too faint to read as a deliberate panel. */
+  background: color-mix(in srgb, var(--border) 55%, var(--background));
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+.scenario-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgb(16 20 24 / 4%);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+.scenario-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  box-shadow: 0 10px 28px -12px color-mix(in srgb, var(--accent) 40%, transparent);
+  transform: translateY(-2px);
+}
+
+/* The recommended one gets a tinted ground and a corner ribbon, so the
+   suggestion is visible before you read any of the four titles. */
+.scenario-card-pick {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent-soft) 42%, var(--card));
+  padding-top: 2.6rem;
+}
+.scenario-ribbon {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-bottom-right-radius: 0.75rem;
+  background: var(--accent);
+  color: var(--accent-fg);
+  padding: 0.35rem 0.85rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.scenario-quote {
+  position: relative;
+  margin-top: 1rem;
+  border-radius: 0.6rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  padding: 0.85rem 0.9rem 0.85rem 2.4rem;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--foreground);
+}
+.scenario-quote-mark {
+  position: absolute;
+  left: 0.65rem;
+  top: 0.2rem;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 2.2rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* ── Flashcard deck ─────────────────────────────────────────────────────
+   The current card sits centred and on top; the previous and next peek out
+   either side, scaled down, faded and behind it. Navigating transitions the
+   three slots, so a card appears to come forward as you move through. */
+.deck {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 0.5rem;
+  /* Neighbours are clipped at the page edges rather than widening the page.
+     No fixed height: a tall card used to overflow this box and get cut off,
+     so the current card sets the height instead (see .deck-current). */
+  overflow: clip;
+}
+
+.deck-slot {
+  width: min(34rem, 100%);
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms ease;
+}
+
+/* In normal flow, so the deck is exactly as tall as the card it contains. */
+.deck-current {
+  position: relative;
+  opacity: 1;
+  z-index: 3;
+}
+
+/* Neighbours are lifted out of flow and centred on the current card. */
+.deck-prev,
+.deck-next {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+/* Offset far enough that the neighbours read as a stack without their text
+   bleeding out around the centre card and competing with it. */
+.deck-prev {
+  transform: translate(calc(-50% - 17.5rem), -50%) scale(0.84);
+  opacity: 0.35;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.deck-next {
+  transform: translate(calc(-50% + 17.5rem), -50%) scale(0.84);
+  opacity: 0.35;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Narrow screens have no room for neighbours — show the centre card only. */
+@media (max-width: 900px) {
+  .deck-prev,
+  .deck-next {
+    opacity: 0;
+  }
+}
+
+.deck-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.75rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 1.1rem;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.deck-arrow:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-slot {
+    transition: none;
+  }
+}
+
+/* ── Flashcard flip ─────────────────────────────────────────────────────
+   Mirrors the employee credential's structure (ui.md §6): perspective and
+   clipping on the wrapper, transform on the rotor, both faces in the same
+   grid cell so the card never resizes mid-flip. */
+.flashcard {
+  position: relative;
+  /* Card proportions, not a full-width banner — a study card should look like
+     something you could hold. */
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+  min-width: 0;
+  overflow: clip;
+  border-radius: 1rem;
+  perspective: 1200px;
+  /* Credential-only warm palette (ui.md §4), scoped so it never leaks out.
+     The card stays warm and light in BOTH app themes, so the semantic tokens
+     used by text and pills inside it are redefined here — otherwise dark mode
+     would paint light text onto a light card. */
+  --fc-ivory: #f7f3eb;
+  --fc-ink: #20344b;
+  --fc-muted: #6f665c;
+  --fc-border: #d6cfc3;
+  --fc-bronze: #79634d;
+
+  --foreground: #20344b;
+  --muted: #6f665c;
+  --card: #f7f3eb;
+  --border: #d6cfc3;
+  --accent: #20344b;
+  --accent-fg: #f7f3eb;
+  --accent-soft: #e5ebef;
+  --ok: #1f6f3a;
+  --ok-soft: #e7f2e9;
+  box-shadow:
+    0 1px 2px rgb(255 255 255 / 55%),
+    0 5px 12px -6px color-mix(in srgb, var(--fc-ink) 24%, transparent),
+    0 18px 34px -18px color-mix(in srgb, var(--fc-ink) 48%, transparent);
+}
+
+.flashcard-control {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-radius: inherit;
+  background: transparent;
+  border: 0;
+}
+.flashcard-control:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -4px;
+}
+
+.flashcard-rotor {
+  display: grid;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  transition: transform 420ms ease-in-out;
+}
+.flashcard-rotor[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+
+/* Same warm frosted-acrylic material as the employee credential (ui.md §7):
+   translucent ivory base, a luminous top/left rim, a cool refraction on the
+   right, and a clipped diagonal sheen above it. */
+.flashcard-face {
+  position: relative;
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  /* Centred both ways — a study card reads better balanced than top-left. */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.25rem;
+  min-height: 15rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, white 52%, var(--fc-border));
+  color: var(--fc-ink);
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 34%),
+      rgb(255 255 255 / 9%) 42%,
+      color-mix(in srgb, var(--fc-ivory) 18%, transparent) 72%
+    ),
+    color-mix(in srgb, var(--fc-ivory) 92%, transparent);
+  backdrop-filter: blur(22px) saturate(124%);
+  -webkit-backdrop-filter: blur(22px) saturate(124%);
+  box-shadow:
+    inset 0 2px 1px rgb(255 255 255 / 92%),
+    inset 2px 0 1px rgb(255 255 255 / 72%),
+    inset -1px 0 2px color-mix(in srgb, #ccecf2 24%, transparent),
+    inset 0 -2px 4px color-mix(in srgb, var(--fc-ink) 20%, transparent);
+  transform-origin: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Clipped specular sheen. Content sits above it via z-index below. */
+.flashcard-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.72;
+  transform: translateX(-3%);
+  background: linear-gradient(
+    122deg,
+    transparent 8%,
+    rgb(255 255 255 / 7%) 19%,
+    rgb(255 255 255 / 38%) 30%,
+    rgb(255 255 255 / 64%) 37%,
+    rgb(255 255 255 / 28%) 44%,
+    color-mix(in srgb, #d7f3f5 14%, transparent) 51%,
+    transparent 63%
+  );
+  transition:
+    transform 320ms ease,
+    opacity 320ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .flashcard:hover .flashcard-face::after {
+    transform: translateX(3%);
+    opacity: 0.9;
+  }
+}
+
+/* Text and controls above the sheen. */
+.flashcard-face > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* The answer face keeps the same material, tinted green so the two sides
+   are instantly distinguishable. */
+.flashcard-back {
+  transform: rotateY(180deg);
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 34%),
+      rgb(255 255 255 / 9%) 42%,
+      color-mix(in srgb, var(--ok-soft) 22%, transparent) 72%
+    ),
+    color-mix(in srgb, var(--ok-soft) 82%, var(--fc-ivory));
+  border-color: color-mix(in srgb, var(--ok) 26%, var(--fc-border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flashcard-face::after {
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flashcard-rotor {
+    transition: none;
+  }
+}
+
+/* ── Editorial bands ────────────────────────────────────────────────────
+   Full-width horizontal sections separated by generous vertical space, the
+   way an advisory-firm site is built. Nothing here is a floating card. */
+.marketing-shell {
+  display: flex;
+  flex-direction: column;
+}
+
+.band {
+  width: 100%;
+  padding-block: clamp(4rem, 9vw, 8.5rem);
+  padding-inline: clamp(1rem, 5vw, 4rem);
+}
+
+.band-tight {
+  padding-block: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+/* Alternating ground so bands separate without borders or shadows. */
+.band-alt {
+  background: var(--band-alt);
+}
+
+.band-dark {
+  background: var(--brand-navy);
+  color: #fff;
+}
+
+.band-inner {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+}
+
+.band-narrow {
+  max-width: 52rem;
+}
+
+/* Section opener: small gold rule + eyebrow, then a large serif line. */
+.band-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.band-dark .band-eyebrow {
+  color: var(--brand-gold);
+}
+
+.band-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.85rem, 3.6vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin-top: 1.25rem;
+}
+
+.band-lede {
+  margin-top: 1.5rem;
+  max-width: 44rem;
+  font-size: clamp(1.02rem, 1.3vw, 1.2rem);
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.band-dark .band-lede {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Pull quote — one per page, large and quiet. */
+.pullquote {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  line-height: 1.35;
+  font-style: italic;
+  text-wrap: balance;
+}
+
+/* ── Scroll reveal ──────────────────────────────────────────────────────
+   Content is VISIBLE by default and only animates once the observer marks
+   it ready. If JS never runs, nothing is left stranded at opacity 0. */
+[data-reveal] {
+  opacity: 1;
+}
+
+[data-reveal].reveal-armed {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+[data-reveal].reveal-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-reveal-delay="1"].reveal-in {
+  transition-delay: 0.09s;
+}
+[data-reveal-delay="2"].reveal-in {
+  transition-delay: 0.18s;
+}
+[data-reveal-delay="3"].reveal-in {
+  transition-delay: 0.27s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal].reveal-armed,
+  [data-reveal].reveal-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Cover ──────────────────────────────────────────────────────────────
+   Full-bleed opening panel. To use a photograph instead of the drawn
+   graphic, drop the file in /public and set --cover-image on .cover:
+     --cover-image: url("/cover.jpg");
+   The dark scrim and every text colour below already assume a dark ground,
+   so a photo needs no other change. */
+.cover {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  /* Edge to edge — a rounded card floating in a padded column is what made
+     this read as a dashboard rather than a site. */
+  min-height: min(86vh, 44rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.75rem, 5vw, 5rem);
+  background-color: var(--brand-navy);
+  background-image:
+    radial-gradient(
+      ellipse 120% 80% at 75% -10%,
+      rgba(91, 155, 213, 0.3),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 90% 70% at 5% 110%,
+      rgba(201, 169, 97, 0.22),
+      transparent 60%
+    ),
+    linear-gradient(160deg, #16304d 0%, #0f2238 55%, #16304d 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Photo layer — inert until --cover-image is set. */
+.cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--cover-image, none);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Scrim so headline text stays legible over a photo or the gradient. */
+.cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    100deg,
+    rgba(10, 24, 40, 0.82) 0%,
+    rgba(10, 24, 40, 0.55) 45%,
+    rgba(10, 24, 40, 0.25) 100%
+  );
+}
+
+.cover-waves {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.cover-inner {
+  position: relative;
+  max-width: 46rem;
+}
+
+.cover-rule {
+  width: 3.5rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--brand-gold);
+}
+
+.cover-scroll {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(1rem, 3vw, 2rem);
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s ease;
+}
+
+.cover-scroll:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cover-scroll span:last-child {
+  animation: cover-bob 2.4s ease-in-out infinite;
+}
+
+@keyframes cover-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover-scroll span:last-child {
+    animation: none;
+  }
+}
+
+.hero-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(20, 52, 78, 0.96), rgba(22, 48, 77, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 80px -32px rgba(22, 48, 77, 0.8);
+  padding: clamp(1.25rem, 2vw, 2rem);
+}
+
+.hero-panel::before {
+  content: "";
+  position: absolute;
+  inset: auto auto -40% -20%;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 9999px;
+  background: rgba(201, 169, 97, 0.12);
+  filter: blur(70px);
+  animation: pulse-glow 10s ease-in-out infinite alternate;
+}
+
+.hero-grid {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+  grid-template-columns: 1.15fr 0.85fr;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-kicker {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--brand-gold);
+}
+
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.hero-stat {
+  min-width: 8.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(4px);
+}
+
+.hero-stat strong {
+  display: block;
+  font-size: 1.35rem;
+  color: white;
+}
+
+.hero-stat span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.step-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.step-card {
+  border-radius: 1rem;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+  padding: 1.1rem;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.step-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 12px 24px -18px rgba(16, 20, 24, 0.28);
+  transform: translateY(-2px);
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 6rem;
+  border-radius: 9999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.7rem;
+}
+
 .surface-card {
   background: var(--card);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(16, 20, 24, 0.04), 0 4px 10px -2px rgba(16, 20, 24, 0.06);
+  transition: box-shadow 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+/* For cards that are themselves a link/button target — signals real affordance. */
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 10px -2px rgba(16, 20, 24, 0.05), 0 12px 24px -8px rgba(16, 20, 24, 0.12);
+  transform: translateY(-2px);
 }
 
 .eyebrow {
@@ -87,4 +888,106 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+/* Advisory-firm display type — headlines only, never body copy. */
+.display-serif {
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ---- motion: a page settling into place, and a nudge on interactive elements ---- */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fade-in-up 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger-children>* {
+  opacity: 0;
+  animation: fade-in-up 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger-children>*:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.stagger-children>*:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.stagger-children>*:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.stagger-children>*:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.stagger-children>*:nth-child(5) {
+  animation-delay: 240ms;
+}
+
+.stagger-children>*:nth-child(6) {
+  animation-delay: 300ms;
+}
+
+.btn-lift {
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+
+.btn-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px -4px rgba(16, 20, 24, 0.18);
+}
+
+.btn-lift:active {
+  transform: translateY(0);
+}
+
+@keyframes pulse-glow {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.96);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: translate3d(10%, -8%, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 1023px) {
+
+  .hero-grid,
+  .step-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .page-enter,
+  .stagger-children>*,
+  .surface-card,
+  .btn-lift,
+  .hero-panel::before {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .stagger-children>* {
+    opacity: 1;
+  }
 }

@@ -1,14 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 type ShareControlsProps = {
+  /** Page-scoped presentation hook; persistence behaviour stays here. */
+  className?: string;
   initialShared: boolean;
   repId: string;
 };
 
-export function ShareControls({ initialShared, repId }: ShareControlsProps) {
+export function ShareControls({
+  className = "",
+  initialShared,
+  repId,
+}: ShareControlsProps) {
   const [shared, setShared] = useState(initialShared);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +45,7 @@ export function ShareControls({ initialShared, repId }: ShareControlsProps) {
   };
 
   return (
-    <section className="surface-card rounded-xl p-5">
+    <section className={`surface-card rounded-xl p-5 ${className}`}>
       <p className="eyebrow">Rep-owned</p>
       <h2 className="mt-1 text-lg font-semibold text-foreground">
         Sharing with manager
@@ -70,12 +75,10 @@ export function ShareControls({ initialShared, repId }: ShareControlsProps) {
               ? "Sharing progress · click to make private"
               : "Private · click to share progress"}
         </button>
-        <Link
-          href="/coach/manager"
-          className="text-sm font-medium text-accent hover:underline"
-        >
-          Open manager view →
-        </Link>
+        {/* No link to /coach/manager here — the middleware bounces employees, so it would dead-end. */}
+        <span className="text-sm text-muted">
+          Sign in as a manager to see what they see.
+        </span>
       </div>
 
       {error ? (

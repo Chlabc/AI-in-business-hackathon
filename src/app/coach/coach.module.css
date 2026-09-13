@@ -1,0 +1,456 @@
+/* Only /coach supplies these local classes. Pairing with surface-card beats
+   its unlayered background/border declarations regardless of CSS load order.
+   Hierarchy rules below are likewise confined to this page. */
+.onboarding:global(.surface-card) {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--border));
+}
+
+.verdict:global(.surface-card) {
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--card));
+  border-left-color: var(--accent);
+}
+
+.problem:global(.surface-card) {
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 30%, var(--border));
+}
+
+/* Semantic guidance surfaces stay local to the action section. */
+.approved {
+  background: color-mix(in srgb, var(--ok-soft) 55%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--ok) 20%, var(--border));
+}
+
+.avoid {
+  background: color-mix(in srgb, var(--danger-soft) 65%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--danger) 20%, var(--border));
+}
+
+.progress:global(.surface-card) {
+  border-color: color-mix(in srgb, var(--ok) 20%, var(--border));
+}
+
+.progress > div:first-child {
+  background: color-mix(in srgb, var(--ok-soft) 50%, var(--card));
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.sharing:global(.surface-card) {
+  background: color-mix(in srgb, var(--accent-soft) 30%, var(--card));
+  border-color: color-mix(in srgb, var(--accent) 15%, var(--border));
+}
+
+.problem > p:first-child {
+  font-size: clamp(2.25rem, 3vw, 3rem);
+  line-height: 1.1;
+}
+
+.guidance {
+  margin-top: 1rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  background: color-mix(in srgb, var(--accent-soft) 65%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+  border-left: 3px solid var(--accent);
+  border-radius: 0.75rem;
+}
+
+.pricing {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-block: 1rem;
+  border-block: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border));
+}
+
+@media (min-width: 640px) {
+  .pricing {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.approved,
+.avoid {
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+
+.weakestStage {
+  padding: 0.75rem 0.5rem;
+  background: var(--danger-soft);
+  border-radius: 0.5rem;
+}
+
+.weakestStage > span:first-child {
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.weakestStage > span:last-child {
+  width: auto;
+  min-width: 4.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.otherStage {
+  padding-inline: 0.5rem;
+}
+
+.otherStage > span:first-child {
+  color: var(--muted);
+}
+
+.otherStage > div > div {
+  opacity: 0.45;
+}
+
+.progress > div:first-child h2 {
+  font-size: 1.25rem;
+  line-height: 1.4;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--foreground);
+}
+
+.progress > div:nth-child(2) {
+  padding-block: 1.5rem;
+}
+
+.progress > div:nth-child(2) > div > p:first-child {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.progress > div:nth-child(2) > div > p:last-child {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress > div:nth-child(2) > div:nth-child(2) > p:last-child {
+  color: var(--accent);
+}
+
+.progress > div:nth-child(3) > p:first-child {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.progress > p:last-child {
+  padding-block: 0.75rem;
+}
+
+.secondary {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sharing:global(.surface-card),
+.rawCalls:global(.surface-card) {
+  padding: 1rem;
+  box-shadow: none;
+}
+
+.sharing > p:first-child {
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--muted);
+}
+
+.sharing > h2 {
+  font-size: 1rem;
+}
+
+.sharing > div {
+  margin-top: 0.75rem;
+}
+
+.sharing > div > span {
+  font-size: 0.75rem;
+}
+
+.profilePerformance {
+  display: grid;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.credential {
+  /* Credential-only tokens intentionally retain a light, warm identity in
+     both app themes. Descendant utilities inherit these without leaking out. */
+  --card: #f7f3eb;
+  --foreground: #20344b;
+  --muted: #6f665c;
+  --accent: #20344b;
+  --accent-soft: #e5ebef;
+  --border: #d6cfc3;
+  --credential-bronze: #79634d;
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  align-self: start;
+  perspective: 1200px;
+  perspective-origin: center;
+  border-radius: 1.25rem;
+  /* Clip projected edges, not the wrapper's own shadow. Unlike hidden,
+     overflow: clip does not flatten the preserved 3D scene. */
+  overflow: clip;
+  box-shadow:
+    0 1px 2px rgb(255 255 255 / 55%),
+    0 5px 12px -6px color-mix(in srgb, var(--accent) 24%, transparent),
+    0 18px 34px -18px color-mix(in srgb, var(--accent) 48%, transparent);
+}
+
+.credentialControl {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 1.25rem;
+  cursor: pointer;
+  background: transparent;
+}
+
+.credentialControl:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -4px;
+}
+
+.credentialRotor {
+  display: grid;
+  border-radius: inherit;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  transform: rotateY(0deg);
+  transform-origin: center;
+  transform-style: preserve-3d;
+  transition: transform 420ms ease-in-out;
+}
+
+.credentialRotor[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+
+.credentialFace.repProfile {
+  /* Both faces size the same intrinsic row, including the hidden face.
+     No absolute-positioned content or state-dependent sizing is needed. */
+  grid-area: 1 / 1;
+  align-self: stretch;
+  justify-self: stretch;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  aspect-ratio: auto;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  border-radius: inherit;
+  /* Warm frosted acrylic: translucency belongs to the face itself, while the
+     blur keeps anything behind it quiet enough for credential text. */
+  box-shadow:
+    inset 0 2px 1px rgb(255 255 255 / 92%),
+    inset 2px 0 1px rgb(255 255 255 / 72%),
+    inset -1px 0 2px color-mix(in srgb, #ccecf2 24%, transparent),
+    inset 0 -2px 4px color-mix(in srgb, var(--accent) 20%, transparent);
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 34%),
+      rgb(255 255 255 / 9%) 42%,
+      color-mix(in srgb, var(--card) 18%, transparent) 72%
+    ),
+    color-mix(in srgb, var(--card) 68%, transparent);
+  border-color: color-mix(in srgb, white 52%, var(--border));
+  backdrop-filter: blur(22px) saturate(124%);
+  -webkit-backdrop-filter: blur(22px) saturate(124%);
+  transform-origin: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.credentialFace.repProfile::before {
+  border-color: color-mix(in srgb, var(--credential-bronze) 18%, transparent);
+  box-shadow:
+    inset 1px 1px 0 rgb(255 255 255 / 75%),
+    inset -1px -1px 0 color-mix(in srgb, var(--accent) 14%, transparent),
+    0 0 8px rgb(255 255 255 / 24%);
+}
+
+/* Each face owns its reflection. No oversized/translated overlay and no
+   filters or opacity on the rotor that could flatten its preserved 3D. */
+.credentialFace.repProfile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    122deg,
+    transparent 8%,
+    rgb(255 255 255 / 7%) 19%,
+    rgb(255 255 255 / 38%) 30%,
+    rgb(255 255 255 / 64%) 37%,
+    rgb(255 255 255 / 28%) 44%,
+    color-mix(in srgb, #d7f3f5 14%, transparent) 51%,
+    transparent 63%
+  );
+  opacity: 0.72;
+  transform: translateX(-3%);
+  transition:
+    opacity 220ms ease,
+    transform 420ms ease;
+}
+
+/* Keep all credential content, especially the portrait, above the optical
+   reflection so the image remains crisp rather than looking washed out. */
+.credentialFace.repProfile > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .credential:hover .credentialFace.repProfile::after {
+    opacity: 0.9;
+    transform: translateX(3%);
+  }
+}
+
+.credential .employeeCompany > span {
+  color: var(--credential-bronze);
+}
+
+.credentialBack {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credentialRotor {
+    transition: none;
+  }
+
+  .credentialFace.repProfile::after {
+    transition: none;
+    transform: none;
+  }
+}
+
+.performancePanel {
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: 0.75rem;
+  background: var(--card);
+  box-shadow: 0 2px 6px rgb(16 20 24 / 4%);
+}
+
+.repProfile {
+  position: relative;
+  min-width: 0;
+  align-self: start;
+  aspect-ratio: 1.6;
+  padding: clamp(1.25rem, 2vw, 1.75rem);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--card));
+  box-shadow: 0 8px 20px -12px color-mix(in srgb, var(--accent) 35%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.repProfile::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  border-radius: 0.875rem;
+  pointer-events: none;
+}
+
+.employeeCompany {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.employeeIdentity {
+  display: grid;
+  grid-template-columns: minmax(4rem, 28%) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  flex: 1;
+}
+
+.employeePortrait {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 5;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--border));
+  border-radius: 0.375rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  font-weight: 600;
+}
+
+.performancePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.performanceMetrics {
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  flex: 1;
+}
+
+.metricBlock {
+  min-width: 0;
+  padding: 1rem;
+  background: var(--card);
+}
+
+.metricProblem {
+  background: color-mix(in srgb, var(--warn-soft) 65%, var(--card));
+}
+
+@media (min-width: 640px) {
+  .performanceMetrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .profilePerformance {
+    grid-template-columns: minmax(0, 37fr) minmax(0, 63fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .repProfile {
+    aspect-ratio: auto;
+  }
+
+  .employeeIdentity {
+    grid-template-columns: clamp(4rem, 18vw, 7rem) minmax(0, 1fr);
+  }
+}

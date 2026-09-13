@@ -404,9 +404,29 @@ export function DownloadPdfButton({
       type="button"
       onClick={() => void download()}
       disabled={busy}
-      className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent disabled:opacity-50"
+      className="btn-lift inline-flex h-12 shrink-0 items-center justify-center gap-2.5 rounded-full bg-accent px-7 text-base font-semibold text-accent-fg transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
     >
-      {busy ? "Preparing PDF…" : "Download PDF report"}
+      <DownloadIcon className="h-5 w-5" />
+      {busy ? "Preparing…" : "Download report"}
     </button>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 3v12" />
+      <path d="m7.5 10.5 4.5 4.5 4.5-4.5" />
+      <path d="M4 17.5v1.5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5" />
+    </svg>
   );
 }
