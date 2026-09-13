@@ -258,8 +258,11 @@ export default async function CoachPage() {
         </div>
       </section>
 
-      {/* 8 — paired stage weakness and practice progress */}
-      <div className="mt-3 grid items-start gap-6 lg:grid-cols-2 lg:gap-8">
+      {/* 8 — paired stage weakness and practice progress.
+             items-stretch, not items-start: the stage list is much shorter than
+             the progress panel, and leaving it top-aligned opened a tall empty
+             gap down the left of the page. */}
+      <div className="mt-3 grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
         <section className="surface-card rounded-xl p-6">
           <h2 className="text-lg font-semibold text-foreground">
             Where you struggle

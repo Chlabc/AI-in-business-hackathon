@@ -4,10 +4,10 @@ import { SCENARIOS } from "@/data/scenarios";
 
 export const dynamic = "force-dynamic";
 
-const difficultyClass: Record<string, string> = {
-  Easy: "border-ok/30 bg-ok-soft text-ok",
-  Medium: "border-warn/30 bg-warn-soft text-warn",
-  Hard: "border-danger/30 bg-danger-soft text-danger",
+const difficultyPill: Record<string, string> = {
+  Easy: "pill-ok",
+  Medium: "pill-warn",
+  Hard: "pill-danger",
 };
 
 export default function TrainingPage() {
@@ -29,41 +29,59 @@ export default function TrainingPage() {
         </p>
       </div>
 
-      <div className="stagger-children grid gap-4 lg:grid-cols-2">
+      <div className="stagger-children grid gap-5 lg:grid-cols-2">
         {SCENARIOS.map((s) => (
           <Link
             key={s.id}
             href={`/coach/practice?scenario=${s.id}`}
-            className={`card-interactive surface-card flex flex-col justify-between rounded-xl p-6 ${
-              s.recommended ? "border-accent/40" : ""
-            }`}
+            className={`card-interactive scenario-card ${s.recommended ? "scenario-card-pick" : ""}`}
           >
+            {s.recommended ? (
+              <span className="scenario-ribbon">★ Picked for you</span>
+            ) : null}
+
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold text-foreground">
-                  {s.title}
-                </h2>
-                <span
-                  className={`rounded border px-2 py-0.5 text-xs font-medium ${difficultyClass[s.difficulty]}`}
-                >
-                  {s.difficulty}
+              <span
+                className={`pill ${difficultyPill[s.difficulty] ?? "pill-neutral"}`}
+              >
+                {s.difficulty}
+              </span>
+              <h2 className="display-serif mt-3 text-2xl leading-tight text-foreground">
+                {s.title}
+              </h2>
+              <p className="mt-2 leading-relaxed text-muted">{s.description}</p>
+
+              {/* The client's opening line is the most concrete thing on the
+                  card — treat it as a quote, not another paragraph. */}
+              <blockquote className="scenario-quote">
+                <span className="scenario-quote-mark" aria-hidden>
+                  “
                 </span>
-                {s.recommended ? (
-                  <span className="rounded border border-accent/40 bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
-                    Recommended
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-2 text-sm text-muted">{s.description}</p>
-              <p className="mt-2 text-xs text-muted">
-                Skill: {s.skill} · Persona: {s.customerPersona}
-              </p>
-              <p className="mt-3 rounded-md border border-border bg-background px-3 py-2 text-sm italic text-foreground">
-                “{s.openingLine}”
-              </p>
+                {s.openingLine}
+              </blockquote>
+
+              <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs">
+                <div>
+                  <dt className="uppercase tracking-[0.12em] text-muted">
+                    You&apos;ll practise
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-foreground">
+                    {s.skill}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="uppercase tracking-[0.12em] text-muted">
+                    You&apos;ll be talking to
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-foreground">
+                    {s.customerPersona}
+                  </dd>
+                </div>
+              </dl>
             </div>
-            <span className="btn-lift mt-5 inline-flex h-10 w-fit items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-fg">
-              Start drill
+
+            <span className="btn-lift mt-6 inline-flex h-11 w-fit items-center justify-center gap-2 rounded-full bg-accent px-6 text-sm font-semibold text-accent-fg">
+              Start this drill →
             </span>
           </Link>
         ))}

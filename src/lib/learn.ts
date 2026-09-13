@@ -95,9 +95,52 @@ export function buildFlashcards(playbook: FirmPlaybook): Flashcard[] {
 }
 
 /**
- * Five multiple-choice questions grounded in playbook facts.
- * Deterministic option order (no Math.random) so demos stay stable.
+ * Build four DISTINCT priced options.
+ *
+ * The distractors used to be arithmetic on the playbook numbers (list - 20,
+ * floor - 10) with nothing checking the results differed. At the seeded values
+ * list - 20 and floor are both 80, and floor - 10 and competitor are both 70,
+ * so two questions rendered the same option twice. Candidates are now deduped
+ * and topped up until four genuinely different prices exist.
  */
+function pricedOptions(correct: number, candidates: number[], slot = 2) {
+  const seen = new Set<number>([correct]);
+  const values = [correct];
+
+  for (const c of candidates) {
+    if (values.length >= 4) break;
+    if (c > 0 && !seen.has(c)) {
+      seen.add(c);
+      values.push(c);
+    }
+  }
+  // Top up from a widening spread if the playbook's own numbers collide.
+  for (let step = 5; values.length < 4 && step <= 100; step += 5) {
+    for (const candidate of [correct + step, correct - step]) {
+      if (values.length >= 4) break;
+      if (candidate > 0 && !seen.has(candidate)) {
+        seen.add(candidate);
+        values.push(candidate);
+      }
+    }
+  }
+
+  const ids = ["a", "b", "c", "d"] as const;
+  // Deterministic placement (no Math.random, so demos stay stable), but each
+  // question puts the answer in a different slot — always-first is guessable,
+  // and so is always-third.
+  const others = values.filter((v) => v !== correct);
+  const placed = [
+    ...others.slice(0, slot),
+    correct,
+    ...others.slice(slot),
+  ].slice(0, 4);
+  return {
+    options: placed.map((v, i) => ({ id: ids[i], label: money(v) })),
+    correctId: ids[placed.indexOf(correct)],
+  };
+}
+
 export function buildQuiz(playbook: FirmPlaybook): QuizQuestion[] {
   const list = playbook.standardPermFeePct;
   const floor = playbook.feeFloorPct;
@@ -116,37 +159,20 @@ export function buildQuiz(playbook: FirmPlaybook): QuizQuestion[] {
     {
       id: "q_list",
       prompt: `What is ${playbook.firmName}’s list seat price in the playbook?`,
-      options: [
-        { id: "a", label: money(list) },
-        { id: "b", label: money(Math.max(10, list - 20)) },
-        { id: "c", label: money(competitor) },
-        { id: "d", label: money(floor) },
-      ],
-      correctId: "a",
+      ...pricedOptions(list, [floor, competitor, list - 20], 3),
       explain: `List is ${money(list)}. Floor is ${money(floor)} — different number.`,
     },
     {
       id: "q_floor",
-      prompt: "What is the fee floor you must not break without approval?",
-      options: [
-        { id: "a", label: money(list) },
-        { id: "b", label: money(floor) },
-        { id: "c", label: money(competitor) },
-        { id: "d", label: money(Math.max(5, floor - 10)) },
-      ],
-      correctId: "b",
+      prompt: "What is the price floor you must not break without approval?",
+      ...pricedOptions(floor, [list, competitor, floor - 10], 1),
       explain: `Floor is ${money(floor)}. Going below invents pricing the firm didn’t approve.`,
     },
     {
       id: "q_competitor",
-      prompt: "If the buyer cites a competitor seat price, which figure is in our playbook?",
-      options: [
-        { id: "a", label: money(list) },
-        { id: "b", label: money(floor) },
-        { id: "c", label: money(competitor) },
-        { id: "d", label: money(competitor + 15) },
-      ],
-      correctId: "c",
+      prompt:
+        "If the buyer cites a competitor seat price, which figure is in our playbook?",
+      ...pricedOptions(competitor, [list, floor, competitor + 15], 2),
       explain: `Playbook competitor quote is ${money(competitor)} — explore before matching.`,
     },
     {

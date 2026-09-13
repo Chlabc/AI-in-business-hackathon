@@ -80,23 +80,42 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setFlipped((f) => !f)}
-          className="surface-card min-h-[220px] w-full rounded-xl px-6 py-8 text-left transition hover:border-accent"
-        >
-          <p className="text-xs uppercase tracking-wider text-muted">
-            {card.tag} · {flipped ? "The answer" : "Question"}
-          </p>
-          <p className="mt-4 text-lg font-medium leading-relaxed text-foreground sm:text-xl">
-            {flipped ? card.back : card.front}
-          </p>
-          {/* A visible control, not grey fine print — people were missing that
-              the card has a back at all. */}
-          <span className="mt-6 inline-flex h-10 items-center rounded-full border border-accent/40 bg-accent-soft px-5 text-sm font-semibold text-accent">
-            {flipped ? "Hide the answer" : "Show the answer"}
-          </span>
-        </button>
+        {/* Same 3D flip as the employee credential: wrapper owns perspective
+            and clipping, rotor owns the transform, both faces share one grid
+            cell so the card never changes size between sides. */}
+        <div className="flashcard">
+          <button
+            type="button"
+            onClick={() => setFlipped((f) => !f)}
+            className="flashcard-control"
+            aria-label={
+              flipped ? "Hide the answer" : `Show the answer: ${card.front}`
+            }
+          />
+          <div className="flashcard-rotor" data-flipped={flipped}>
+            <div className="flashcard-face" aria-hidden={flipped}>
+              <span className="pill pill-accent w-fit">{card.tag}</span>
+              <p className="mt-5 text-lg font-medium leading-relaxed text-foreground sm:text-2xl">
+                {card.front}
+              </p>
+              <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full bg-accent px-6 text-sm font-semibold text-accent-fg">
+                Show the answer
+              </span>
+            </div>
+            <div
+              className="flashcard-face flashcard-back"
+              aria-hidden={!flipped}
+            >
+              <span className="pill pill-ok w-fit">Answer</span>
+              <p className="mt-5 text-lg font-medium leading-relaxed text-foreground sm:text-2xl">
+                {card.back}
+              </p>
+              <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full border border-border bg-card px-6 text-sm font-semibold text-muted">
+                Flip back
+              </span>
+            </div>
+          </div>
+        </div>
 
         <div className="flex flex-wrap gap-3">
           <button
