@@ -434,6 +434,7 @@ body {
     inset 2px 0 1px rgb(255 255 255 / 72%),
     inset -1px 0 2px color-mix(in srgb, #ccecf2 24%, transparent),
     inset 0 -2px 4px color-mix(in srgb, var(--fc-ink) 20%, transparent);
+  transform: rotateY(0deg);
   transform-origin: center;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -897,16 +898,17 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* ---- motion: a page settling into place, and a nudge on interactive elements ---- */
+/* ---- motion: a page settling into place, and a nudge on interactive elements ----
+   Opacity-only on purpose. A leftover transform on <main> (from translateY
+   + animation-fill-mode: both) flattens descendant preserve-3d and breaks the
+   employee-credential / flashcard flips into a mirrored front face. */
 @keyframes fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
