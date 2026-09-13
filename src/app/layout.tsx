@@ -48,7 +48,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* This runs before React and its contents are irrelevant to hydration,
+            so mismatches on it are never meaningful. Some antivirus products
+            (Kaspersky's web protection, for one) rewrite script tags in <head>
+            before React loads, which otherwise surfaces as a hydration error
+            that looks like an app bug but is entirely client-side. */}
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
       </head>
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <ThemeProvider>
