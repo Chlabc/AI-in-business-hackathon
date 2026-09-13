@@ -1,23 +1,46 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
-import { DEMO_REP_ID } from "@/data/seed";
+import { DEMO_REP_ID, getRep } from "@/data/seed";
 import { listAttempts } from "@/lib/attempts";
 import { getSession } from "@/lib/auth";
+import type { EvalSnapshot } from "@/lib/eval-snapshot";
+import { loadEvalSnapshot } from "@/lib/load-eval-snapshot";
 import {
   beforeAfterFromAttempts,
   USER_TEST_PROTOCOL,
+  type BeforeAfterEvidence,
 } from "@/lib/value-evidence";
 
 export const dynamic = "force-dynamic";
 
 export default async function ValuePage() {
   const user = await getSession();
+  const isManager = user?.role === "manager";
+
+  // A manager has no repId of their own. The page used to fall back to the demo
+  // rep and then say "are YOU getting better?" about someone else's drills, so
+  // the two roles now get the question each of them actually has.
   const repId = user?.repId ?? DEMO_REP_ID;
   const attempts = await listAttempts(repId);
   const evidence = beforeAfterFromAttempts(attempts);
+  const repName = getRep(repId)?.name ?? "the demo rep";
 
+  return isManager ? (
+    <ManagerEvidence
+      evidence={evidence}
+      repName={repName}
+      snapshot={loadEvalSnapshot()}
+    />
+  ) : (
+    <RepProgress evidence={evidence} />
+  );
+}
+
+/* ── Rep: am I improving? ─────────────────────────────────────────────── */
+
+function RepProgress({ evidence }: { evidence: BeforeAfterEvidence }) {
   return (
-    <AppShell focus="Value evidence">
+    <AppShell focus="My progress">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="eyebrow">Step 3 of 3 · Track</p>
@@ -58,15 +81,129 @@ export default async function ValuePage() {
         earlyPct={evidence.holdRateEarlyPct}
         latePct={evidence.holdRateLatePct}
       />
+    </AppShell>
+  );
+}
+
+/* ── Manager: does the tool work? ─────────────────────────────────────── */
+
+function ManagerEvidence({
+  evidence,
+  repName,
+  snapshot,
+}: {
+  evidence: BeforeAfterEvidence;
+  repName: string;
+  snapshot: EvalSnapshot;
+}) {
+  const h = snapshot.headlines;
+  const checks = [
+    {
+      value: h.scoringOverallPct,
+      pass: `${h.scoringOverallAgree}/${h.scoringTotal}`,
+      label: "Scoring agrees with a human grader",
+      explain: `On fixed transcripts a person graded by hand, our score landed within ${snapshot.overallAgreementBand} points of theirs.`,
+    },
+    {
+      value: h.diagnosisPct,
+      pass: `${h.diagnosisPassed}/${h.diagnosisTotal}`,
+      label: "Diagnosis picks the right weak spot",
+      explain:
+        "Given a rep's call history, it named the same stage and objection a human labelled.",
+    },
+    {
+      value: h.personaPct,
+      pass: `${h.personaPassed}/${h.personaTotal}`,
+      label: "Guardrails hold",
+      explain:
+        "The AI client never invented a price below the floor, and ignored instructions hidden in a transcript.",
+    },
+  ];
+
+  return (
+    <AppShell focus="Evidence">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow">For managers and evaluators</p>
+          <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
+            Does this tool actually work?
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted lg:text-base">
+            Two separate claims, kept separate: whether the coach{" "}
+            <strong className="font-medium text-foreground">judges well</strong>
+            , and whether reps{" "}
+            <strong className="font-medium text-foreground">improve</strong>.
+            Every figure is measured, not estimated.
+          </p>
+        </div>
+        <Link
+          href="/coach/health"
+          className="inline-flex h-10 items-center rounded-md border border-border px-4 text-sm text-muted transition hover:text-foreground"
+        >
+          Full accuracy report →
+        </Link>
+      </div>
+
+      {/* Claim 1 — the scorer is accurate. This is the strong evidence. */}
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Claim 1 — the coach judges calls the way a human would
+        </h2>
+        <div className="mt-3 grid gap-3 lg:grid-cols-3">
+          {checks.map((c) => (
+            <div key={c.label} className="surface-card rounded-xl p-5">
+              <div className="flex items-baseline gap-2.5">
+                <p className="text-4xl font-semibold tabular-nums text-ok">
+                  {c.value}
+                </p>
+                <p className="font-mono text-sm text-muted">{c.pass}</p>
+              </div>
+              <p className="mt-3 font-medium text-foreground">{c.label}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                {c.explain}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-xs text-muted">
+          Produced by <code className="font-mono">npm run eval</code>, last run{" "}
+          {new Date(snapshot.generatedAt).toLocaleString()}. It re-runs on
+          committed transcripts, so these numbers are reproducible rather than
+          claimed.
+        </p>
+      </section>
+
+      {/* Claim 2 — reps improve. Honest about its small sample. */}
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Claim 2 — reps improve with practice
+        </h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted">
+          One rep ({repName}) across {evidence.attemptCount} scored drills. This
+          is a demo sample, not a study — read it as a working loop, not proof.
+        </p>
+        <div className="mt-4 space-y-6">
+          <BeforeAfterScore
+            attemptCount={evidence.attemptCount}
+            firstScore={evidence.firstScore}
+            latestScore={evidence.latestScore}
+            scoreDelta={evidence.scoreDelta}
+          />
+          <PriceHold
+            earlyPct={evidence.holdRateEarlyPct}
+            latePct={evidence.holdRateLatePct}
+          />
+        </div>
+      </section>
 
       <section className="surface-card rounded-xl p-5 sm:p-6">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-          How we would prove this properly
+          How we would prove claim 2 properly
         </h2>
         <p className="mt-1 max-w-3xl text-sm leading-relaxed text-muted">
-          The numbers above are one person practising. Real evidence needs real
-          reps, so this is the protocol we would run next — written down rather
-          than filled in with invented quotes.
+          Claim 1 is already measured. Claim 2 needs real reps, so this is the
+          protocol we would run next — written down rather than filled in with
+          invented quotes.
         </p>
         <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted">
           {USER_TEST_PROTOCOL.map((step) => (
@@ -76,7 +213,6 @@ export default async function ValuePage() {
           ))}
         </ol>
       </section>
-
     </AppShell>
   );
 }
