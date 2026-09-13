@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import { HelpWidget } from "@/components/HelpWidget";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <ThemeProvider>
           {children}
+          <HelpWidget />
         </ThemeProvider>
       </body>
     </html>
