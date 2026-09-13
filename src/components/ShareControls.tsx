@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 type ShareControlsProps = {
@@ -70,12 +69,10 @@ export function ShareControls({ initialShared, repId }: ShareControlsProps) {
               ? "Sharing progress · click to make private"
               : "Private · click to share progress"}
         </button>
-        <Link
-          href="/coach/manager"
-          className="text-sm font-medium text-accent hover:underline"
-        >
-          Open manager view →
-        </Link>
+        {/* No link to /coach/manager here — the middleware bounces employees, so it would dead-end. */}
+        <span className="text-sm text-muted">
+          Sign in as a manager to see what they see.
+        </span>
       </div>
 
       {error ? (

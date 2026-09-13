@@ -1,43 +1,74 @@
 import { NextResponse } from "next/server";
-import { DEMO_REP_ID } from "@/data/seed";
-import { saveAttempt } from "@/lib/attempts";
+import {
+  jsonAuthError,
+  repIdForViewer,
+  requireRole,
+} from "@/lib/auth";
+import { saveAttempt, type PracticeAttempt } from "@/lib/attempts";
 import { scoreTranscript, type TranscriptTurn } from "@/lib/score";
 
 export async function POST(request: Request) {
-  let body: {
-    repId?: string;
-    conversationId?: string | null;
-    scenarioId?: string;
-    turns?: TranscriptTurn[];
-  };
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+    const user = await requireRole("employee");
 
-  const turns = (body.turns ?? []).filter(
-    (t) => t && typeof t.text === "string" && t.role,
-  ) as TranscriptTurn[];
+    let body: {
+      repId?: string;
+      conversationId?: string | null;
+      scenarioId?: string;
+      turns?: TranscriptTurn[];
+    };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    }
 
-  const userTurns = turns.filter((t) => t.role === "user");
-  if (userTurns.length === 0) {
-    return NextResponse.json(
-      { error: "Need at least one user turn to score" },
-      { status: 400 },
+    const turns = (body.turns ?? []).filter(
+      (t) => t && typeof t.text === "string" && t.role,
+    ) as TranscriptTurn[];
+
+    const userTurns = turns.filter((t) => t.role === "user");
+    if (userTurns.length === 0) {
+      return NextResponse.json(
+        { error: "Need at least one user turn to score" },
+        { status: 400 },
+      );
+    }
+
+    const repId = repIdForViewer(user);
+    const score = await scoreTranscript(
+      turns,
+      body.scenarioId ?? "price-objection",
     );
+
+    let attempt: PracticeAttempt;
+    let persisted = true;
+    try {
+      attempt = await saveAttempt({
+        repId,
+        conversationId: body.conversationId ?? null,
+        turns,
+        score,
+      });
+    } catch (err) {
+      // Vercel serverless FS is often read-only — never block the score card.
+      console.error(
+        "[practice/score] saveAttempt failed; returning score only",
+        err,
+      );
+      persisted = false;
+      attempt = {
+        id: `ephemeral_${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        repId,
+        conversationId: body.conversationId ?? null,
+        turns,
+        score,
+      };
+    }
+
+    return NextResponse.json({ attempt, score, persisted });
+  } catch (e) {
+    return jsonAuthError(e) ?? NextResponse.json({ error: "Error" }, { status: 500 });
   }
-
-  const score = await scoreTranscript(
-    turns,
-    body.scenarioId ?? "price-objection",
-  );
-  const attempt = await saveAttempt({
-    repId: body.repId ?? DEMO_REP_ID,
-    conversationId: body.conversationId ?? null,
-    turns,
-    score,
-  });
-
-  return NextResponse.json({ attempt, score });
 }

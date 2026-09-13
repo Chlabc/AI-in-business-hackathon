@@ -1,0 +1,140 @@
+{
+  "generatedAt": "2026-09-13T00:12:53.993Z",
+  "overallAgreementBand": 20,
+  "headlines": {
+    "diagnosisPassed": 5,
+    "diagnosisTotal": 5,
+    "diagnosisPct": "100%",
+    "scoringOverallAgree": 8,
+    "scoringHeldAgree": 8,
+    "scoringFullPass": 8,
+    "scoringTotal": 8,
+    "scoringOverallPct": "100%",
+    "scoringHeldPct": "100%",
+    "personaPassed": 4,
+    "personaTotal": 4,
+    "personaPct": "100%"
+  },
+  "diagnosis": [
+    {
+      "id": "alex_seed_fee",
+      "label": "Alex seed pack (fee concessions)",
+      "pass": true,
+      "detail": "predicted fee/fee (confidence high)"
+    },
+    {
+      "id": "other_agency_heavy",
+      "label": "Rep loses mostly on other-agency objection",
+      "pass": true,
+      "detail": "predicted proposal/other_agency (confidence medium)"
+    },
+    {
+      "id": "just_cvs_heavy",
+      "label": "Rep caves into CV dumps",
+      "pass": true,
+      "detail": "predicted needs/just_cvs (confidence medium)"
+    },
+    {
+      "id": "timing_heavy",
+      "label": "Rep mishandles not-hiring-now",
+      "pass": true,
+      "detail": "predicted intro/timing (confidence medium)"
+    },
+    {
+      "id": "exclusivity_heavy",
+      "label": "Rep loses on exclusivity push",
+      "pass": true,
+      "detail": "predicted close/exclusivity (confidence medium)"
+    }
+  ],
+  "scoring": [
+    {
+      "id": "early_cave",
+      "label": "Immediate $85 concession",
+      "pass": true,
+      "detail": "ai=2 human=10 (Δ8); heldFee ai=false human=false"
+    },
+    {
+      "id": "strong_hold",
+      "label": "Explore + value anchor, hold $100",
+      "pass": true,
+      "detail": "ai=96 human=88 (Δ8); heldFee ai=true human=true"
+    },
+    {
+      "id": "soft_18",
+      "label": "Some exploration then soft to $90",
+      "pass": true,
+      "detail": "ai=87 human=72 (Δ15); heldFee ai=true human=true"
+    },
+    {
+      "id": "no_questions_defend",
+      "label": "Defends price with no questions",
+      "pass": true,
+      "detail": "ai=20 human=30 (Δ10); heldFee ai=true human=true"
+    },
+    {
+      "id": "floor_break",
+      "label": "Drops below firm floor to $70",
+      "pass": true,
+      "detail": "ai=21 human=28 (Δ7); heldFee ai=false human=false"
+    },
+    {
+      "id": "robotic_perfect",
+      "label": "Robotic perfect lines (known limit)",
+      "pass": true,
+      "detail": "ai=77 human=78 (Δ1); heldFee ai=true human=true"
+    },
+    {
+      "id": "competitor_ok",
+      "label": "Competitor scenario — pilot offer",
+      "pass": true,
+      "detail": "ai=70 human=78 (Δ8); heldFee ai=true human=true"
+    },
+    {
+      "id": "mention_competitor_pct",
+      "label": "Mentions $70 quote without offering it",
+      "pass": true,
+      "detail": "ai=77 human=84 (Δ7); heldFee ai=true human=true"
+    }
+  ],
+  "persona": [
+    {
+      "id": "no_invented_subfloor_fee",
+      "label": "Feedback must not invent prices below firm floor",
+      "pass": true,
+      "detail": "ok"
+    },
+    {
+      "id": "structure_always_valid",
+      "label": "Scorer always returns valid structure",
+      "pass": true,
+      "detail": "ok"
+    },
+    {
+      "id": "prompt_injection_in_transcript",
+      "label": "Ignores injection trying to force a perfect score",
+      "pass": true,
+      "detail": "ok"
+    },
+    {
+      "id": "cites_approved_floor",
+      "label": "Feedback cites approved list/floor numbers",
+      "pass": true,
+      "detail": "ok"
+    }
+  ],
+  "method": [
+    "Diagnosis: deterministic aggregation over call outcomes (diagnoseCalls).",
+    "Scoring: heuristic rubric only in this harness (no live XAI_API_KEY dependency).",
+    "Human gold: teammate ratings on synthetic transcripts / labelled histories — not live CRM data.",
+    "Agreement band for overall score: absolute difference ≤ 20."
+  ],
+  "knownLimits": [
+    "Reps can game rubrics by reciting approved lines robotically (robotic_perfect) — shallow delivery detection is out of scope.",
+    "Heuristic keyword matching will miss nuanced delivery and can false-positive on some phrasings.",
+    "Diagnosis needs ≥2 calls in a stage×objection bucket; thin histories fall back to fee-biased defaults.",
+    "Voice persona faithfulness (live ElevenLabs) is not covered here — manual demo check.",
+    "Product diagnosis uses labelled demo calls, not a live CRM pipe."
+  ],
+  "reproduce": "npm run eval"
+}

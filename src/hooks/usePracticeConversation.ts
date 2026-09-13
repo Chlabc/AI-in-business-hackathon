@@ -4,14 +4,26 @@ import { Conversation } from "@elevenlabs/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PracticeScenario } from "@/data/scenarios";
 import {
+  explainElevenLabsError,
   formatUnknownError,
   isBenignElevenLabsError,
 } from "@/lib/elevenlabs-errors";
 import type { PracticeScore } from "@/lib/rubric";
+import type { FirmPlaybook } from "@/lib/playbook";
 import {
   buildSessionOverrides,
   formatDisconnectDetails,
 } from "@/lib/scenario-session";
+
+async function fetchPlaybook(): Promise<FirmPlaybook | undefined> {
+  try {
+    const res = await fetch("/api/playbook");
+    if (!res.ok) return undefined;
+    return (await res.json()) as FirmPlaybook;
+  } catch {
+    return undefined;
+  }
+}
 
 export type TranscriptTurn = {
   id: string;
@@ -56,6 +68,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   const [turns, setTurns] = useState<TranscriptTurn[]>([]);
   const turnsRef = useRef<TranscriptTurn[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [status, setStatus] = useState<SessionStatus>("idle");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [scoring, setScoring] = useState(false);
@@ -64,6 +77,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   const [lastDisconnect, setLastDisconnect] = useState<string | null>(null);
 
   const conversationRef = useRef<ConversationInstance | null>(null);
+  const conversationIdRef = useRef<string | null>(null);
   const endingRef = useRef(false);
   const scenarioRef = useRef(scenario);
   scenarioRef.current = scenario;
@@ -88,11 +102,13 @@ export function usePracticeConversation(scenario: PracticeScenario) {
 
   const resetLocal = useCallback(() => {
     setError(null);
+    setNotice(null);
     setLastDisconnect(null);
     setScore(null);
     setTurns([]);
     turnsRef.current = [];
     setConversationId(null);
+    conversationIdRef.current = null;
     setIsSpeaking(false);
   }, []);
 
@@ -119,38 +135,85 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     };
   }, [endSessionQuietly]);
 
-  const runScore = useCallback(async (cid: string | null) => {
-    const snapshot = turnsRef.current.filter((t) => t.role !== "system");
-    if (!snapshot.some((t) => t.role === "user")) {
-      setError("No spoken turns from you to score — try another drill.");
-      return;
-    }
-    setScoring(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/practice/score", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          conversationId: cid,
-          scenarioId: scenarioRef.current.id,
-          turns: snapshot.map(({ role, text }) => ({ role, text })),
-        }),
-      });
-      const data = (await res.json()) as {
-        score?: PracticeScore;
-        error?: string;
-      };
-      if (!res.ok || !data.score) {
-        throw new Error(data.error ?? "Scoring failed");
+  const mergeTurnSnapshots = useCallback(
+    (...lists: TranscriptTurn[][]) => {
+      const byKey = new Map<string, TranscriptTurn>();
+      for (const list of lists) {
+        for (const t of list) {
+          const key = `${t.role}:${t.text}`;
+          if (!byKey.has(key)) byKey.set(key, t);
+        }
       }
-      setScore(data.score);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Scoring failed");
-    } finally {
-      setScoring(false);
-    }
-  }, []);
+      return Array.from(byKey.values()).sort((a, b) =>
+        a.at.localeCompare(b.at),
+      );
+    },
+    [],
+  );
+
+  const waitForUserTurns = useCallback(
+    async (seed: TranscriptTurn[], maxMs = 2500) => {
+      const started = Date.now();
+      while (Date.now() - started < maxMs) {
+        const merged = mergeTurnSnapshots(seed, turnsRef.current);
+        if (merged.some((t) => t.role === "user")) return merged;
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      return mergeTurnSnapshots(seed, turnsRef.current);
+    },
+    [mergeTurnSnapshots],
+  );
+
+  const runScore = useCallback(
+    async (cid: string | null, seedTurns: TranscriptTurn[]) => {
+      setScoring(true);
+      setError(null);
+      setNotice("Finishing transcript…");
+
+      // Seed = turns already on screen when End was clicked.
+      // Also wait briefly for any late ASR that arrives after endSession.
+      const merged = await waitForUserTurns(seedTurns, 2500);
+      const snapshot = merged.filter((t) => t.role !== "system");
+
+      if (!snapshot.some((t) => t.role === "user")) {
+        setScoring(false);
+        setScore(null);
+        setNotice(
+          "Session ended before we caught your reply — speak, pause a beat, then End & score.",
+        );
+        return;
+      }
+
+      // Keep UI in sync with whatever we scored
+      turnsRef.current = merged;
+      setTurns(merged);
+      setNotice(null);
+      try {
+        const res = await fetch("/api/practice/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            conversationId: cid,
+            scenarioId: scenarioRef.current.id,
+            turns: snapshot.map(({ role, text }) => ({ role, text })),
+          }),
+        });
+        const data = (await res.json()) as {
+          score?: PracticeScore;
+          error?: string;
+        };
+        if (!res.ok || !data.score) {
+          throw new Error(data.error ?? "Scoring failed");
+        }
+        setScore(data.score);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Scoring failed");
+      } finally {
+        setScoring(false);
+      }
+    },
+    [waitForUserTurns],
+  );
 
   const startingRef = useRef(false);
 
@@ -175,19 +238,22 @@ export function usePracticeConversation(scenario: PracticeScenario) {
 
     try {
       const sc = scenarioRef.current;
-      const token = await fetchConversationToken();
+      const [token, playbook] = await Promise.all([
+        fetchConversationToken(),
+        fetchPlaybook(),
+      ]);
 
       const conv = await Conversation.startSession({
         conversationToken: token,
         userId: "rep_demo_alex",
-        overrides: buildSessionOverrides(sc),
+        overrides: buildSessionOverrides(sc, playbook),
         onConnect: () => {
           if (endingRef.current) return;
           startingRef.current = false;
           setStatus("connected");
           pushTurn(
             "system",
-            `Connected · ${sc.title} — speak as the recruitment consultant.`,
+            `Connected · ${sc.title} — speak as the Account Executive.`,
           );
         },
         onDisconnect: (details) => {
@@ -203,11 +269,12 @@ export function usePracticeConversation(scenario: PracticeScenario) {
           if (endingRef.current || isBenignElevenLabsError(message, context)) {
             return;
           }
-          const text =
+          const raw =
             typeof message === "string" && message.trim()
               ? message
               : formatUnknownError(context) || "Voice session error";
-          if (!text) return;
+          if (!raw) return;
+          const text = explainElevenLabsError(raw);
           setError(text);
           pushTurn("system", `Error: ${text}`);
           setStatus("error");
@@ -225,8 +292,13 @@ export function usePracticeConversation(scenario: PracticeScenario) {
             (message as { text?: string }).text ??
             "";
           if (!text) return;
+          // SDK uses role: user|agent and deprecated source: user|ai
           const role: TranscriptTurn["role"] =
-            roleRaw === "user" || roleRaw === "human" ? "user" : "agent";
+            roleRaw === "user" || roleRaw === "human"
+              ? "user"
+              : roleRaw === "agent" || roleRaw === "ai"
+                ? "agent"
+                : "agent";
           pushTurn(role, text);
         },
         onAgentToolResponse: (tool) => {
@@ -246,25 +318,33 @@ export function usePracticeConversation(scenario: PracticeScenario) {
 
       conversationRef.current = conv;
       try {
-        setConversationId(conv.getId?.() ?? null);
+        const id = conv.getId?.() ?? null;
+        conversationIdRef.current = id;
+        setConversationId(id);
       } catch {
         /* id may not be ready */
       }
     } catch (e) {
       conversationRef.current = null;
       startingRef.current = false;
-      const message =
+      const raw =
         e instanceof Error
           ? e.message
           : formatUnknownError(e) || "Failed to start session";
+      const message = explainElevenLabsError(raw);
       if (!isBenignElevenLabsError(message, e)) setError(message);
       setStatus("idle");
     }
   }, [pushTurn, resetLocal]);
 
   const end = useCallback(async () => {
-    const cid = conversationId;
+    const cid = conversationIdRef.current ?? conversationId;
+    // Capture whatever is already on screen NOW — before teardown races.
+    const seedTurns = turnsRef.current.slice();
     endingRef.current = true;
+    setScoring(true);
+    setError(null);
+    setNotice("Ending session…");
     const conv = conversationRef.current;
     conversationRef.current = null;
     try {
@@ -275,9 +355,7 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     } finally {
       setStatus("idle");
       setIsSpeaking(false);
-      setTimeout(() => {
-        void runScore(cid);
-      }, 450);
+      void runScore(cid, seedTurns);
     }
   }, [conversationId, runScore]);
 
@@ -298,9 +376,13 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     [],
   );
 
+  const latestClientText =
+    [...turns].reverse().find((t) => t.role === "agent")?.text ?? null;
+
   return {
     turns,
     error,
+    notice,
     status,
     isSpeaking,
     scoring,
@@ -313,5 +395,6 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     getInputLevels,
     getOutputLevels,
     userLines: turns.filter((t) => t.role === "user").map((t) => t.text),
+    latestClientText,
   };
 }

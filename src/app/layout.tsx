@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
-import { RoleProvider } from "@/components/RoleProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -24,7 +23,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: "Cornerman — AI Sales Coach",
   description:
-    "Diagnose where you lose deals, then drill that weak spot in a live spoken roleplay. Rep-owned coaching for recruitment consultants.",
+    "Diagnose where you lose deals, then drill that weak spot in a live spoken roleplay. Rep-owned coaching for B2B SaaS account executives.",
 };
 
 const themeInitScript = `
@@ -52,7 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <ThemeProvider>
-          <RoleProvider>{children}</RoleProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>

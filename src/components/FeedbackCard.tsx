@@ -1,5 +1,7 @@
+"use client";
+
+import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import type { PracticeScore } from "@/lib/rubric";
-import { DownloadPdfButton } from "./DownloadPdfButton";
 
 type FeedbackCardProps = {
   score: PracticeScore;
@@ -7,13 +9,18 @@ type FeedbackCardProps = {
   repName?: string;
 };
 
+/** Green / amber / red so a weak criterion is obvious without reading the number. */
 function tierBarClass(fraction: number) {
   if (fraction >= 0.8) return "bg-ok";
   if (fraction >= 0.5) return "bg-warn";
   return "bg-danger";
 }
 
-export function FeedbackCard({ score, whatYouSaid = [], repName }: FeedbackCardProps) {
+export function FeedbackCard({
+  score,
+  whatYouSaid = [],
+  repName = "Alex Chen",
+}: FeedbackCardProps) {
   const said =
     whatYouSaid.length > 0
       ? whatYouSaid.slice(-3)
@@ -29,7 +36,7 @@ export function FeedbackCard({ score, whatYouSaid = [], repName }: FeedbackCardP
               Score {score.overall}/100
             </h2>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs">
             <span className="rounded border border-border bg-card px-2 py-1 text-muted">
               {score.method}
             </span>
@@ -40,10 +47,14 @@ export function FeedbackCard({ score, whatYouSaid = [], repName }: FeedbackCardP
                   : "border-warn/30 bg-warn-soft text-warn"
               }`}
             >
-              {score.heldFee ? "Fee held" : "Fee softened"}
+              {score.heldFee ? "Price held" : "Price softened"}
               {score.feeOfferedPct !== null ? ` · ${score.feeOfferedPct}%` : ""}
             </span>
-            <DownloadPdfButton score={score} whatYouSaid={whatYouSaid} repName={repName} />
+            <DownloadPdfButton
+              score={score}
+              whatYouSaid={whatYouSaid}
+              repName={repName}
+            />
           </div>
         </div>
       </div>

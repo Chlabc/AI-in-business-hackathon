@@ -1,60 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { DayIcon, NightIcon } from "@/components/ThemeIcons";
 import {
   DiagnosisIcon,
   DrillIcon,
+  LightbulbIcon,
+  LockIcon,
   ManagerIcon,
   ScenariosIcon,
+  ScoreIcon,
 } from "@/components/NavIcons";
-import { useRole } from "@/components/RoleProvider";
 import { useTheme } from "@/components/ThemeProvider";
+import type { SessionUser } from "@/lib/auth-types";
+import { navForRole } from "@/lib/auth-nav";
 
 type AppHeaderProps = {
-  repName?: string;
+  user?: SessionUser | null;
   focus?: string;
-  /** "marketing" is the public landing page — simpler nav, no rep context, one clear CTA. */
+  /** "marketing" is the public landing page — no rep context, one clear CTA. */
   variant?: "app" | "marketing";
 };
 
-const REP_LINKS = [
-  { href: "/coach", label: "Diagnosis", Icon: DiagnosisIcon },
-  { href: "/coach/training", label: "Scenarios", Icon: ScenariosIcon },
-  { href: "/coach/practice", label: "Drill", Icon: DrillIcon },
-];
+type IconComponent = (props: { className?: string }) => React.ReactElement;
 
-const MANAGER_LINKS = [
-  { href: "/coach/manager", label: "Team overview", Icon: ManagerIcon },
-];
-
-/**
- * A demo-only role switch — not access control. It exists so the rep/manager
- * split is visible in the product, the way the privacy model already claims.
- */
-function RoleSwitch() {
-  const { role, setRole } = useRole();
-  return (
-    <div className="flex items-center gap-1 rounded-full border border-border bg-background p-0.5">
-      {(["rep", "manager"] as const).map((r) => (
-        <button
-          key={r}
-          type="button"
-          onClick={() => setRole(r)}
-          title="Demo role switch — not a login"
-          className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize transition ${
-            role === r
-              ? "bg-accent text-accent-fg"
-              : "text-muted hover:text-foreground"
-          }`}
-        >
-          {r}
-        </button>
-      ))}
-    </div>
-  );
-}
+/** Labels come from auth-nav (the source of truth for what a role may see); icons are looked up here. */
+const NAV_ICONS: Record<string, IconComponent> = {
+  "/coach": DiagnosisIcon,
+  "/coach/learn": LightbulbIcon,
+  "/coach/training": ScenariosIcon,
+  "/coach/practice": DrillIcon,
+  "/coach/value": ScoreIcon,
+  "/coach/manager": ManagerIcon,
+  "/coach/playbook": ScenariosIcon,
+  "/coach/health": ScoreIcon,
+  "/login": LockIcon,
+};
 
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
@@ -78,12 +61,31 @@ function ThemeToggle() {
 }
 
 export function AppHeader({
-  repName = "Alex Chen",
-  focus = "Fee concessions",
+  user = null,
+  focus,
   variant = "app",
 }: AppHeaderProps) {
   const pathname = usePathname();
-  const { role } = useRole();
+  const router = useRouter();
+  const [signingOut, setSigningOut] = useState(false);
+
+  const nav = navForRole(user?.role ?? null);
+  const identityLabel = user
+    ? user.role === "manager"
+      ? `Manager: ${user.name}`
+      : `Rep: ${user.name}`
+    : "Not signed in";
+
+  async function signOut() {
+    setSigningOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.replace("/login");
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   if (variant === "marketing") {
     return (
@@ -108,10 +110,10 @@ export function AppHeader({
             <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
             <ThemeToggle />
             <Link
-              href="/coach"
+              href="/login"
               className="btn-lift inline-flex h-9 items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-fg transition hover:opacity-90"
             >
-              Open coach
+              Sign in
             </Link>
           </nav>
         </div>
@@ -123,68 +125,113 @@ export function AppHeader({
     <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur-sm">
       <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10 xl:px-12">
         <div className="flex min-w-0 items-center gap-4 sm:gap-6">
-          <Link href="/" className="shrink-0">
+          <Link
+            href={
+              user
+                ? user.role === "manager"
+                  ? "/coach/manager"
+                  : "/coach"
+                : "/"
+            }
+            className="shrink-0"
+          >
             <span className="text-base font-semibold tracking-tight text-foreground">
               Cornerman
             </span>
           </Link>
           <div className="hidden h-4 w-px bg-border sm:block" />
           <div className="hidden min-w-0 items-center gap-3 text-sm sm:flex">
-            {role === "manager" ? (
-              <span className="truncate text-muted">
-                Viewing as{" "}
-                <span className="font-medium text-foreground">manager</span> —
-                summaries only, no transcripts
-              </span>
-            ) : (
+            <span className="truncate font-medium text-foreground">
+              {identityLabel}
+            </span>
+            {focus ? (
               <>
-                <span className="truncate text-muted">
-                  Rep:{" "}
-                  <span className="font-medium text-foreground">{repName}</span>
-                </span>
                 <span className="text-border">|</span>
                 <span className="truncate text-muted">
                   Focus:{" "}
                   <span className="font-medium text-accent">{focus}</span>
                 </span>
               </>
-            )}
+            ) : null}
           </div>
         </div>
 
         <div className="flex items-center gap-1">
-          {(role === "manager" ? MANAGER_LINKS : REP_LINKS).map((link, i) => {
-            const active = pathname === link.href;
+          {nav.map((item) => {
+            const Icon = NAV_ICONS[item.href];
+            const active = pathname === item.href;
             return (
               <Link
-                key={link.href}
-                href={link.href}
-                className={`hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 sm:inline-flex ${
-                  i === 3 ? "md:inline-flex" : ""
-                } ${
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`hidden items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 lg:inline-flex ${
                   active
                     ? "bg-accent-soft text-accent"
                     : "text-muted hover:bg-accent-soft hover:text-foreground"
                 }`}
               >
-                <link.Icon className="h-4 w-4" />
-                {link.label}
+                {Icon ? <Icon className="h-4 w-4" /> : null}
+                {item.label}
               </Link>
             );
           })}
-          <div className="mx-1 hidden h-4 w-px bg-border sm:block" />
-          <RoleSwitch />
+          {user ? (
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              disabled={signingOut}
+              className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-muted transition hover:bg-accent-soft hover:text-foreground disabled:opacity-50 lg:inline-flex"
+            >
+              {signingOut ? "…" : "Sign out"}
+            </button>
+          ) : null}
+          <div className="mx-1 hidden h-4 w-px bg-border lg:block" />
           <ThemeToggle />
         </div>
       </div>
-      <div className="mx-auto flex w-full max-w-[1800px] gap-3 px-4 pb-3 text-xs text-muted sm:hidden sm:px-6 lg:px-10 xl:px-12">
-        <span>
-          Rep: <span className="text-foreground">{repName}</span>
-        </span>
-        <span>·</span>
-        <span>
-          Focus: <span className="text-accent">{focus}</span>
-        </span>
+
+      {/* Below lg the nav moves under the bar so five labels never truncate. */}
+      <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-2 px-4 pb-3 text-xs sm:px-6 lg:hidden">
+        <div className="flex gap-3 text-muted">
+          <span className="text-foreground">{identityLabel}</span>
+          {focus ? (
+            <>
+              <span>·</span>
+              <span>
+                Focus: <span className="text-accent">{focus}</span>
+              </span>
+            </>
+          ) : null}
+        </div>
+        <nav className="flex flex-wrap gap-1">
+          {nav.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`rounded-md px-2.5 py-1 font-medium transition ${
+                  active
+                    ? "bg-accent-soft text-accent"
+                    : "text-muted hover:bg-accent-soft hover:text-foreground"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+          {user ? (
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="rounded-md px-2.5 py-1 font-medium text-muted transition hover:bg-accent-soft hover:text-foreground"
+            >
+              Sign out
+            </button>
+          ) : null}
+        </nav>
       </div>
     </header>
   );

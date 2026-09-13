@@ -4,11 +4,9 @@ import { GuidedDemo } from "@/components/GuidedDemo";
 import { KILL_LIST, PHASES, SCOPE_SENTENCE } from "@/lib/phases";
 import { SCENARIOS } from "@/data/scenarios";
 import {
-  DiagnosisIcon,
   DrillIcon,
   LightbulbIcon,
   LockIcon,
-  ManagerIcon,
   ScoreIcon,
 } from "@/components/NavIcons";
 
@@ -111,7 +109,7 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
               <Link
-                href="/coach/practice"
+                href="/login"
                 className="btn-lift inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-gold-fg"
               >
                 Try the coach ›
@@ -220,10 +218,10 @@ export default function Home() {
         </h2>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/coach"
+            href="/login"
             className="btn-lift inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-gold-fg"
           >
-            Open the coach ›
+            Sign in to the coach ›
           </Link>
           <a
             href="#build-phases"

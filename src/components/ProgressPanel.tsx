@@ -37,7 +37,7 @@ export function ProgressPanel({
           </p>
         </div>
         <div>
-          <p className="text-xs uppercase tracking-wider text-muted">Fee hold</p>
+          <p className="text-xs uppercase tracking-wider text-muted">Price hold</p>
           <p className="mt-1 text-2xl font-semibold">
             {feeHoldRate === null ? "—" : `${feeHoldRate}%`}
           </p>

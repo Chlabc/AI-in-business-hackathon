@@ -49,21 +49,22 @@ export const PHASES: Phase[] = [
     id: 5,
     title: "Eval harness",
     hours: "24–30",
-    status: "active",
-    summary: "Diagnosis accuracy + scoring–human agreement",
+    status: "done",
+    summary: "Diagnosis accuracy + scoring–human agreement (`npm run eval`)",
   },
   {
     id: 6,
     title: "User tests & value",
     hours: "30–36",
-    status: "pending",
-    summary: "3–5 sessions, before/after, ROI blurb",
+    status: "done",
+    summary:
+      "Value page: before/after, ROI blurb, 3–5 labeled user-test sessions",
   },
   {
     id: 7,
     title: "Harden & document",
     hours: "36–42",
-    status: "pending",
+    status: "active",
     summary: "Stress cases, README, architecture diagram",
   },
   {
@@ -76,12 +77,12 @@ export const PHASES: Phase[] = [
 ];
 
 export const SCOPE_SENTENCE =
-  "Cornerman diagnoses a recruitment rep’s losing pattern from seeded call outcomes, runs a live ElevenLabs fee-objection roleplay, scores against approved talk-tracks, and shows progress — rep-owned, not surveillance.";
+  "Cornerman diagnoses a B2B SaaS AE’s losing pattern from seeded call outcomes, runs a live ElevenLabs price-objection roleplay, scores against approved talk-tracks, and shows progress — rep-owned, not surveillance.";
 
 export const KILL_LIST = [
-  "Live CRM / ATS / call-recording integration",
-  "Multi-vertical generic sales coaching",
+  "Live CRM / call-recording integration",
+  "Multi-vertical generic sales coaching (demo is B2B SaaS-deep)",
   "Manager “who’s failing” leaderboard or raw transcript surveillance",
   "Mobile apps, payments, full enterprise SSO",
-  "Invented fees or ungrounded best-practice advice",
+  "Invented prices or ungrounded best-practice advice",
 ] as const;

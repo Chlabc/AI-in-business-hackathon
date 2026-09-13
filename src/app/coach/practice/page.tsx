@@ -2,19 +2,37 @@ import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { PracticeSession } from "@/components/PracticeSession";
 import { getScenario } from "@/data/scenarios";
-import { getTalkTrackForObjection } from "@/data/seed";
+import { DEMO_REP_ID } from "@/data/seed";
+import { requireRole } from "@/lib/auth";
+import { diagnoseRep } from "@/lib/diagnosis";
+import { getPlaybook, getPlaybookTalkTrack } from "@/lib/playbook";
+import { applyPlaybookToScenario } from "@/lib/scenario-session";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
   searchParams: Promise<{ scenario?: string }>;
 };
 
 export default async function PracticePage({ searchParams }: Props) {
+  const user = await requireRole("employee");
+  const repId = user.repId ?? DEMO_REP_ID;
   const params = await searchParams;
-  const scenario = getScenario(params.scenario);
-  const track = getTalkTrackForObjection(scenario.objectionType);
+  const baseScenario = getScenario(params.scenario);
+  const playbook = await getPlaybook();
+  const scenario = applyPlaybookToScenario(baseScenario, playbook);
+  const track = getPlaybookTalkTrack(playbook, scenario.objectionType);
+  const diagnosis = diagnoseRep(repId);
+
+  const headline =
+    scenario.id === "price-objection"
+      ? (diagnosis?.headline ??
+        "Drill the fee conversation — your seeded weak spot.")
+      : `${scenario.skill}: ${scenario.description}`;
 
   return (
     <AppShell focus={scenario.skill}>
+      {/* Manager-only pages are omitted here — middleware would bounce an employee. */}
       <div className="flex flex-wrap gap-4 text-sm">
         <Link href="/coach" className="text-muted transition hover:text-accent">
           ← Diagnosis
@@ -28,21 +46,29 @@ export default async function PracticePage({ searchParams }: Props) {
       </div>
 
       <div>
-        <p className="eyebrow">Live practice · {scenario.difficulty}</p>
-        <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
+        <p className="eyebrow">Live practice</p>
+        {/* The title is repeated inside PracticeSession's step header, so it is stated once here. */}
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
           {scenario.title}
         </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          You&apos;re speaking with a {scenario.customerPersona.toLowerCase()}.
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted lg:text-base">
+          {scenario.description}
+        </p>
+        <p className="mt-2 text-sm text-muted">
+          Difficulty:{" "}
+          <span className="font-medium capitalize text-foreground">
+            {scenario.difficulty}
+          </span>
         </p>
       </div>
 
-      {/* key forces a clean voice session when switching scenarios */}
       <PracticeSession
         key={scenario.id}
         scenario={scenario}
-        doThis={track.anchorPoints}
-        avoidThis={track.neverDo}
+        track={track}
+        standardFeePct={playbook.standardPermFeePct}
+        feeFloorPct={playbook.feeFloorPct}
+        diagnosisHeadline={headline}
       />
     </AppShell>
   );

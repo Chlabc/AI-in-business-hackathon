@@ -2,10 +2,10 @@ import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { OnboardingBanner } from "@/components/OnboardingBanner";
 import { ProgressPanel } from "@/components/ProgressPanel";
-import { RoleNotice } from "@/components/RoleNotice";
 import { ShareControls } from "@/components/ShareControls";
 import { DEMO_REP_ID } from "@/data/seed";
 import { listAttempts, practiceKpisFromAttempts } from "@/lib/attempts";
+import { requireRole } from "@/lib/auth";
 import { getRepDashboard } from "@/lib/diagnosis";
 import { getShareSettings } from "@/lib/share";
 
@@ -21,23 +21,25 @@ function label(value: string) {
 }
 
 export default async function CoachPage() {
-  const dash = getRepDashboard(DEMO_REP_ID);
+  const user = await requireRole("employee");
+  const repId = user.repId ?? DEMO_REP_ID;
+  const dash = getRepDashboard(repId);
 
   if (!dash) {
     return <div className="px-6 py-12 text-muted">Demo rep not found.</div>;
   }
 
-  const { rep, firm, kpis, diagnosis, recentCalls } = dash;
-  const attempts = await listAttempts(DEMO_REP_ID);
+  const { rep, firm, kpis, diagnosis, talkTrack, recentCalls } = dash;
+  const attempts = await listAttempts(repId);
   const practice = practiceKpisFromAttempts(attempts);
   kpis.practice = practice;
-  const share = await getShareSettings(DEMO_REP_ID);
+  const share = await getShareSettings(repId);
 
-  /** Each number gets a sentence saying what it actually means. */
+  /** Every number gets a sentence saying what it actually means. */
   const numbers = [
     {
       value: pct(kpis.feeConcessionRate),
-      meaning: "of your fee conversations ended with you dropping the price",
+      meaning: "of your price conversations ended with you dropping the price",
       isProblem: true,
     },
     {
@@ -53,8 +55,7 @@ export default async function CoachPage() {
   ];
 
   return (
-    <AppShell repName={rep.name} focus="Fee concessions">
-      <RoleNotice side="rep" />
+    <AppShell focus="Price concessions">
       <OnboardingBanner />
 
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -68,9 +69,17 @@ export default async function CoachPage() {
             role
           </p>
         </div>
-        <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
-          Seeded demo data · not a live CRM
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/coach/value"
+            className="rounded border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-semibold text-accent transition hover:opacity-90"
+          >
+            Value / evidence →
+          </Link>
+          <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
+            Seeded demo data · not a live CRM
+          </span>
+        </div>
       </div>
 
       {/* ── The verdict, and the one thing to do about it ───────────── */}
@@ -158,6 +167,51 @@ export default async function CoachPage() {
         </div>
       </section>
 
+      {/* ── What good looks like, straight from the firm's playbook ──── */}
+      <section className="surface-card rounded-xl p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          What your firm says to do here
+        </h2>
+        <h3 className="mt-2 text-lg font-semibold text-foreground">
+          {talkTrack.title}
+        </h3>
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+          {talkTrack.approvedPlay}
+        </p>
+        <div className="mt-5 grid gap-6 sm:grid-cols-2">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-ok">
+              Do this
+            </p>
+            <ul className="mt-2 space-y-1.5 text-sm text-foreground">
+              {talkTrack.anchorPoints.map((p) => (
+                <li key={p} className="flex gap-2 leading-relaxed">
+                  <span aria-hidden className="text-ok">
+                    ✓
+                  </span>
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-danger">
+              Never do this
+            </p>
+            <ul className="mt-2 space-y-1.5 text-sm text-foreground">
+              {talkTrack.neverDo.map((p) => (
+                <li key={p} className="flex gap-2 leading-relaxed">
+                  <span aria-hidden className="text-danger">
+                    ✕
+                  </span>
+                  {p}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       {/* ── Where it breaks down + your practice so far ──────────────── */}
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <section className="surface-card rounded-xl p-6">
@@ -196,7 +250,7 @@ export default async function CoachPage() {
 
       <ShareControls
         initialShared={share.shareProgressWithManager}
-        repId={DEMO_REP_ID}
+        repId={repId}
       />
 
       {/* ── The raw data, available but not shouting ─────────────────── */}

@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { DEMO_REP_ID } from "@/data/seed";
+import { dataStorePath } from "@/lib/file-store";
 
 export type ShareSettings = {
   repId: string;
@@ -8,7 +9,7 @@ export type ShareSettings = {
   updatedAt: string;
 };
 
-const STORE = path.join(process.cwd(), "data", "share-settings.json");
+const STORE = dataStorePath("share-settings.json");
 
 async function readAll(): Promise<Record<string, ShareSettings>> {
   try {

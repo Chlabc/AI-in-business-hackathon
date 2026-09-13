@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { PracticeScore } from "@/lib/rubric";
 
 type DownloadPdfButtonProps = {
@@ -24,6 +25,16 @@ const COLOR = {
 };
 type RGB = readonly [number, number, number];
 
+function setRgb(doc: { setTextColor: (r: number, g: number, b: number) => void }, c: RGB) {
+  doc.setTextColor(c[0], c[1], c[2]);
+}
+function setFill(doc: { setFillColor: (r: number, g: number, b: number) => void }, c: RGB) {
+  doc.setFillColor(c[0], c[1], c[2]);
+}
+function setDraw(doc: { setDrawColor: (r: number, g: number, b: number) => void }, c: RGB) {
+  doc.setDrawColor(c[0], c[1], c[2]);
+}
+
 const PAGE_MARGIN = 18;
 const PAGE_WIDTH = 210;
 const PAGE_HEIGHT = 297;
@@ -41,15 +52,19 @@ export function DownloadPdfButton({
   whatYouSaid = [],
   repName = "Rep",
 }: DownloadPdfButtonProps) {
+  const [busy, setBusy] = useState(false);
+
   async function download() {
+    setBusy(true);
+    try {
     const { jsPDF } = await import("jspdf");
     const doc = new jsPDF({ unit: "mm", format: "a4" });
     let y = 0;
 
     function drawHeader() {
-      doc.setFillColor(...COLOR.navy);
+      setFill(doc, COLOR.navy);
       doc.rect(0, 0, PAGE_WIDTH, 30, "F");
-      doc.setFillColor(...COLOR.gold);
+      setFill(doc, COLOR.gold);
       doc.rect(0, 30, PAGE_WIDTH, 1.2, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(17);
@@ -57,7 +72,7 @@ export function DownloadPdfButton({
       doc.text("CORNERMAN", PAGE_MARGIN, 14);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.setTextColor(...COLOR.headerText);
+      setRgb(doc, COLOR.headerText);
       doc.text("SALES PRACTICE REPORT", PAGE_MARGIN, 21.5);
       doc.text(repName, PAGE_WIDTH - PAGE_MARGIN, 13, { align: "right" });
       const dateLabel = new Date().toLocaleDateString(undefined, {
@@ -80,13 +95,13 @@ export function DownloadPdfButton({
 
     function sectionTitle(text: string) {
       ensureSpace(11);
-      doc.setFillColor(...COLOR.navy);
+      setFill(doc, COLOR.navy);
       doc.rect(PAGE_MARGIN, y - 2.6, 2.2, 2.2, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.setTextColor(...COLOR.navy);
+      setRgb(doc, COLOR.navy);
       doc.text(text.toUpperCase(), PAGE_MARGIN + 6, y);
-      doc.setDrawColor(...COLOR.hairline);
+      setDraw(doc, COLOR.hairline);
       doc.setLineWidth(0.25);
       doc.line(PAGE_MARGIN, y + 2, PAGE_WIDTH - PAGE_MARGIN, y + 2);
       y += 9;
@@ -95,11 +110,11 @@ export function DownloadPdfButton({
     function bulletList(items: string[]) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(...COLOR.ink);
+      setRgb(doc, COLOR.ink);
       for (const item of items) {
         const lines = doc.splitTextToSize(item, CONTENT_WIDTH - 10);
         ensureSpace(lines.length * 5 + 2);
-        doc.setFillColor(...COLOR.navy);
+        setFill(doc, COLOR.navy);
         doc.circle(PAGE_MARGIN + 2.2, y - 1.3, 0.7, "F");
         doc.text(lines, PAGE_MARGIN + 6, y);
         y += lines.length * 5 + 2.5;
@@ -113,12 +128,12 @@ export function DownloadPdfButton({
       const lines = doc.splitTextToSize(text, CONTENT_WIDTH - 14);
       const boxHeight = lines.length * 5 + 10;
       ensureSpace(boxHeight + 2);
-      doc.setDrawColor(...COLOR.hairline);
+      setDraw(doc, COLOR.hairline);
       doc.setLineWidth(0.3);
       doc.roundedRect(PAGE_MARGIN, y, CONTENT_WIDTH, boxHeight, 1.5, 1.5, "S");
-      doc.setFillColor(...COLOR.navy);
+      setFill(doc, COLOR.navy);
       doc.rect(PAGE_MARGIN, y, 1, boxHeight, "F");
-      doc.setTextColor(...COLOR.ink);
+      setRgb(doc, COLOR.ink);
       doc.text(lines, PAGE_MARGIN + 7, y + 6.5);
       y += boxHeight + 6;
     }
@@ -126,7 +141,7 @@ export function DownloadPdfButton({
     /** Single continuous ring-segment path (annulus sector) — one fill, no seams. */
     function ringSector(cx: number, cy: number, outerR: number, innerR: number, fromDeg: number, toDeg: number, color: RGB) {
       if (toDeg <= fromDeg) return;
-      doc.setFillColor(...color);
+      setFill(doc, color);
       const segments = 48;
       const step = (toDeg - fromDeg) / segments;
       const outer: [number, number][] = [];
@@ -166,17 +181,17 @@ export function DownloadPdfButton({
       ringSector(cx, cyBase, outerR, innerR, startDeg, fillEnd, color);
       const a0 = (startDeg * Math.PI) / 180;
       const a1 = (fillEnd * Math.PI) / 180;
-      doc.setFillColor(...color);
+      setFill(doc, color);
       doc.circle(cx + midR * Math.cos(a0), cyBase + midR * Math.sin(a0), capR, "F");
       doc.circle(cx + midR * Math.cos(a1), cyBase + midR * Math.sin(a1), capR, "F");
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(27);
-      doc.setTextColor(...COLOR.navy);
+      setRgb(doc, COLOR.navy);
       doc.text(String(score.overall), cx, cyBase - 1, { align: "center" });
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      doc.setTextColor(...COLOR.muted);
+      setRgb(doc, COLOR.muted);
       doc.text("OUT OF 100", cx, cyBase + 6, { align: "center" });
 
       const panelX = PAGE_MARGIN + 84;
@@ -185,15 +200,15 @@ export function DownloadPdfButton({
       const feeColor: RGB = score.heldFee ? COLOR.teal : COLOR.burgundy;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);
-      doc.setTextColor(...feeColor);
+      setRgb(doc, feeColor);
       doc.text(score.heldFee ? "Fee held" : "Fee softened", panelX, py + 4);
-      doc.setDrawColor(...COLOR.hairline);
+      setDraw(doc, COLOR.hairline);
       doc.setLineWidth(0.3);
       doc.line(panelX, py + 7, panelX + panelW, py + 7);
       py += 13;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
-      doc.setTextColor(...COLOR.muted);
+      setRgb(doc, COLOR.muted);
       doc.text(
         score.feeOfferedPct !== null ? `Lowest offered: ${score.feeOfferedPct}%` : "No explicit fee offered",
         panelX,
@@ -232,7 +247,7 @@ export function DownloadPdfButton({
         cy + R * frac * Math.sin(angleFor(i)),
       ];
 
-      doc.setDrawColor(...COLOR.hairline);
+      setDraw(doc, COLOR.hairline);
       doc.setLineWidth(0.25);
       for (const level of [0.25, 0.5, 0.75, 1]) {
         const pts = Array.from({ length: n }, (_, i) => pt(i, level));
@@ -249,7 +264,7 @@ export function DownloadPdfButton({
 
       const dataPts = score.criteria.map((c, i) => pt(i, Math.max(c.score, 0.04)));
       doc.setFillColor(230, 236, 242);
-      doc.setDrawColor(...COLOR.navy);
+      setDraw(doc, COLOR.navy);
       doc.setLineWidth(0.7);
       const first = dataPts[0];
       const deltas = dataPts.slice(1).map((p, idx) => [p[0] - dataPts[idx][0], p[1] - dataPts[idx][1]] as [number, number]);
@@ -258,7 +273,7 @@ export function DownloadPdfButton({
 
       for (let i = 0; i < n; i++) {
         const c = score.criteria[i];
-        doc.setFillColor(...tierColor(c.score));
+        setFill(doc, tierColor(c.score));
         doc.circle(dataPts[i][0], dataPts[i][1], 1.4, "F");
       }
 
@@ -270,9 +285,9 @@ export function DownloadPdfButton({
         const sin = Math.sin(angleFor(i));
         const align: "left" | "center" | "right" = Math.abs(cos) > 0.2 ? (cos > 0 ? "left" : "right") : "center";
         const dy = sin > 0.5 ? 3 : sin < -0.5 ? -1 : 1.5;
-        doc.setTextColor(...COLOR.ink);
+        setRgb(doc, COLOR.ink);
         doc.text(SHORT_LABEL[score.criteria[i].id] ?? score.criteria[i].label, x, yy + dy, { align });
-        doc.setTextColor(...COLOR.muted);
+        setRgb(doc, COLOR.muted);
         doc.setFontSize(7.5);
         doc.text(`${Math.round(score.criteria[i].score * 100)}%`, x, yy + dy + 3.6, { align });
         doc.setFontSize(8);
@@ -297,11 +312,11 @@ export function DownloadPdfButton({
       ensureSpace(Math.min(chartTotalHeight, PAGE_HEIGHT - 60));
 
       const chartTop = y + 4;
-      doc.setDrawColor(...COLOR.hairline);
+      setDraw(doc, COLOR.hairline);
       doc.setLineWidth(0.2);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
-      doc.setTextColor(...COLOR.muted);
+      setRgb(doc, COLOR.muted);
       const rowsHeight = rowHeights.reduce((a, b) => a + b, 0);
       for (const pct of [0, 25, 50, 75, 100]) {
         const gx = barX + barW * (pct / 100);
@@ -315,21 +330,21 @@ export function DownloadPdfButton({
         ensureSpace(barH + 2);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9);
-        doc.setTextColor(...COLOR.ink);
+        setRgb(doc, COLOR.ink);
         doc.text(c.label, PAGE_MARGIN, yy + barH - 1.2, { maxWidth: labelW - 3 });
 
-        doc.setFillColor(...color);
+        setFill(doc, color);
         doc.rect(barX, yy, Math.max(barW * c.score, 1.5), barH, "F");
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8.5);
-        doc.setTextColor(...color);
+        setRgb(doc, color);
         doc.text(`${Math.round(c.score * c.max)}/${c.max}`, barX + barW + 2, yy + barH - 1.2);
 
         yy += barH + 2;
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
-        doc.setTextColor(...COLOR.muted);
+        setRgb(doc, COLOR.muted);
         const noteLines = doc.splitTextToSize(c.notes, barW);
         doc.text(noteLines, barX, yy + 3);
         yy += noteLines.length * 3.6 + 4;
@@ -341,12 +356,12 @@ export function DownloadPdfButton({
       const total = doc.getNumberOfPages();
       for (let i = 1; i <= total; i++) {
         doc.setPage(i);
-        doc.setDrawColor(...COLOR.hairline);
+        setDraw(doc, COLOR.hairline);
         doc.setLineWidth(0.3);
         doc.line(PAGE_MARGIN, FOOTER_Y - 4, PAGE_WIDTH - PAGE_MARGIN, FOOTER_Y - 4);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(8);
-        doc.setTextColor(...COLOR.muted);
+        setRgb(doc, COLOR.muted);
         doc.text("Cornerman · AI-assisted sales practice · fictional demo data", PAGE_MARGIN, FOOTER_Y);
         doc.text(`Page ${i} of ${total}`, PAGE_WIDTH - PAGE_MARGIN, FOOTER_Y, { align: "right" });
       }
@@ -378,16 +393,20 @@ export function DownloadPdfButton({
     rubricChart();
 
     stampFooters();
-    doc.save(`sales-practice-report-${score.scenarioId}-${Date.now()}.pdf`);
+    doc.save(`cornerman-practice-${score.scenarioId}-${Date.now()}.pdf`);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
     <button
       type="button"
-      onClick={download}
-      className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-background"
+      onClick={() => void download()}
+      disabled={busy}
+      className="rounded-md border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition hover:border-accent disabled:opacity-50"
     >
-      Download PDF report
+      {busy ? "Preparing PDF…" : "Download PDF report"}
     </button>
   );
 }
