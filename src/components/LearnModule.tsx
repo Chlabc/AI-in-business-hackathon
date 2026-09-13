@@ -86,12 +86,16 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
           className="surface-card min-h-[220px] w-full rounded-xl px-6 py-8 text-left transition hover:border-accent"
         >
           <p className="text-xs uppercase tracking-wider text-muted">
-            {card.tag} · {flipped ? "Answer" : "Prompt"}
+            {card.tag} · {flipped ? "The answer" : "Question"}
           </p>
           <p className="mt-4 text-lg font-medium leading-relaxed text-foreground sm:text-xl">
             {flipped ? card.back : card.front}
           </p>
-          <p className="mt-6 text-xs text-muted">Click card to flip</p>
+          {/* A visible control, not grey fine print — people were missing that
+              the card has a back at all. */}
+          <span className="mt-6 inline-flex h-10 items-center rounded-full border border-accent/40 bg-accent-soft px-5 text-sm font-semibold text-accent">
+            {flipped ? "Hide the answer" : "Show the answer"}
+          </span>
         </button>
 
         <div className="flex flex-wrap gap-3">

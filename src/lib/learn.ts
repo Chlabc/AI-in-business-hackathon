@@ -51,7 +51,7 @@ export function buildFlashcards(playbook: FirmPlaybook): Flashcard[] {
   playbook.valueAnchors.slice(0, 3).forEach((anchor, i) => {
     cards.push({
       id: `anchor_${i}`,
-      front: `Value anchor ${i + 1} — what do we stand on?`,
+      front: `Name value anchor ${i + 1} — what do you point to instead of cutting price?`,
       back: anchor,
       tag: "Value",
     });
@@ -63,14 +63,15 @@ export function buildFlashcards(playbook: FirmPlaybook): Flashcard[] {
   if (feeTrack) {
     cards.push({
       id: "fee_play",
-      front: `Approved play — ${feeTrack.title}`,
+      front: `What is the approved way to handle "${feeTrack.title}"?`,
       back: feeTrack.approvedPlay,
       tag: "Talk-track",
     });
     if (feeTrack.neverDo[0]) {
       cards.push({
         id: "fee_never",
-        front: "Never do this on price pushback",
+        front:
+          "A client pushes back on price. What is the one thing you must never do?",
         back: feeTrack.neverDo[0],
         tag: "Guardrail",
       });
@@ -84,7 +85,7 @@ export function buildFlashcards(playbook: FirmPlaybook): Flashcard[] {
   if (faqLine) {
     cards.push({
       id: "faq",
-      front: "Firm note from the playbook FAQ",
+      front: "What does the firm's playbook FAQ tell you here?",
       back: faqLine.replace(/^[-*•]\s*/, ""),
       tag: "FAQ",
     });

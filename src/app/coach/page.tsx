@@ -7,6 +7,7 @@ import { DEMO_REP_ID } from "@/data/seed";
 import { listAttempts, practiceKpisFromAttempts } from "@/lib/attempts";
 import { requireRole } from "@/lib/auth";
 import { getRepDashboard } from "@/lib/diagnosis";
+import { seatPrice, seatPriceFull } from "@/lib/money";
 import { getShareSettings } from "@/lib/share";
 
 export const dynamic = "force-dynamic";
@@ -35,21 +36,27 @@ export default async function CoachPage() {
   kpis.practice = practice;
   const share = await getShareSettings(repId);
 
-  /** Every number gets a sentence saying what it actually means. */
+  const discount =
+    kpis.avgFeeAskedPct !== null && kpis.avgFeeEndedPct !== null
+      ? Math.round((kpis.avgFeeAskedPct - kpis.avgFeeEndedPct) * 10) / 10
+      : null;
+
+  /** Every number gets a sentence saying what it actually means, in plain words. */
   const numbers = [
     {
       value: pct(kpis.feeConcessionRate),
-      meaning: "of your price conversations ended with you dropping the price",
+      meaning:
+        "of the times a client pushed back on price, you lowered it rather than defending it",
+      isProblem: true,
+    },
+    {
+      value: seatPrice(discount),
+      meaning: `the average amount you knock off each seat — you ask ${seatPriceFull(kpis.avgFeeAskedPct)} and settle at ${seatPrice(kpis.avgFeeEndedPct)}`,
       isProblem: true,
     },
     {
       value: pct(kpis.winRate),
       meaning: "of all your calls ended in a win",
-      isProblem: false,
-    },
-    {
-      value: `${pct(kpis.avgFeeAskedPct)} → ${pct(kpis.avgFeeEndedPct)}`,
-      meaning: `you open at ${pct(kpis.avgFeeAskedPct)} and settle at ${pct(kpis.avgFeeEndedPct)} on average (firm floor is ${firm.feeFloorPct}%)`,
       isProblem: false,
     },
   ];
@@ -170,6 +177,10 @@ export default async function CoachPage() {
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
           What your firm says to do here
         </h2>
+        <p className="mt-1 text-sm text-muted">
+          List price is {seatPriceFull(firm.standardPermFeePct)}. You must not
+          go below {seatPrice(firm.feeFloorPct)} without approval.
+        </p>
         <h3 className="mt-2 text-lg font-semibold text-foreground">
           {talkTrack.title}
         </h3>
@@ -214,10 +225,11 @@ export default async function CoachPage() {
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <section className="surface-card rounded-xl p-6">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Where the conversation breaks down
+            Which part of the call goes wrong
           </h2>
-          <p className="mt-1 text-sm text-muted">
-            Share of calls at each stage that ended lost or conceded.
+          <p className="mt-1 text-sm leading-relaxed text-muted">
+            A sales call has five stages. This is how often each one ends badly
+            for you — a longer red bar is a worse stage.
           </p>
           <ul className="mt-4 space-y-2.5">
             {kpis.byStage.map((s) => (
@@ -237,6 +249,14 @@ export default async function CoachPage() {
               </li>
             ))}
           </ul>
+          <p className="mt-4 text-sm leading-relaxed text-muted">
+            Everything goes wrong in one place:{" "}
+            <strong className="font-medium text-foreground">
+              {label(diagnosis.primaryStage)}
+            </strong>
+            . The other four stages are fine — that&apos;s why there&apos;s only
+            one thing to practise.
+          </p>
         </section>
 
         <ProgressPanel
@@ -265,7 +285,7 @@ export default async function CoachPage() {
                 <th className="pb-2 pr-3 font-medium">Stage</th>
                 <th className="pb-2 pr-3 font-medium">Objection</th>
                 <th className="pb-2 pr-3 font-medium">Outcome</th>
-                <th className="pb-2 font-medium">Fee</th>
+                <th className="pb-2 font-medium">Price per seat</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border text-foreground">
@@ -284,8 +304,8 @@ export default async function CoachPage() {
                   </td>
                   <td className="py-2.5 font-mono text-xs text-muted">
                     {c.feeEndedPct !== null
-                      ? `${c.feeAskedPct}→${c.feeEndedPct}%`
-                      : `${c.feeAskedPct}%`}
+                      ? `${seatPrice(c.feeAskedPct)} → ${seatPrice(c.feeEndedPct)}`
+                      : seatPrice(c.feeAskedPct)}
                   </td>
                 </tr>
               ))}

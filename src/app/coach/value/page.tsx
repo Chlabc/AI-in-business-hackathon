@@ -55,33 +55,10 @@ export default async function ValuePage() {
         scoreDelta={evidence.scoreDelta}
       />
 
-      <section className="surface-card rounded-xl p-5 sm:p-6">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-          Price hold — did they stop caving?
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          Share of drills that ended at or near list price, first half vs second
-          half of their attempts.
-        </p>
-        {evidence.holdRateEarlyPct === null ? (
-          <p className="mt-4 text-sm text-muted">
-            Not enough scored drills yet.
-          </p>
-        ) : (
-          <div className="mt-5 space-y-4">
-            <HoldBar
-              label="Early drills"
-              value={evidence.holdRateEarlyPct}
-              tone="muted"
-            />
-            <HoldBar
-              label="Later drills"
-              value={evidence.holdRateLatePct ?? evidence.holdRateEarlyPct}
-              tone="strong"
-            />
-          </div>
-        )}
-      </section>
+      <PriceHold
+        earlyPct={evidence.holdRateEarlyPct}
+        latePct={evidence.holdRateLatePct}
+      />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="surface-card rounded-xl p-5 sm:p-6">
@@ -265,6 +242,69 @@ function ScoreBar({
         {score ?? "—"}
       </span>
     </div>
+  );
+}
+
+/**
+ * Two identical bars communicate nothing, so when the rate hasn't moved the
+ * card says what that actually means instead of drawing a flat chart.
+ */
+function PriceHold({
+  earlyPct,
+  latePct,
+}: {
+  earlyPct: number | null;
+  latePct: number | null;
+}) {
+  if (earlyPct === null) {
+    return (
+      <section className="surface-card rounded-xl p-5 sm:p-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+          Did they stop discounting?
+        </h2>
+        <p className="mt-2 text-sm text-muted">Not enough scored drills yet.</p>
+      </section>
+    );
+  }
+
+  const late = latePct ?? earlyPct;
+  const unchanged = late === earlyPct;
+
+  return (
+    <section className="surface-card rounded-xl p-5 sm:p-6">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+        Did they stop discounting?
+      </h2>
+      <p className="mt-1 text-sm leading-relaxed text-muted">
+        How often a drill ended at or near list price — their first half of
+        attempts against their second half.
+      </p>
+
+      {unchanged && earlyPct === 100 ? (
+        <div className="mt-4 rounded-lg border border-border bg-background p-4">
+          <p className="text-2xl font-semibold text-ok">
+            Held the price every time
+          </p>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            In all scored drills the price was held, first to last. There is no
+            before-and-after to show here because there was never a discount to
+            stop — this metric only becomes interesting once someone caves in a
+            drill.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-4">
+          <HoldBar label="Early drills" value={earlyPct} tone="muted" />
+          <HoldBar label="Later drills" value={late} tone="strong" />
+          {unchanged ? (
+            <p className="text-sm text-muted">
+              Unchanged at {earlyPct}% — more drills needed before this means
+              anything.
+            </p>
+          ) : null}
+        </div>
+      )}
+    </section>
   );
 }
 

@@ -52,8 +52,11 @@ export function ProgressPanel({
       ) : (
         <>
           <div className="border-b border-border px-5 py-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted">
               Score trend
+            </p>
+            <p className="mb-3 mt-1 text-xs leading-relaxed text-muted">
+              One bar per drill, oldest on the left. Taller is a better score.
             </p>
             <div className="flex h-28 items-end gap-1.5">
               {chronological.map((a, i) => {
@@ -74,8 +77,15 @@ export function ProgressPanel({
                 );
               })}
             </div>
-            <p className="mt-2 text-[11px] text-muted">
-              Green bar = fee held · Amber = softened
+            <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted">
+              <span className="inline-flex items-center gap-1.5">
+                <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-ok" />
+                you held the price
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span aria-hidden className="h-2.5 w-2.5 rounded-sm bg-warn" />
+                you discounted
+              </span>
             </p>
           </div>
 
