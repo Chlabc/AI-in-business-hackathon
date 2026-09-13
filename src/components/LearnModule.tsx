@@ -112,10 +112,10 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
               <div className="flashcard-rotor" data-flipped={flipped}>
                 <div className="flashcard-face" aria-hidden={flipped}>
                   <span className="pill pill-accent w-fit">{card.tag}</span>
-                  <p className="mt-5 text-lg font-medium leading-relaxed sm:text-2xl">
+                  <p className="text-lg font-medium leading-relaxed sm:text-2xl">
                     {card.front}
                   </p>
-                  <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full bg-accent px-6 text-sm font-semibold text-accent-fg">
+                  <span className="inline-flex h-11 w-fit items-center rounded-full bg-accent px-6 text-sm font-semibold text-accent-fg">
                     Show the answer
                   </span>
                 </div>
@@ -124,10 +124,10 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
                   aria-hidden={!flipped}
                 >
                   <span className="pill pill-ok w-fit">Answer</span>
-                  <p className="mt-5 text-lg font-medium leading-relaxed sm:text-2xl">
+                  <p className="text-lg font-medium leading-relaxed sm:text-2xl">
                     {card.back}
                   </p>
-                  <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full border border-border bg-card px-6 text-sm font-semibold text-muted">
+                  <span className="inline-flex h-11 w-fit items-center rounded-full border border-border bg-card px-6 text-sm font-semibold text-muted">
                     Flip back
                   </span>
                 </div>
@@ -277,7 +277,7 @@ function DeckFace({ text, tag }: { text: string; tag: string }) {
     <div className="flashcard">
       <div className="flashcard-face">
         <span className="pill pill-accent w-fit">{tag}</span>
-        <p className="mt-5 text-lg font-medium leading-relaxed sm:text-2xl">
+        <p className="text-lg font-medium leading-relaxed sm:text-2xl">
           {text}
         </p>
       </div>

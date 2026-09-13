@@ -239,26 +239,33 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 17rem;
   padding-block: 0.5rem;
-  /* The neighbours are clipped at the page edges rather than widening it. */
+  /* Neighbours are clipped at the page edges rather than widening the page.
+     No fixed height: a tall card used to overflow this box and get cut off,
+     so the current card sets the height instead (see .deck-current). */
   overflow: clip;
 }
 
 .deck-slot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
   width: min(34rem, 100%);
   transition:
     transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
     opacity 420ms ease;
 }
 
+/* In normal flow, so the deck is exactly as tall as the card it contains. */
 .deck-current {
-  transform: translate(-50%, -50%) scale(1);
+  position: relative;
   opacity: 1;
   z-index: 3;
+}
+
+/* Neighbours are lifted out of flow and centred on the current card. */
+.deck-prev,
+.deck-next {
+  position: absolute;
+  top: 50%;
+  left: 50%;
 }
 
 /* Offset far enough that the neighbours read as a stack without their text
@@ -386,6 +393,11 @@ body {
   grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
+  /* Centred both ways — a study card reads better balanced than top-left. */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1.25rem;
   min-height: 15rem;
   width: 100%;
   max-width: 100%;
