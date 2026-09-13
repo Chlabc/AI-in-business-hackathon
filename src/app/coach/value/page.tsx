@@ -138,9 +138,9 @@ function ManagerEvidence({
         </div>
         <Link
           href="/coach/health"
-          className="inline-flex h-10 items-center rounded-md border border-border px-4 text-sm text-muted transition hover:text-foreground"
+          className="inline-flex h-10 shrink-0 items-center rounded-md border border-accent/30 bg-accent-soft px-4 text-sm font-semibold text-accent transition hover:opacity-90"
         >
-          Full accuracy report →
+          See every test case →
         </Link>
       </div>
 

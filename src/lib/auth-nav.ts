@@ -14,11 +14,13 @@ export function navForRole(
     ];
   }
   if (role === "manager") {
+    // /coach/health is deliberately NOT here. It and /coach/value both answer
+    // "is the scoring any good?", so two nav items read as two questions.
+    // Evidence is the summary and links onward to the full accuracy report.
     return [
       { href: "/coach/manager", label: "Team" },
       { href: "/coach/playbook", label: "Playbook" },
-      { href: "/coach/health", label: "Accuracy" },
-      { href: "/coach/value", label: "Does it work?" },
+      { href: "/coach/value", label: "Evidence" },
     ];
   }
   return [{ href: "/login", label: "Sign in" }];
