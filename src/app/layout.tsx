@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import Script from "next/script";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
@@ -29,9 +30,12 @@ export const metadata: Metadata = {
 const themeInitScript = `
 (function(){
   try {
-    var stored = localStorage.getItem('cornerman-theme');
-    // First visit defaults to day (light); only honor an explicit saved choice.
-    var theme = (stored === 'light' || stored === 'dark') ? stored : 'light';
+    var stored = null;
+    try { stored = localStorage.getItem('cornerman-theme'); } catch (e) {}
+    var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = (stored === 'light' || stored === 'dark')
+      ? stored
+      : (systemDark ? 'dark' : 'light');
     var root = document.documentElement;
     root.classList.remove('light','dark');
     root.classList.add(theme);
@@ -46,10 +50,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`light ${geistSans.variable} ${geistMono.variable} ${sourceSerif.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        <Script
+          id="cornerman-theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
         <ThemeProvider>
           {children}
         </ThemeProvider>

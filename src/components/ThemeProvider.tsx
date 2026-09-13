@@ -20,15 +20,21 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "cornerman-theme";
 
-function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+function readStoredTheme(): Theme | null {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    // First visit defaults to day; only honor an explicit saved choice.
-    return stored === "light" || stored === "dark" ? stored : "light";
+    return stored === "light" || stored === "dark" ? stored : null;
   } catch {
-    return "light";
+    return null;
   }
+}
+
+function readPreferredTheme(): Theme {
+  const stored = readStoredTheme();
+  if (stored) return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
 }
 
 function applyTheme(theme: Theme) {
@@ -39,20 +45,50 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readStoredTheme);
+  // The server and the first client render must agree. The pre-hydration
+  // script has already painted the preferred document theme; this state is
+  // synchronized immediately after React hydrates.
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const syncPreferredTheme = () => {
+      const next = readPreferredTheme();
+      applyTheme(next);
+      setThemeState(next);
+    };
+
+    const syncSystemTheme = () => {
+      if (readStoredTheme() === null) syncPreferredTheme();
+    };
+
+    syncPreferredTheme();
+    media.addEventListener("change", syncSystemTheme);
+    window.addEventListener("storage", syncPreferredTheme);
+
+    return () => {
+      media.removeEventListener("change", syncSystemTheme);
+      window.removeEventListener("storage", syncPreferredTheme);
+    };
+  }, []);
 
   const setTheme = useCallback((next: Theme) => {
     setThemeState(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+    applyTheme(next);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      // Theme switching still works when storage is unavailable.
+    }
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme(theme === "light" ? "dark" : "light");
-  }, [setTheme, theme]);
+    const appliedTheme = document.documentElement.classList.contains("dark")
+      ? "dark"
+      : "light";
+    setTheme(appliedTheme === "light" ? "dark" : "light");
+  }, [setTheme]);
 
   const value = useMemo(
     () => ({ theme, setTheme, toggleTheme }),

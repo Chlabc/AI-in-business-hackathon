@@ -14,11 +14,20 @@ type Props = {
   attemptCount: number;
 };
 
-export function EmployeeCredential({ repId, agency, name, role, weeksInRole, weakestStage, attemptCount }: Props) {
+export function EmployeeCredential({
+  repId,
+  agency,
+  name,
+  role,
+  weeksInRole,
+  weakestStage,
+  attemptCount,
+}: Props) {
   const [flipped, setFlipped] = useState(false);
   const [portraitFailed, setPortraitFailed] = useState(false);
-  // Match the existing seeded rep identity, never a custom session display name.
-  const portraitSrc = repId === "rep_demo_alex" ? "/alex-chen.png" : null;
+  const isCanonicalAlex =
+    repId === "rep_demo_alex" && name.trim().toLowerCase() === "alex chen";
+  const portraitSrc = isCanonicalAlex ? "/alex-chen.png" : null;
   const id = useId();
   const frontId = `${id}-front`;
   const backId = `${id}-back`;
