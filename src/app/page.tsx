@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { GuidedDemo } from "@/components/GuidedDemo";
+import { Reveal } from "@/components/Reveal";
 import { SCOPE_SENTENCE } from "@/lib/phases";
 import { SCENARIOS } from "@/data/scenarios";
 import {
@@ -33,6 +34,21 @@ const WHAT_YOU_GET = [
   },
 ];
 
+const AUDIENCES = [
+  {
+    title: "For reps",
+    body: "Practise the objection in a realistic voice call and walk away with a score you can act on.",
+  },
+  {
+    title: "For managers",
+    body: "See progress summaries, not raw call recordings, so the system reads as coaching rather than surveillance.",
+  },
+  {
+    title: "For the firm",
+    body: "Update talk tracks, price floors and red lines in one place, and the AI client and the scorer both follow them.",
+  },
+];
+
 const scenario = SCENARIOS.find((s) => s.recommended) ?? SCENARIOS[0];
 
 /**
@@ -47,7 +63,7 @@ const COVER_STYLE = {
 /** Soundwave motif — the product is voice, so the cover says so without a photo. */
 function CoverWaves() {
   const bars = Array.from({ length: 48 }, (_, i) => {
-    // Deterministic pseudo-random so the server and client render identically.
+    // Deterministic, not random, so server and client render identically.
     const wave = Math.sin(i * 0.7) * 0.5 + Math.sin(i * 0.29) * 0.5;
     return 8 + Math.abs(wave) * 46;
   });
@@ -73,7 +89,7 @@ function CoverWaves() {
   );
 }
 
-/** A small, honest preview of the real drill — actual scenario copy, not a stock photo. */
+/** A small, honest preview of the real drill — actual scenario copy, not a mockup. */
 function LivePreviewCard() {
   return (
     <div className="surface-card w-full max-w-sm rounded-xl p-5">
@@ -102,7 +118,9 @@ function LivePreviewCard() {
       <div className="mt-4 flex items-center gap-3 border-t border-border pt-4">
         <span className="text-2xl font-semibold text-ok">76</span>
         <div>
-          <p className="text-xs font-medium text-foreground">Explored the objection</p>
+          <p className="text-xs font-medium text-foreground">
+            Explored the objection
+          </p>
           <p className="text-xs text-muted">Before defending the price — nice.</p>
         </div>
       </div>
@@ -114,10 +132,10 @@ export default function Home() {
   return (
     <AppShell variant="marketing">
       <div className="marketing-shell">
-        {/* ── Cover ───────────────────────────────────────────────────
-            COVER_IMAGE points at a file in /public. If the file isn't there
-            the url() simply fails to paint and the drawn gradient shows
-            instead, so the page never breaks over a missing image. */}
+        {/* ── Cover ───────────────────────────────────────────────────────
+            COVER_STYLE points at a file in /public. If it isn't there the
+            url() paints nothing and the drawn gradient shows instead, so the
+            page never breaks over a missing image. */}
         <section className="cover" style={COVER_STYLE}>
           <CoverWaves />
           <div className="cover-inner">
@@ -138,13 +156,13 @@ export default function Home() {
                 href="/login"
                 className="btn-lift inline-flex h-12 items-center justify-center rounded-full bg-brand-gold px-8 text-base font-semibold text-brand-gold-fg"
               >
-                Let&apos;s get started ›
+                Let&apos;s get started &rsaquo;
               </Link>
               <a
                 href="#how-it-works"
                 className="text-sm font-medium text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
               >
-                See how it works first ›
+                See how it works first &rsaquo;
               </a>
             </div>
           </div>
@@ -155,136 +173,185 @@ export default function Home() {
           </a>
         </section>
 
-        {/* A real slice of the product, right under the cover: the scenario
-            copy is pulled from the same data the live drill uses. */}
-        <section className="surface-card rounded-2xl p-6 lg:p-8">
-          <div className="grid items-center gap-8 lg:grid-cols-[1fr_auto]">
-            <div>
-              <p className="eyebrow">A real drill</p>
-              <h2 className="display-serif mt-1 text-2xl text-foreground sm:text-3xl">
-                This is what a session looks like.
+        {/* ── The problem, stated once, in large type ──────────────────── */}
+        <section className="band">
+          <div className="band-inner band-narrow">
+            <Reveal>
+              <p className="band-eyebrow">The problem</p>
+              <h2 className="band-title text-foreground">
+                Reps don&apos;t lose deals because they lack knowledge. They lose
+                them in the ten seconds after a client says &ldquo;that&apos;s
+                too expensive.&rdquo;
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted lg:text-base">
-                {SCOPE_SENTENCE}
-              </p>
-              <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
-                {[
-                  ["12", "calls analysed"],
-                  ["6", "rubric checks"],
-                  ["1", "clear next step"],
-                ].map(([n, label]) => (
-                  <div key={label}>
-                    <dt className="text-2xl font-semibold text-foreground">{n}</dt>
-                    <dd className="mt-0.5 text-xs uppercase tracking-wider text-muted">
-                      {label}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-            <div className="flex justify-center lg:justify-end">
-              <LivePreviewCard />
-            </div>
-          </div>
-
-          <div className="mt-8 border-t border-border pt-6">
-            <p className="text-center text-[0.7rem] uppercase tracking-[0.16em] text-muted">
-              Built with
-            </p>
-            <ul className="mt-3 flex flex-wrap items-center justify-center gap-x-10 gap-y-2 text-sm font-medium text-muted">
-              {["ElevenLabs", "Next.js", "React", "TypeScript", "Tailwind CSS"].map(
-                (tech) => (
-                  <li key={tech}>{tech}</li>
-                ),
-              )}
-            </ul>
+              <p className="band-lede">{SCOPE_SENTENCE}</p>
+            </Reveal>
           </div>
         </section>
 
-        {/* The guided demo teaches the same four steps interactively, so the
-            static list that used to sit above it was cut as a duplicate. */}
-        <div id="how-it-works" className="scroll-mt-20">
-          <GuidedDemo />
-        </div>
-
-        <section id="what-you-get" className="scroll-mt-20">
-          <p className="eyebrow">What you get</p>
-          <h2 className="display-serif mt-1 text-2xl tracking-tight text-foreground sm:text-3xl">
-            Not a course. A practice partner that talks back.
-          </h2>
-          <div className="stagger-children mt-6 grid gap-4 sm:grid-cols-2">
-            {WHAT_YOU_GET.map((item) => (
-              <div key={item.title} className="surface-card rounded-xl p-5">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-soft text-accent">
-                  <item.Icon className="h-[18px] w-[18px]" />
-                </span>
-                <h3 className="mt-3 text-base font-semibold text-foreground">
-                  {item.title}
-                </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted">
-                  {item.body}
+        {/* ── A real drill ─────────────────────────────────────────────── */}
+        <section className="band band-alt">
+          <div className="band-inner">
+            <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto]">
+              <Reveal>
+                <p className="band-eyebrow">A real drill</p>
+                <h2 className="band-title text-foreground">
+                  This is what a session looks like.
+                </h2>
+                <p className="band-lede">
+                  The client pushes back on price. You answer out loud. The
+                  moment you finish, you are scored against the six things your
+                  firm&apos;s playbook says a good answer does.
                 </p>
-              </div>
-            ))}
+                <dl className="mt-10 flex flex-wrap gap-x-14 gap-y-6">
+                  {[
+                    ["12", "calls analysed"],
+                    ["6", "rubric checks"],
+                    ["1", "clear next step"],
+                  ].map(([n, label]) => (
+                    <div key={label}>
+                      <dt className="display-serif text-4xl text-foreground">
+                        {n}
+                      </dt>
+                      <dd className="mt-1 text-xs uppercase tracking-[0.14em] text-muted">
+                        {label}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </Reveal>
+              <Reveal delay={1} className="flex justify-center lg:justify-end">
+                <LivePreviewCard />
+              </Reveal>
+            </div>
           </div>
         </section>
 
-        <section className="surface-card rounded-2xl p-6 lg:p-8">
-          <p className="eyebrow">Why this is useful</p>
-          <div className="mt-4 grid gap-6 lg:grid-cols-2">
-            <div>
-              <h2 className="display-serif text-2xl text-foreground sm:text-3xl">
+        {/* ── Walkthrough ──────────────────────────────────────────────── */}
+        <section id="how-it-works" className="band scroll-mt-16">
+          <div className="band-inner">
+            <Reveal>
+              <GuidedDemo />
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── Pull quote ───────────────────────────────────────────────── */}
+        <section className="band band-tight band-dark">
+          <div className="band-inner band-narrow text-center">
+            <Reveal>
+              <p className="pullquote text-white">
+                &ldquo;The hard part was never knowing what to say. It was saying
+                it while someone pushed back.&rdquo;
+              </p>
+              <p className="mt-6 text-xs uppercase tracking-[0.2em] text-white/45">
+                The premise Cornerman is built on
+              </p>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ── What you get ─────────────────────────────────────────────── */}
+        <section id="what-you-get" className="band scroll-mt-16">
+          <div className="band-inner">
+            <Reveal>
+              <p className="band-eyebrow">What you get</p>
+              <h2 className="band-title text-foreground">
+                Not a course. A practice partner that talks back.
+              </h2>
+            </Reveal>
+            <div className="mt-14 grid gap-x-14 gap-y-12 sm:grid-cols-2">
+              {WHAT_YOU_GET.map((item, i) => (
+                <Reveal
+                  key={item.title}
+                  as="article"
+                  delay={i % 2 === 0 ? 0 : 1}
+                >
+                  <item.Icon className="h-7 w-7 text-accent" />
+                  <h3 className="mt-5 text-lg font-semibold text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2.5 max-w-md leading-relaxed text-muted">
+                    {item.body}
+                  </p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Who it's for ─────────────────────────────────────────────── */}
+        <section className="band band-alt">
+          <div className="band-inner">
+            <Reveal>
+              <p className="band-eyebrow">Why this is useful</p>
+              <h2 className="band-title text-foreground">
                 Built for the moment reps actually lose confidence.
               </h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                The hard part is not knowledge. It is the pressure of the real
-                conversation. Cornerman gives reps a safe place to rehearse that
-                exact spike, then shows them what to do next without exposing
-                every transcript to their manager.
-              </p>
-            </div>
-            <div className="space-y-3 text-sm text-muted">
-              <div className="rounded-xl border border-border bg-background p-4">
-                <span className="font-semibold text-foreground">For reps:</span>{" "}
-                practise the objection in a realistic voice call and walk away with
-                a score you can actually act on.
-              </div>
-              <div className="rounded-xl border border-border bg-background p-4">
-                <span className="font-semibold text-foreground">For managers:</span>{" "}
-                see progress summaries, not raw call recordings, so the system feels
-                like coaching rather than surveillance.
-              </div>
-              <div className="rounded-xl border border-border bg-background p-4">
-                <span className="font-semibold text-foreground">For the firm:</span>{" "}
-                update talk tracks, fee floors, and red lines in one place and let
-                the AI client and scorer follow them.
-              </div>
+            </Reveal>
+            <div className="mt-14 grid gap-x-14 gap-y-10 lg:grid-cols-3">
+              {AUDIENCES.map((a, i) => (
+                <Reveal
+                  key={a.title}
+                  as="article"
+                  delay={i === 0 ? 0 : i === 1 ? 1 : 2}
+                  className="border-t border-border pt-6"
+                >
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-accent">
+                    {a.title}
+                  </h3>
+                  <p className="mt-3 leading-relaxed text-muted">{a.body}</p>
+                </Reveal>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="rounded-2xl bg-brand-navy px-6 py-12 text-center text-white lg:py-16">
-          <h2 className="display-serif text-2xl sm:text-4xl">
-            Ready to stop losing on fees?
-          </h2>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/login"
-              className="btn-lift inline-flex h-11 items-center justify-center rounded-full bg-brand-gold px-6 text-sm font-semibold text-brand-gold-fg"
-            >
-              Sign in to the coach ›
-            </Link>
-            <a
-              href="#how-it-works"
-              className="text-sm font-medium text-white/75 underline-offset-4 transition-colors hover:text-white hover:underline"
-            >
-              See how it works ›
-            </a>
+        {/* ── Close ────────────────────────────────────────────────────── */}
+        <section className="band band-dark">
+          <div className="band-inner band-narrow text-center">
+            <Reveal>
+              <h2 className="band-title mt-0 text-white">
+                Ready to stop losing on price?
+              </h2>
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+                <Link
+                  href="/login"
+                  className="btn-lift inline-flex h-12 items-center justify-center rounded-full bg-brand-gold px-8 text-base font-semibold text-brand-gold-fg"
+                >
+                  Let&apos;s get started &rsaquo;
+                </Link>
+                <a
+                  href="#how-it-works"
+                  className="text-sm font-medium text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline"
+                >
+                  See how it works &rsaquo;
+                </a>
+              </div>
+              <div className="mt-16 border-t border-white/10 pt-8">
+                <p className="text-[0.7rem] uppercase tracking-[0.2em] text-white/40">
+                  Built with
+                </p>
+                <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-2 text-sm text-white/55">
+                  {[
+                    "ElevenLabs",
+                    "Next.js",
+                    "React",
+                    "TypeScript",
+                    "Tailwind CSS",
+                  ].map((tech) => (
+                    <li key={tech}>{tech}</li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
           </div>
         </section>
 
-        <footer className="border-t border-border pt-6 text-center text-xs text-muted">
-          Forward · AI in Business Hackathon · Track 1 + ElevenLabs
+        <footer className="band band-tight border-t border-border">
+          <p className="text-center text-xs text-muted">
+            Forward &middot; AI in Business Hackathon &middot; Track 1 +
+            ElevenLabs
+          </p>
         </footer>
       </div>
     </AppShell>

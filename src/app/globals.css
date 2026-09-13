@@ -26,6 +26,9 @@ html.light {
   --brand-navy: #16304d;
   --brand-gold: #c9a961;
   --brand-gold-fg: #16304d;
+  /* Alternating band ground — a hair warmer than --background so full-width
+     sections separate without needing borders. */
+  --band-alt: #f1f3f5;
 }
 
 /* Option B — High-Performance Dark (navy + copper) */
@@ -53,6 +56,7 @@ html.dark {
   --brand-navy: #16304d;
   --brand-gold: #d0b06c;
   --brand-gold-fg: #16304d;
+  --band-alt: #171d24;
 }
 
 @theme inline {
@@ -88,10 +92,126 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* ── Editorial bands ────────────────────────────────────────────────────
+   Full-width horizontal sections separated by generous vertical space, the
+   way an advisory-firm site is built. Nothing here is a floating card. */
 .marketing-shell {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+}
+
+.band {
+  width: 100%;
+  padding-block: clamp(4rem, 9vw, 8.5rem);
+  padding-inline: clamp(1rem, 5vw, 4rem);
+}
+
+.band-tight {
+  padding-block: clamp(2.5rem, 5vw, 4.5rem);
+}
+
+/* Alternating ground so bands separate without borders or shadows. */
+.band-alt {
+  background: var(--band-alt);
+}
+
+.band-dark {
+  background: var(--brand-navy);
+  color: #fff;
+}
+
+.band-inner {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 76rem;
+}
+
+.band-narrow {
+  max-width: 52rem;
+}
+
+/* Section opener: small gold rule + eyebrow, then a large serif line. */
+.band-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.band-dark .band-eyebrow {
+  color: var(--brand-gold);
+}
+
+.band-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(1.85rem, 3.6vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  margin-top: 1.25rem;
+}
+
+.band-lede {
+  margin-top: 1.5rem;
+  max-width: 44rem;
+  font-size: clamp(1.02rem, 1.3vw, 1.2rem);
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.band-dark .band-lede {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Pull quote — one per page, large and quiet. */
+.pullquote {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(1.5rem, 3vw, 2.4rem);
+  line-height: 1.35;
+  font-style: italic;
+  text-wrap: balance;
+}
+
+/* ── Scroll reveal ──────────────────────────────────────────────────────
+   Content is VISIBLE by default and only animates once the observer marks
+   it ready. If JS never runs, nothing is left stranded at opacity 0. */
+[data-reveal] {
+  opacity: 1;
+}
+
+[data-reveal].reveal-armed {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+[data-reveal].reveal-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-reveal-delay="1"].reveal-in {
+  transition-delay: 0.09s;
+}
+[data-reveal-delay="2"].reveal-in {
+  transition-delay: 0.18s;
+}
+[data-reveal-delay="3"].reveal-in {
+  transition-delay: 0.27s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal].reveal-armed,
+  [data-reveal].reveal-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* ── Cover ──────────────────────────────────────────────────────────────
@@ -104,7 +224,8 @@ body {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  border-radius: 1.5rem;
+  /* Edge to edge — a rounded card floating in a padded column is what made
+     this read as a dashboard rather than a site. */
   min-height: min(86vh, 44rem);
   display: flex;
   flex-direction: column;

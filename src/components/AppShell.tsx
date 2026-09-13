@@ -30,9 +30,16 @@ export async function AppShell({
     <div className="flex min-h-full flex-1 flex-col">
       <AppHeader user={user} focus={focus} variant={variant} />
       {headerExtra}
-      <main className="page-enter mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:gap-8 lg:px-10 xl:px-12">
-        {children}
-      </main>
+      {/* Marketing pages lay out their own full-bleed bands, so the shell gets
+          out of the way — no max-width, no padding, no gap. Boxed cards inside a
+          padded column is what made the landing page read as a dashboard. */}
+      {variant === "marketing" ? (
+        <main className="page-enter flex w-full flex-1 flex-col">{children}</main>
+      ) : (
+        <main className="page-enter mx-auto flex w-full max-w-[1800px] flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:gap-8 lg:px-10 xl:px-12">
+          {children}
+        </main>
+      )}
     </div>
   );
 }
