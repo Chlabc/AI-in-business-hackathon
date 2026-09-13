@@ -13,6 +13,7 @@ import {
   ScenariosIcon,
   ScoreIcon,
 } from "@/components/NavIcons";
+import { Logo } from "@/components/Logo";
 import { useTheme } from "@/components/ThemeProvider";
 import type { SessionUser } from "@/lib/auth-types";
 import { navForRole } from "@/lib/auth-nav";
@@ -90,9 +91,7 @@ export function AppHeader({
     return (
       <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-[1800px] items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-10 xl:px-12">
-          <span className="text-base font-semibold tracking-tight text-foreground">
-            Cornerman
-          </span>
+          <Logo className="text-foreground" />
           <nav className="flex items-center gap-1 sm:gap-2">
             {/* One anchor only — the landing page is a single scroll, and a second
                 link to a neighbouring section reads as a second page that repeats it. */}
@@ -130,9 +129,7 @@ export function AppHeader({
             }
             className="shrink-0"
           >
-            <span className="text-base font-semibold tracking-tight text-foreground">
-              Cornerman
-            </span>
+            <Logo className="text-foreground" />
           </Link>
           <div className="hidden h-4 w-px bg-border sm:block" />
           <div className="hidden min-w-0 items-center gap-3 text-sm sm:flex">
