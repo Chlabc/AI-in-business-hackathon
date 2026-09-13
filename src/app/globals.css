@@ -163,7 +163,19 @@ body {
   background: color-mix(in srgb, var(--warn-soft) 60%, var(--card));
 }
 
-/* ── Scenario cards ─────────────────────────────────────────────────── */
+/* ── Scenario cards ───────────────────────────────────────────────────
+   The cards sit on their own grey ground so the group reads as one block
+   separated from the intro copy above it, and the white cards gain an edge
+   they don't have against the page's own off-white. */
+.scenario-stage {
+  border-radius: 1.25rem;
+  border: 1px solid var(--border);
+  /* A step darker than --band-alt: that token is only a few RGB units from the
+     page ground, which was too faint to read as a deliberate panel. */
+  background: color-mix(in srgb, var(--border) 55%, var(--background));
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+}
+
 .scenario-card {
   position: relative;
   display: flex;

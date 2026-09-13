@@ -29,7 +29,7 @@ export default function TrainingPage() {
         </p>
       </div>
 
-      <div className="stagger-children grid gap-5 lg:grid-cols-2">
+      <div className="scenario-stage stagger-children grid gap-5 lg:grid-cols-2">
         {SCENARIOS.map((s) => (
           <Link
             key={s.id}
