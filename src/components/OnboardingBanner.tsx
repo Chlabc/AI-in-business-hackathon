@@ -27,7 +27,7 @@ function getServerSnapshot(): boolean {
   return true;
 }
 
-export function OnboardingBanner() {
+export function OnboardingBanner({ className = "" }: { className?: string }) {
   const dismissed = useSyncExternalStore(
     subscribe,
     getSnapshot,
@@ -46,7 +46,7 @@ export function OnboardingBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="surface-card flex flex-col gap-3 rounded-xl border-accent/30 bg-accent-soft p-5 sm:flex-row sm:items-start sm:justify-between">
+    <div className={`surface-card flex flex-col gap-3 rounded-xl border-accent/30 bg-accent-soft p-5 sm:flex-row sm:items-start sm:justify-between ${className}`}>
       <div>
         <p className="text-sm font-semibold text-accent">
           New here? Here&apos;s what this page does

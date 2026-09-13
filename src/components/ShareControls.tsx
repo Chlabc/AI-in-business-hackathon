@@ -3,11 +3,16 @@
 import { useState } from "react";
 
 type ShareControlsProps = {
+  className?: string;
   initialShared: boolean;
   repId: string;
 };
 
-export function ShareControls({ initialShared, repId }: ShareControlsProps) {
+export function ShareControls({
+  className = "",
+  initialShared,
+  repId,
+}: ShareControlsProps) {
   const [shared, setShared] = useState(initialShared);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +44,7 @@ export function ShareControls({ initialShared, repId }: ShareControlsProps) {
   };
 
   return (
-    <section className="surface-card rounded-xl p-5">
+    <section className={`surface-card rounded-xl p-5 ${className}`}>
       <p className="eyebrow">Rep-owned</p>
       <h2 className="mt-1 text-lg font-semibold text-foreground">
         Sharing with manager

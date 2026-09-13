@@ -9,6 +9,8 @@ import { requireRole } from "@/lib/auth";
 import { getRepDashboard } from "@/lib/diagnosis";
 import { seatPrice, seatPriceFull } from "@/lib/money";
 import { getShareSettings } from "@/lib/share";
+import colors from "./coach.module.css";
+import { EmployeeCredential } from "./EmployeeCredential";
 
 export const dynamic = "force-dynamic";
 
@@ -45,17 +47,20 @@ export default async function CoachPage() {
   const numbers = [
     {
       value: pct(kpis.feeConcessionRate),
+      title: "Price concessions",
       meaning:
         "of the times a client pushed back on price, you lowered it rather than defending it",
       isProblem: true,
     },
     {
       value: seatPrice(discount),
+      title: "Average seat discount",
       meaning: `the average amount you knock off each seat — you ask ${seatPriceFull(kpis.avgFeeAskedPct)} and settle at ${seatPrice(kpis.avgFeeEndedPct)}`,
       isProblem: true,
     },
     {
       value: pct(kpis.winRate),
+      title: "Win rate",
       meaning: "of all your calls ended in a win",
       isProblem: false,
     },
@@ -63,7 +68,7 @@ export default async function CoachPage() {
 
   return (
     <AppShell focus="Price concessions">
-      <OnboardingBanner />
+      <OnboardingBanner className={colors.onboarding} />
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -90,11 +95,11 @@ export default async function CoachPage() {
       </div>
 
       {/* ── The verdict, and the one thing to do about it ───────────── */}
-      <section className="surface-card rounded-xl border-l-4 border-l-danger p-6 lg:p-8">
+      <section className={`surface-card rounded-xl border-l-4 border-l-danger p-6 lg:p-8 ${colors.verdict}`}>
         <p className="text-xs font-semibold uppercase tracking-wider text-danger">
           The pattern costing you deals
         </p>
-        <h2 className="display-serif mt-3 max-w-4xl text-2xl leading-snug text-foreground lg:text-3xl">
+        <h2 className="display-serif mt-3 max-w-4xl text-3xl leading-snug text-foreground lg:text-4xl">
           {diagnosis.headline}
         </h2>
         <p className="mt-3 text-sm text-muted">
@@ -111,7 +116,7 @@ export default async function CoachPage() {
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <Link
             href="/coach/practice?scenario=price-objection"
-            className="btn-lift inline-flex h-12 items-center justify-center rounded-full bg-accent px-7 text-base font-semibold text-accent-fg transition hover:opacity-90"
+            className="btn-lift inline-flex h-12 items-center justify-center rounded-full bg-accent px-7 text-lg font-semibold text-accent-fg transition hover:opacity-90"
           >
             Practice this now
           </Link>
@@ -141,58 +146,68 @@ export default async function CoachPage() {
         </ol>
       </section>
 
-      {/* ── The numbers, each with a plain-English meaning ───────────── */}
-      <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-          Your numbers
-        </h2>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
-          {numbers.map((n) => (
-            <div
-              key={n.meaning}
-              className={`surface-card rounded-xl p-5 ${n.isProblem ? "border-warn/40 bg-warn-soft" : ""
-                }`}
-            >
-              <p
-                className={`text-3xl font-semibold ${n.isProblem ? "text-warn" : "text-foreground"
-                  }`}
-              >
-                {n.value}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                {n.meaning}
-              </p>
-              {n.isProblem ? (
-                <p className="mt-2 text-xs font-medium text-warn">
-                  ← this is the one to fix
+      {/* ── Rep context and performance, with unchanged KPI data ─────── */}
+      <section className={colors.profilePerformance}>
+        <EmployeeCredential
+          agency={rep.agency}
+          name={rep.name}
+          role={rep.title}
+          weeksInRole={rep.weeksInRole}
+          weakestStage={label(diagnosis.primaryStage)}
+          attemptCount={attempts.length}
+        />
+        <div className={colors.performancePanel}>
+          <h2 className="text-xl font-semibold text-foreground">
+            Your performance snapshot
+          </h2>
+          <div className={colors.performanceMetrics}>
+            {numbers.map((n) => (
+              <div key={n.meaning} className={`${colors.metricBlock} ${n.isProblem ? colors.metricProblem : ""}`}>
+                <p className="text-xs font-medium text-muted">{n.title}</p>
+                <p className={`mt-2 text-3xl font-semibold ${n.isProblem ? "text-warn" : "text-foreground"}`}>
+                  {n.value}
                 </p>
-              ) : null}
-            </div>
-          ))}
+                <p className="mt-3 text-xs leading-relaxed text-muted">{n.meaning}</p>
+                {n.isProblem ? (
+                  <p className="mt-2 text-xs font-medium text-warn">← this is the one to fix</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── What good looks like, straight from the firm's playbook ──── */}
-      <section className="surface-card rounded-xl p-6">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-          What your firm says to do here
-        </h2>
-        <p className="mt-1 text-sm text-muted">
-          List price is {seatPriceFull(firm.standardPermFeePct)}. You must not
-          go below {seatPrice(firm.feeFloorPct)} without approval.
-        </p>
-        <h3 className="mt-2 text-lg font-semibold text-foreground">
+      <section className={colors.guidance}>
+        <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">What to do next</h2>
+        <p className="mt-2 text-sm text-muted">What your firm says to do here</p>
+        <h3 className="display-serif mt-6 max-w-3xl text-2xl leading-snug text-accent sm:text-3xl">
           {talkTrack.title}
         </h3>
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted">
+        <p className="mt-3 max-w-3xl text-base leading-relaxed text-foreground">
           {talkTrack.approvedPlay}
         </p>
-        <div className="mt-5 grid gap-6 sm:grid-cols-2">
+        <dl className={colors.pricing}>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-ok">
+            <dt className="text-sm text-muted">List price</dt>
+            <dd className="mt-1 text-2xl font-semibold text-foreground">
+              {seatPriceFull(firm.standardPermFeePct)}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-sm text-muted">Approval floor</dt>
+            <dd className="mt-1 text-2xl font-semibold text-foreground">
+              {seatPriceFull(firm.feeFloorPct)}
+            </dd>
+            <p className="mt-1 text-xs text-muted">You must not go below this without approval.</p>
+          </div>
+        </dl>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className={colors.approved}>
+            <p className="text-base font-semibold text-ok">
               Do this
             </p>
-            <ul className="mt-2 space-y-1.5 text-sm text-foreground">
+            <ul className="mt-2 space-y-1.5 text-sm text-muted">
               {talkTrack.anchorPoints.map((p) => (
                 <li key={p} className="flex gap-2 leading-relaxed">
                   <span aria-hidden className="text-ok">
@@ -203,11 +218,11 @@ export default async function CoachPage() {
               ))}
             </ul>
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-danger">
+          <div className={colors.avoid}>
+            <p className="text-base font-semibold text-danger">
               Never do this
             </p>
-            <ul className="mt-2 space-y-1.5 text-sm text-foreground">
+            <ul className="mt-2 space-y-1.5 text-sm text-muted">
               {talkTrack.neverDo.map((p) => (
                 <li key={p} className="flex gap-2 leading-relaxed">
                   <span aria-hidden className="text-danger">
@@ -222,18 +237,17 @@ export default async function CoachPage() {
       </section>
 
       {/* ── Where it breaks down + your practice so far ──────────────── */}
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="mt-3 grid items-start gap-8 lg:grid-cols-2">
         <section className="surface-card rounded-xl p-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Which part of the call goes wrong
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground">Where you struggle</h2>
+          <p className="mt-1 text-sm text-muted">Which part of the call goes wrong</p>
           <p className="mt-1 text-sm leading-relaxed text-muted">
             A sales call has five stages. This is how often each one ends badly
             for you — a longer red bar is a worse stage.
           </p>
           <ul className="mt-4 space-y-2.5">
             {kpis.byStage.map((s) => (
-              <li key={s.stage} className="flex items-center gap-3 text-sm">
+              <li key={s.stage} className={`flex items-center gap-3 text-sm ${s.stage === diagnosis.primaryStage ? colors.weakestStage : colors.otherStage}`}>
                 <span className="w-24 capitalize text-foreground">
                   {label(s.stage)}
                 </span>
@@ -260,59 +274,65 @@ export default async function CoachPage() {
         </section>
 
         <ProgressPanel
+          className={colors.progress}
+          heading="Are you improving?"
           attempts={attempts}
           feeHoldRate={practice.feeHoldRate}
           trendLabel={practice.trendLabel}
         />
       </div>
 
-      <ShareControls
-        initialShared={share.shareProgressWithManager}
-        repId={repId}
-      />
+      <section className={colors.secondary}>
+        <h2 className="text-base font-medium text-muted">Secondary information</h2>
+        <ShareControls
+          className={colors.sharing}
+          initialShared={share.shareProgressWithManager}
+          repId={repId}
+        />
 
-      {/* ── The raw data, available but not shouting ─────────────────── */}
-      <details className="surface-card rounded-xl p-6">
-        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-muted transition hover:text-foreground">
-          See all {recentCalls.length} calls we analysed
-        </summary>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-sm">
-            <thead className="text-xs uppercase tracking-wider text-muted">
-              <tr>
-                <th className="pb-2 pr-3 font-medium">Date</th>
-                <th className="pb-2 pr-3 font-medium">Client</th>
-                <th className="pb-2 pr-3 font-medium">Stage</th>
-                <th className="pb-2 pr-3 font-medium">Objection</th>
-                <th className="pb-2 pr-3 font-medium">Outcome</th>
-                <th className="pb-2 font-medium">Price per seat</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border text-foreground">
-              {recentCalls.map((c) => (
-                <tr key={c.id}>
-                  <td className="py-2.5 pr-3 font-mono text-xs text-muted">
-                    {c.date}
-                  </td>
-                  <td className="py-2.5 pr-3">{c.client}</td>
-                  <td className="py-2.5 pr-3 capitalize">{label(c.stage)}</td>
-                  <td className="py-2.5 pr-3 capitalize">
-                    {label(c.objectionType)}
-                  </td>
-                  <td className="py-2.5 pr-3">
-                    <OutcomePill outcome={c.outcome} />
-                  </td>
-                  <td className="py-2.5 font-mono text-xs text-muted">
-                    {c.feeEndedPct !== null
-                      ? `${seatPrice(c.feeAskedPct)} → ${seatPrice(c.feeEndedPct)}`
-                      : seatPrice(c.feeAskedPct)}
-                  </td>
+        {/* ── The raw data, available but not shouting ─────────────────── */}
+        <details className={`surface-card rounded-xl p-6 ${colors.rawCalls}`}>
+          <summary className="cursor-pointer text-sm font-medium text-muted transition hover:text-foreground">
+            See all {recentCalls.length} calls we analysed
+          </summary>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-sm">
+              <thead className="text-xs uppercase tracking-wider text-muted">
+                <tr>
+                  <th className="pb-2 pr-3 font-medium">Date</th>
+                  <th className="pb-2 pr-3 font-medium">Client</th>
+                  <th className="pb-2 pr-3 font-medium">Stage</th>
+                  <th className="pb-2 pr-3 font-medium">Objection</th>
+                  <th className="pb-2 pr-3 font-medium">Outcome</th>
+                  <th className="pb-2 font-medium">Price per seat</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
+              </thead>
+              <tbody className="divide-y divide-border text-foreground">
+                {recentCalls.map((c) => (
+                  <tr key={c.id}>
+                    <td className="py-2.5 pr-3 font-mono text-xs text-muted">
+                      {c.date}
+                    </td>
+                    <td className="py-2.5 pr-3">{c.client}</td>
+                    <td className="py-2.5 pr-3 capitalize">{label(c.stage)}</td>
+                    <td className="py-2.5 pr-3 capitalize">
+                      {label(c.objectionType)}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      <OutcomePill outcome={c.outcome} />
+                    </td>
+                    <td className="py-2.5 font-mono text-xs text-muted">
+                      {c.feeEndedPct !== null
+                        ? `${seatPrice(c.feeAskedPct)} → ${seatPrice(c.feeEndedPct)}`
+                        : seatPrice(c.feeAskedPct)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </section>
     </AppShell>
   );
 }
