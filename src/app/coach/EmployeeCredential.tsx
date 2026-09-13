@@ -5,6 +5,7 @@ import Image from "next/image";
 import colors from "./coach.module.css";
 
 type Props = {
+  repId: string;
   agency: string;
   name: string;
   role: string;
@@ -13,9 +14,11 @@ type Props = {
   attemptCount: number;
 };
 
-export function EmployeeCredential({ agency, name, role, weeksInRole, weakestStage, attemptCount }: Props) {
+export function EmployeeCredential({ repId, agency, name, role, weeksInRole, weakestStage, attemptCount }: Props) {
   const [flipped, setFlipped] = useState(false);
   const [portraitFailed, setPortraitFailed] = useState(false);
+  // Match the existing seeded rep identity, never a custom session display name.
+  const portraitSrc = repId === "rep_demo_alex" ? "/alex-chen.png" : null;
   const id = useId();
   const frontId = `${id}-front`;
   const backId = `${id}-back`;
@@ -37,11 +40,11 @@ export function EmployeeCredential({ agency, name, role, weeksInRole, weakestSta
           </div>
           <div className={colors.employeeIdentity}>
             <span className={colors.employeePortrait}>
-              {portraitFailed ? (
+              {!portraitSrc || portraitFailed ? (
                 <span aria-hidden="true">{name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("")}</span>
               ) : (
                 <Image
-                  src="/alex-chen.png"
+                  src={portraitSrc}
                   alt="Alex Chen"
                   fill
                   sizes="(max-width: 1023px) 112px, 180px"

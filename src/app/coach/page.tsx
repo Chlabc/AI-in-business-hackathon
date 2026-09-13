@@ -149,6 +149,8 @@ export default async function CoachPage() {
       {/* ── Rep context and performance, with unchanged KPI data ─────── */}
       <section className={colors.profilePerformance}>
         <EmployeeCredential
+          key={rep.id}
+          repId={rep.id}
           agency={rep.agency}
           name={rep.name}
           role={rep.title}
