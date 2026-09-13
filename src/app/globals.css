@@ -236,12 +236,38 @@ body {
    grid cell so the card never resizes mid-flip. */
 .flashcard {
   position: relative;
+  /* Card proportions, not a full-width banner — a study card should look like
+     something you could hold. */
   width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
   min-width: 0;
   overflow: clip;
   border-radius: 1rem;
   perspective: 1200px;
-  box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--accent) 55%, transparent);
+  /* Credential-only warm palette (ui.md §4), scoped so it never leaks out.
+     The card stays warm and light in BOTH app themes, so the semantic tokens
+     used by text and pills inside it are redefined here — otherwise dark mode
+     would paint light text onto a light card. */
+  --fc-ivory: #f7f3eb;
+  --fc-ink: #20344b;
+  --fc-muted: #6f665c;
+  --fc-border: #d6cfc3;
+  --fc-bronze: #79634d;
+
+  --foreground: #20344b;
+  --muted: #6f665c;
+  --card: #f7f3eb;
+  --border: #d6cfc3;
+  --accent: #20344b;
+  --accent-fg: #f7f3eb;
+  --accent-soft: #e5ebef;
+  --ok: #1f6f3a;
+  --ok-soft: #e7f2e9;
+  box-shadow:
+    0 1px 2px rgb(255 255 255 / 55%),
+    0 5px 12px -6px color-mix(in srgb, var(--fc-ink) 24%, transparent),
+    0 18px 34px -18px color-mix(in srgb, var(--fc-ink) 48%, transparent);
 }
 
 .flashcard-control {
@@ -270,7 +296,11 @@ body {
   transform: rotateY(180deg);
 }
 
+/* Same warm frosted-acrylic material as the employee credential (ui.md §7):
+   translucent ivory base, a luminous top/left rim, a cool refraction on the
+   right, and a clipped diagonal sheen above it. */
 .flashcard-face {
+  position: relative;
   grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
@@ -281,16 +311,85 @@ body {
   box-sizing: border-box;
   padding: clamp(1.25rem, 3vw, 2rem);
   border-radius: 1rem;
-  border: 1px solid var(--border);
-  background: var(--card);
+  border: 1px solid color-mix(in srgb, white 52%, var(--fc-border));
+  color: var(--fc-ink);
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 34%),
+      rgb(255 255 255 / 9%) 42%,
+      color-mix(in srgb, var(--fc-ivory) 18%, transparent) 72%
+    ),
+    color-mix(in srgb, var(--fc-ivory) 92%, transparent);
+  backdrop-filter: blur(22px) saturate(124%);
+  -webkit-backdrop-filter: blur(22px) saturate(124%);
+  box-shadow:
+    inset 0 2px 1px rgb(255 255 255 / 92%),
+    inset 2px 0 1px rgb(255 255 255 / 72%),
+    inset -1px 0 2px color-mix(in srgb, #ccecf2 24%, transparent),
+    inset 0 -2px 4px color-mix(in srgb, var(--fc-ink) 20%, transparent);
+  transform-origin: center;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
+/* Clipped specular sheen. Content sits above it via z-index below. */
+.flashcard-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.72;
+  transform: translateX(-3%);
+  background: linear-gradient(
+    122deg,
+    transparent 8%,
+    rgb(255 255 255 / 7%) 19%,
+    rgb(255 255 255 / 38%) 30%,
+    rgb(255 255 255 / 64%) 37%,
+    rgb(255 255 255 / 28%) 44%,
+    color-mix(in srgb, #d7f3f5 14%, transparent) 51%,
+    transparent 63%
+  );
+  transition:
+    transform 320ms ease,
+    opacity 320ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .flashcard:hover .flashcard-face::after {
+    transform: translateX(3%);
+    opacity: 0.9;
+  }
+}
+
+/* Text and controls above the sheen. */
+.flashcard-face > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* The answer face keeps the same material, tinted green so the two sides
+   are instantly distinguishable. */
 .flashcard-back {
   transform: rotateY(180deg);
-  background: color-mix(in srgb, var(--ok-soft) 45%, var(--card));
-  border-color: color-mix(in srgb, var(--ok) 22%, var(--border));
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 34%),
+      rgb(255 255 255 / 9%) 42%,
+      color-mix(in srgb, var(--ok-soft) 22%, transparent) 72%
+    ),
+    color-mix(in srgb, var(--ok-soft) 82%, var(--fc-ivory));
+  border-color: color-mix(in srgb, var(--ok) 26%, var(--fc-border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flashcard-face::after {
+    transition: none;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
