@@ -43,12 +43,6 @@ export default async function PracticePage({ searchParams }: Props) {
           >
             All scenarios
           </Link>
-          <Link
-            href="/coach/playbook"
-            className="text-muted transition hover:text-accent"
-          >
-            Playbook (Manager)
-          </Link>
         </div>
         <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
           {scenario.title} · {scenario.difficulty}

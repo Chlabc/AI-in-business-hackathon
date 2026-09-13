@@ -4,75 +4,86 @@ import { SCENARIOS } from "@/data/scenarios";
 
 export const dynamic = "force-dynamic";
 
-const difficultyClass: Record<string, string> = {
-  Easy: "border-ok/30 bg-ok-soft text-ok",
-  Medium: "border-accent/30 bg-accent-soft text-accent",
-  Hard: "border-danger/30 bg-danger-soft text-danger",
+const difficultyPill: Record<string, string> = {
+  Easy: "pill-ok",
+  Medium: "pill-warn",
+  Hard: "pill-danger",
 };
 
 export default function TrainingPage() {
   return (
     <AppShell focus="Scenario selection">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/coach" className="text-sm text-muted hover:text-accent">
-          ← Back to diagnosis
-        </Link>
-        <span className="rounded border border-border bg-card px-3 py-1 text-xs text-muted">
-          Lifted from Huey · live voice on our stack
-        </span>
-      </div>
+      <Link href="/coach" className="text-sm text-muted hover:text-accent">
+        ← Back to your diagnosis
+      </Link>
 
       <div>
-        <p className="eyebrow">Training</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
-          Choose a practice scenario
+        <p className="eyebrow">Pick a situation</p>
+        <h1 className="display-serif mt-2 text-3xl text-foreground lg:text-4xl">
+          What do you want to practise?
         </h1>
-        <p className="mt-3 max-w-3xl text-sm text-muted lg:text-base">
-          Price / fee objection is recommended from Alex&apos;s diagnosis. Other
-          scenarios come from the Huey prototype — same live ElevenLabs drill,
-          different client pushback.
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted lg:text-base">
+          Each one is a real spoken call against an AI client with its own
+          personality and its own way of pushing back. The starred one is picked
+          from your diagnosis — start there if you&apos;re not sure.
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="scenario-stage stagger-children grid gap-5 lg:grid-cols-2">
         {SCENARIOS.map((s) => (
-          <div
+          <Link
             key={s.id}
-            className={`surface-card flex flex-col justify-between rounded-xl p-6 ${
-              s.recommended ? "border-accent/40" : ""
-            }`}
+            href={`/coach/practice?scenario=${s.id}`}
+            className={`card-interactive scenario-card ${s.recommended ? "scenario-card-pick" : ""}`}
           >
+            {s.recommended ? (
+              <span className="scenario-ribbon">★ Picked for you</span>
+            ) : null}
+
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold text-foreground">
-                  {s.title}
-                </h2>
-                <span
-                  className={`rounded border px-2 py-0.5 text-xs font-medium ${difficultyClass[s.difficulty]}`}
-                >
-                  {s.difficulty}
+              <span
+                className={`pill ${difficultyPill[s.difficulty] ?? "pill-neutral"}`}
+              >
+                {s.difficulty}
+              </span>
+              <h2 className="display-serif mt-3 text-2xl leading-tight text-foreground">
+                {s.title}
+              </h2>
+              <p className="mt-2 leading-relaxed text-muted">{s.description}</p>
+
+              {/* The client's opening line is the most concrete thing on the
+                  card — treat it as a quote, not another paragraph. */}
+              <blockquote className="scenario-quote">
+                <span className="scenario-quote-mark" aria-hidden>
+                  “
                 </span>
-                {s.recommended ? (
-                  <span className="rounded border border-accent/40 bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
-                    Recommended
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-2 text-sm text-muted">{s.description}</p>
-              <p className="mt-2 text-xs text-muted">
-                Skill: {s.skill} · Persona: {s.customerPersona}
-              </p>
-              <p className="mt-3 rounded-md border border-border bg-background px-3 py-2 text-sm italic text-foreground">
-                “{s.openingLine}”
-              </p>
+                {s.openingLine}
+              </blockquote>
+
+              <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs">
+                <div>
+                  <dt className="uppercase tracking-[0.12em] text-muted">
+                    You&apos;ll practise
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-foreground">
+                    {s.skill}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="uppercase tracking-[0.12em] text-muted">
+                    You&apos;ll be talking to
+                  </dt>
+                  <dd className="mt-0.5 font-medium text-foreground">
+                    {s.customerPersona}
+                  </dd>
+                </div>
+              </dl>
             </div>
-            <Link
-              href={`/coach/practice?scenario=${s.id}`}
-              className="mt-5 inline-flex h-10 w-fit items-center justify-center rounded-md bg-accent px-4 text-sm font-semibold text-accent-fg transition hover:opacity-90"
-            >
-              Start drill
-            </Link>
-          </div>
+
+            <span className="btn-lift mt-6 inline-flex h-11 w-fit items-center justify-center gap-2 rounded-full bg-accent px-6 text-sm font-semibold text-accent-fg">
+              Start this drill →
+            </span>
+          </Link>
         ))}
       </div>
     </AppShell>

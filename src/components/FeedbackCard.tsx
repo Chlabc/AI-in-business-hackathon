@@ -1,6 +1,7 @@
 "use client";
 
 import { DownloadPdfButton } from "@/components/DownloadPdfButton";
+import { seatPrice } from "@/lib/money";
 import type { PracticeScore } from "@/lib/rubric";
 
 type FeedbackCardProps = {
@@ -8,6 +9,13 @@ type FeedbackCardProps = {
   whatYouSaid?: string[];
   repName?: string;
 };
+
+/** Green / amber / red so a weak criterion is obvious without reading the number. */
+function tierBarClass(fraction: number) {
+  if (fraction >= 0.8) return "bg-ok";
+  if (fraction >= 0.5) return "bg-warn";
+  return "bg-danger";
+}
 
 export function FeedbackCard({
   score,
@@ -37,17 +45,14 @@ export function FeedbackCard({
               className={`rounded border px-2 py-1 font-medium ${
                 score.heldFee
                   ? "border-ok/30 bg-ok-soft text-ok"
-                  : "border-accent/30 bg-accent-soft text-accent"
+                  : "border-warn/30 bg-warn-soft text-warn"
               }`}
             >
               {score.heldFee ? "Price held" : "Price softened"}
-              {score.feeOfferedPct !== null ? ` · ${score.feeOfferedPct}%` : ""}
+              {score.feeOfferedPct !== null
+                ? ` · ${seatPrice(score.feeOfferedPct)}`
+                : ""}
             </span>
-            <DownloadPdfButton
-              score={score}
-              whatYouSaid={whatYouSaid}
-              repName={repName}
-            />
           </div>
         </div>
       </div>
@@ -114,7 +119,7 @@ export function FeedbackCard({
                     {c.label}
                     <div className="mt-1.5 h-1.5 w-28 overflow-hidden rounded-full bg-border">
                       <div
-                        className="h-full rounded-full bg-accent"
+                        className={`h-full rounded-full ${tierBarClass(c.score)}`}
                         style={{ width: `${Math.round(c.score * 100)}%` }}
                       />
                     </div>
@@ -127,6 +132,28 @@ export function FeedbackCard({
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* The report was a small grey button crammed between two status pills.
+          It's the thing you take away from the drill, so it gets its own band
+          at the end, where you've finished reading the feedback. */}
+      <div className="border-t border-border bg-background px-5 py-6 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-base font-semibold text-foreground">
+              Take this away as a PDF
+            </p>
+            <p className="mt-1 max-w-md text-sm leading-relaxed text-muted">
+              A one-page report with your score, the rubric breakdown and the
+              line to rehearse next time.
+            </p>
+          </div>
+          <DownloadPdfButton
+            score={score}
+            whatYouSaid={whatYouSaid}
+            repName={repName}
+          />
         </div>
       </div>
     </section>

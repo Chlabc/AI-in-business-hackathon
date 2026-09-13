@@ -5,6 +5,7 @@ import {
   getTalkTrackForObjection,
 } from "@/data/seed";
 import { computeKpis } from "@/lib/kpis";
+import { seatPrice } from "@/lib/money";
 import type {
   CallRecord,
   Diagnosis,
@@ -84,7 +85,7 @@ export function diagnoseCalls(
   const evidence = supporting.slice(0, 4).map((c) => {
     const drop =
       c.feeEndedPct !== null
-        ? ` (${c.feeAskedPct}% → ${c.feeEndedPct}%)`
+        ? ` (${seatPrice(c.feeAskedPct)} → ${seatPrice(c.feeEndedPct)} a seat)`
         : "";
     return `${c.date} · ${c.client}: ${c.notes}${drop}`;
   });
@@ -98,10 +99,13 @@ export function diagnoseCalls(
         ? "medium"
         : "low";
 
+  // "rate" counts lost AND conceded calls together, so the copy must say both.
+  // Saying "you discount in {rate}%" would contradict the concession-rate KPI,
+  // which counts only the discounted ones.
   const headline =
     top.objection === "fee"
-      ? `You lose ${rate}% of fee conversations — you concede on price before exploring the objection.`
-      : `Your weakest pattern is ${top.stage} / ${top.objection.replaceAll("_", " ")} (${rate}% lost or conceded).`;
+      ? `${rate}% of your price conversations end in a discount or a lost deal — you move on price before asking what the objection really is.`
+      : `${rate}% of your calls hitting the ${top.objection.replaceAll("_", " ")} objection end lost or discounted — that's your weakest moment.`;
 
   return {
     repId,
