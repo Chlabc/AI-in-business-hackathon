@@ -74,6 +74,8 @@ export function usePracticeConversation(scenario: PracticeScenario) {
   const [scoring, setScoring] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [score, setScore] = useState<PracticeScore | null>(null);
+  const [attemptId, setAttemptId] = useState<string | null>(null);
+  const [attemptPersisted, setAttemptPersisted] = useState(false);
   const [lastDisconnect, setLastDisconnect] = useState<string | null>(null);
 
   const conversationRef = useRef<ConversationInstance | null>(null);
@@ -105,6 +107,8 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     setNotice(null);
     setLastDisconnect(null);
     setScore(null);
+    setAttemptId(null);
+    setAttemptPersisted(false);
     setTurns([]);
     turnsRef.current = [];
     setConversationId(null);
@@ -178,6 +182,8 @@ export function usePracticeConversation(scenario: PracticeScenario) {
       if (!snapshot.some((t) => t.role === "user")) {
         setScoring(false);
         setScore(null);
+        setAttemptId(null);
+        setAttemptPersisted(false);
         setNotice(
           "Session ended before we caught your reply — speak, pause a beat, then End & score.",
         );
@@ -200,12 +206,16 @@ export function usePracticeConversation(scenario: PracticeScenario) {
         });
         const data = (await res.json()) as {
           score?: PracticeScore;
+          attempt?: { id?: string };
+          persisted?: boolean;
           error?: string;
         };
         if (!res.ok || !data.score) {
           throw new Error(data.error ?? "Scoring failed");
         }
         setScore(data.score);
+        setAttemptId(data.attempt?.id ?? null);
+        setAttemptPersisted(data.persisted !== false && Boolean(data.attempt?.id));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Scoring failed");
       } finally {
@@ -387,6 +397,8 @@ export function usePracticeConversation(scenario: PracticeScenario) {
     isSpeaking,
     scoring,
     score,
+    attemptId,
+    attemptPersisted,
     lastDisconnect,
     conversationId,
     start,

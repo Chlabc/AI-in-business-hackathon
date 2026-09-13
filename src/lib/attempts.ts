@@ -4,6 +4,13 @@ import { dataStorePath } from "@/lib/file-store";
 import type { PracticeScore } from "@/lib/rubric";
 import type { TranscriptTurn } from "@/lib/score";
 
+/** Rep-owned debrief after a scored drill — never sent to manager PDF. */
+export type AttemptReflection = {
+  whatWentWrong: string;
+  nextTime: string;
+  savedAt: string;
+};
+
 export type PracticeAttempt = {
   id: string;
   repId: string;
@@ -11,6 +18,7 @@ export type PracticeAttempt = {
   conversationId: string | null;
   turns: TranscriptTurn[];
   score: PracticeScore;
+  reflection?: AttemptReflection;
 };
 
 const STORE = dataStorePath("practice-attempts.json");
@@ -44,10 +52,29 @@ export async function saveAttempt(
     conversationId: attempt.conversationId,
     turns: attempt.turns,
     score: attempt.score,
+    ...(attempt.reflection ? { reflection: attempt.reflection } : {}),
   };
   all.push(row);
   await writeAll(all);
   return row;
+}
+
+export async function updateAttemptReflection(
+  attemptId: string,
+  repId: string,
+  reflection: Omit<AttemptReflection, "savedAt"> & { savedAt?: string },
+): Promise<PracticeAttempt | null> {
+  const all = await readAll();
+  const idx = all.findIndex((a) => a.id === attemptId && a.repId === repId);
+  if (idx < 0) return null;
+  const next: AttemptReflection = {
+    whatWentWrong: reflection.whatWentWrong.trim(),
+    nextTime: reflection.nextTime.trim(),
+    savedAt: reflection.savedAt ?? new Date().toISOString(),
+  };
+  all[idx] = { ...all[idx], reflection: next };
+  await writeAll(all);
+  return all[idx];
 }
 
 export async function listAttempts(repId: string): Promise<PracticeAttempt[]> {

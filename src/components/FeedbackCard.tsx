@@ -1,13 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import { seatPrice } from "@/lib/money";
 import type { PracticeScore } from "@/lib/rubric";
+
+export type ReflectionDraft = {
+  whatWentWrong: string;
+  nextTime: string;
+};
 
 type FeedbackCardProps = {
   score: PracticeScore;
   whatYouSaid?: string[];
   repName?: string;
+  attemptId?: string | null;
+  attemptPersisted?: boolean;
 };
 
 /** Green / amber / red so a weak criterion is obvious without reading the number. */
@@ -21,11 +29,67 @@ export function FeedbackCard({
   score,
   whatYouSaid = [],
   repName = "Alex Chen",
+  attemptId = null,
+  attemptPersisted = false,
 }: FeedbackCardProps) {
   const said =
     whatYouSaid.length > 0
       ? whatYouSaid.slice(-3)
       : ["(No user transcript captured)"];
+
+  const [whatWentWrong, setWhatWentWrong] = useState("");
+  const [nextTime, setNextTime] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [saveErr, setSaveErr] = useState<string | null>(null);
+
+  const reflection: ReflectionDraft = { whatWentWrong, nextTime };
+  const hasReflection =
+    Boolean(whatWentWrong.trim()) || Boolean(nextTime.trim());
+
+  async function saveReflection() {
+    if (!hasReflection) {
+      setSaveErr("Write at least one field before saving.");
+      return;
+    }
+    setSaving(true);
+    setSaveErr(null);
+    setSaveMsg(null);
+    try {
+      if (!attemptId || !attemptPersisted) {
+        setSaveMsg(
+          "Kept for this PDF download. Attempt wasn’t persisted on the server — re-download before you leave.",
+        );
+        return;
+      }
+      const res = await fetch("/api/practice/attempts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          attemptId,
+          whatWentWrong,
+          nextTime,
+        }),
+      });
+      const data = (await res.json()) as {
+        error?: string;
+        persisted?: boolean;
+      };
+      if (!res.ok) throw new Error(data.error ?? "Save failed");
+      setSaveMsg(
+        data.persisted === false
+          ? "Saved for this session only (server store unavailable)."
+          : "Reflection saved.",
+      );
+    } catch (e) {
+      setSaveErr(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const fieldClass =
+    "mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent";
 
   return (
     <section className="surface-card overflow-hidden rounded-xl">
@@ -99,7 +163,7 @@ export function FeedbackCard({
         </p>
       </div>
 
-      <div className="p-5 sm:p-6">
+      <div className="border-b border-border p-5 sm:p-6">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted">
           Rubric breakdown
         </h3>
@@ -135,9 +199,59 @@ export function FeedbackCard({
         </div>
       </div>
 
-      {/* The report was a small grey button crammed between two status pills.
-          It's the thing you take away from the drill, so it gets its own band
-          at the end, where you've finished reading the feedback. */}
+      <div className="border-b border-border px-5 py-5 sm:px-6">
+        <p className="eyebrow">Self-reflection</p>
+        <h3 className="mt-1 text-lg font-semibold text-foreground">
+          What will you do differently?
+        </h3>
+        <p className="mt-1 text-sm text-muted">
+          Optional — your words, not the AI’s. Included in the PDF when filled
+          in. Private to you (not on the manager report).
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
+            What went wrong
+            <textarea
+              rows={3}
+              className={fieldClass}
+              placeholder="In one sentence: where did you lose control of the call?"
+              value={whatWentWrong}
+              onChange={(e) => {
+                setWhatWentWrong(e.target.value);
+                setSaveMsg(null);
+                setSaveErr(null);
+              }}
+            />
+          </label>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
+            Next time I will
+            <textarea
+              rows={3}
+              className={fieldClass}
+              placeholder="Next drill, I will…"
+              value={nextTime}
+              onChange={(e) => {
+                setNextTime(e.target.value);
+                setSaveMsg(null);
+                setSaveErr(null);
+              }}
+            />
+          </label>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => void saveReflection()}
+            disabled={saving || !hasReflection}
+            className="inline-flex h-10 items-center rounded-md border border-border bg-card px-4 text-sm font-semibold text-foreground transition hover:border-accent disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save reflection"}
+          </button>
+          {saveMsg ? <p className="text-sm text-ok">{saveMsg}</p> : null}
+          {saveErr ? <p className="text-sm text-danger">{saveErr}</p> : null}
+        </div>
+      </div>
+
       <div className="border-t border-border bg-background px-5 py-6 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -145,14 +259,15 @@ export function FeedbackCard({
               Take this away as a PDF
             </p>
             <p className="mt-1 max-w-md text-sm leading-relaxed text-muted">
-              A one-page report with your score, the rubric breakdown and the
-              line to rehearse next time.
+              Score, rubric, rehearse line
+              {hasReflection ? ", and your self-reflection" : ""}.
             </p>
           </div>
           <DownloadPdfButton
             score={score}
             whatYouSaid={whatYouSaid}
             repName={repName}
+            reflection={hasReflection ? reflection : undefined}
           />
         </div>
       </div>

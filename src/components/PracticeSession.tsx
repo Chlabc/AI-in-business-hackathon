@@ -43,6 +43,8 @@ export function PracticeSession({
     isSpeaking,
     scoring,
     score,
+    attemptId,
+    attemptPersisted,
     lastDisconnect,
     start,
     end,
@@ -204,7 +206,13 @@ export function PracticeSession({
 
       {score ? (
         <div className="space-y-4">
-          <FeedbackCard score={score} whatYouSaid={userLines} />
+          <FeedbackCard
+            key={attemptId ?? `score-${score.overall}-${score.scenarioId}`}
+            score={score}
+            whatYouSaid={userLines}
+            attemptId={attemptId}
+            attemptPersisted={attemptPersisted}
+          />
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
