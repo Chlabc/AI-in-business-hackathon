@@ -21,6 +21,9 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const card = cards[cardIndex];
+  // Wrap both ways so the deck is a loop with no dead ends.
+  const prevOf = cards[(cardIndex - 1 + cards.length) % cards.length];
+  const nextOf = cards[(cardIndex + 1) % cards.length];
   const question = questions[qIndex];
   const score = useMemo(() => {
     let n = 0;
@@ -30,14 +33,15 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
     return n;
   }, [answers, questions]);
 
+  // The deck loops, so the last card's "next" is the first one again.
   function nextCard() {
     setFlipped(false);
-    setCardIndex((i) => Math.min(i + 1, cards.length - 1));
+    setCardIndex((i) => (i + 1) % cards.length);
   }
 
   function prevCard() {
     setFlipped(false);
-    setCardIndex((i) => Math.max(i - 1, 0));
+    setCardIndex((i) => (i - 1 + cards.length) % cards.length);
   }
 
   function submitAnswer() {
@@ -80,59 +84,85 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
           </button>
         </div>
 
-        {/* Same 3D flip as the employee credential: wrapper owns perspective
-            and clipping, rotor owns the transform, both faces share one grid
-            cell so the card never changes size between sides. */}
-        <div className="flashcard">
-          <button
-            type="button"
-            onClick={() => setFlipped((f) => !f)}
-            className="flashcard-control"
-            aria-label={
-              flipped ? "Hide the answer" : `Show the answer: ${card.front}`
-            }
-          />
-          <div className="flashcard-rotor" data-flipped={flipped}>
-            <div className="flashcard-face" aria-hidden={flipped}>
-              <span className="pill pill-accent w-fit">{card.tag}</span>
-              <p className="mt-5 text-lg font-medium leading-relaxed text-foreground sm:text-2xl">
-                {card.front}
-              </p>
-              <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full bg-accent px-6 text-sm font-semibold text-accent-fg">
-                Show the answer
-              </span>
-            </div>
-            <div
-              className="flashcard-face flashcard-back"
-              aria-hidden={!flipped}
-            >
-              <span className="pill pill-ok w-fit">Answer</span>
-              <p className="mt-5 text-lg font-medium leading-relaxed text-foreground sm:text-2xl">
-                {card.back}
-              </p>
-              <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full border border-border bg-card px-6 text-sm font-semibold text-muted">
-                Flip back
-              </span>
+        {/* A looping deck: previous peeks on the left, next on the right, both
+            scaled down, faded and behind. Only the centre card is interactive;
+            the neighbours are decoration and are hidden from assistive tech,
+            since their text is read properly once they become the centre. */}
+        <div className="deck">
+          <div className="deck-slot deck-prev" aria-hidden>
+            <DeckFace text={prevOf.front} tag={prevOf.tag} />
+          </div>
+          <div className="deck-slot deck-next" aria-hidden>
+            <DeckFace text={nextOf.front} tag={nextOf.tag} />
+          </div>
+
+          <div className="deck-slot deck-current">
+            {/* Same 3D flip as the employee credential: wrapper owns
+                perspective, rotor owns the transform, both faces share one
+                grid cell so the card never resizes mid-flip. */}
+            <div className="flashcard">
+              <button
+                type="button"
+                onClick={() => setFlipped((f) => !f)}
+                className="flashcard-control"
+                aria-label={
+                  flipped ? "Hide the answer" : `Show the answer: ${card.front}`
+                }
+              />
+              <div className="flashcard-rotor" data-flipped={flipped}>
+                <div className="flashcard-face" aria-hidden={flipped}>
+                  <span className="pill pill-accent w-fit">{card.tag}</span>
+                  <p className="mt-5 text-lg font-medium leading-relaxed sm:text-2xl">
+                    {card.front}
+                  </p>
+                  <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full bg-accent px-6 text-sm font-semibold text-accent-fg">
+                    Show the answer
+                  </span>
+                </div>
+                <div
+                  className="flashcard-face flashcard-back"
+                  aria-hidden={!flipped}
+                >
+                  <span className="pill pill-ok w-fit">Answer</span>
+                  <p className="mt-5 text-lg font-medium leading-relaxed sm:text-2xl">
+                    {card.back}
+                  </p>
+                  <span className="mt-auto inline-flex h-11 w-fit items-center rounded-full border border-border bg-card px-6 text-sm font-semibold text-muted">
+                    Flip back
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex items-center justify-center gap-4">
           <button
             type="button"
             onClick={prevCard}
-            disabled={cardIndex === 0}
-            className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-40"
+            aria-label="Previous card"
+            className="deck-arrow"
           >
-            Previous
+            ←
           </button>
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {cards.map((c, i) => (
+              <span
+                key={c.id}
+                aria-hidden
+                className={`h-1.5 rounded-full transition-all ${
+                  i === cardIndex ? "w-5 bg-accent" : "w-1.5 bg-border"
+                }`}
+              />
+            ))}
+          </div>
           <button
             type="button"
             onClick={nextCard}
-            disabled={cardIndex >= cards.length - 1}
-            className="rounded-md border border-border px-4 py-2 text-sm disabled:opacity-40"
+            aria-label="Next card"
+            className="deck-arrow"
           >
-            Next card
+            →
           </button>
         </div>
       </div>
@@ -236,6 +266,20 @@ export function LearnModule({ firmName, cards, questions }: LearnModuleProps) {
         >
           Study again
         </button>
+      </div>
+    </div>
+  );
+}
+
+/** A neighbouring card in the deck — same material, no flip, no interaction. */
+function DeckFace({ text, tag }: { text: string; tag: string }) {
+  return (
+    <div className="flashcard">
+      <div className="flashcard-face">
+        <span className="pill pill-accent w-fit">{tag}</span>
+        <p className="mt-5 text-lg font-medium leading-relaxed sm:text-2xl">
+          {text}
+        </p>
       </div>
     </div>
   );

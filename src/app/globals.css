@@ -230,6 +230,88 @@ body {
   color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
+/* ── Flashcard deck ─────────────────────────────────────────────────────
+   The current card sits centred and on top; the previous and next peek out
+   either side, scaled down, faded and behind it. Navigating transitions the
+   three slots, so a card appears to come forward as you move through. */
+.deck {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 17rem;
+  padding-block: 0.5rem;
+  /* The neighbours are clipped at the page edges rather than widening it. */
+  overflow: clip;
+}
+
+.deck-slot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(34rem, 100%);
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms ease;
+}
+
+.deck-current {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  z-index: 3;
+}
+
+/* Offset far enough that the neighbours read as a stack without their text
+   bleeding out around the centre card and competing with it. */
+.deck-prev {
+  transform: translate(calc(-50% - 17.5rem), -50%) scale(0.84);
+  opacity: 0.35;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.deck-next {
+  transform: translate(calc(-50% + 17.5rem), -50%) scale(0.84);
+  opacity: 0.35;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Narrow screens have no room for neighbours — show the centre card only. */
+@media (max-width: 900px) {
+  .deck-prev,
+  .deck-next {
+    opacity: 0;
+  }
+}
+
+.deck-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.75rem;
+  width: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 1.1rem;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
+}
+.deck-arrow:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-slot {
+    transition: none;
+  }
+}
+
 /* ── Flashcard flip ─────────────────────────────────────────────────────
    Mirrors the employee credential's structure (ui.md §6): perspective and
    clipping on the wrapper, transform on the rotor, both faces in the same
