@@ -195,11 +195,9 @@
   max-width: 100%;
   box-sizing: border-box;
   align-self: start;
-  perspective: 1200px;
-  perspective-origin: center;
+  /* Orthographic rotation keeps the edges from growing toward the viewer. */
   border-radius: 1.25rem;
-  /* Clip projected edges, not the wrapper's own shadow. Unlike hidden,
-     overflow: clip does not flatten the preserved 3D scene. */
+  /* Keep face reflections within the fixed frame without clipping its shadow. */
   overflow: clip;
   box-shadow:
     0 1px 2px rgb(255 255 255 / 55%),
@@ -228,14 +226,9 @@
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  transform: rotateY(0deg);
-  transform-origin: center;
-  transform-style: preserve-3d;
-  transition: transform 420ms ease-in-out;
-}
-
-.credentialRotor[data-flipped="true"] {
-  transform: rotateY(180deg);
+  /* Keep the glass faces independent of a nested preserve-3d context.
+     The stationary button owns hit testing throughout the animation. */
+  pointer-events: none;
 }
 
 .credentialFace.repProfile {
@@ -270,6 +263,8 @@
   backdrop-filter: blur(22px) saturate(124%);
   -webkit-backdrop-filter: blur(22px) saturate(124%);
   transform-origin: center;
+  transform: rotateY(0deg);
+  transition: transform 420ms ease-in-out;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -282,8 +277,7 @@
     0 0 8px rgb(255 255 255 / 24%);
 }
 
-/* Each face owns its reflection. No oversized/translated overlay and no
-   filters or opacity on the rotor that could flatten its preserved 3D. */
+/* Each face owns its reflection, keeping it aligned during rotation. */
 .credentialFace.repProfile::after {
   content: "";
   position: absolute;
@@ -325,12 +319,20 @@
   color: var(--credential-bronze);
 }
 
-.credentialBack {
+.credentialFace.credentialBack {
   transform: rotateY(180deg);
 }
 
+.credentialRotor[data-flipped="true"] > .credentialFace {
+  transform: rotateY(-180deg);
+}
+
+.credentialRotor[data-flipped="true"] > .credentialBack {
+  transform: rotateY(0deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .credentialRotor {
+  .credentialFace.repProfile {
     transition: none;
   }
 
